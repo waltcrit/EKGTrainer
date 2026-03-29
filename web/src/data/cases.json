@@ -1,0 +1,419 @@
+[
+  {
+    "id": "nsr_01",
+    "rhythm": "Normal Sinus Rhythm",
+    "category": "sinus",
+    "difficulty": 1,
+    "imagePath": "/cases/nsr_01.png",
+    "rate": 75,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Rate 60\u2013100 bpm",
+      "Regular rhythm",
+      "Upright P wave before each QRS",
+      "Normal PR interval (120\u2013200 ms)",
+      "Narrow QRS (<120 ms)"
+    ],
+    "teaching": "The SA node fires regularly at 75 bpm. Every P wave is followed by a QRS. All intervals are within normal limits \u2014 the baseline rhythm for comparison."
+  },
+  {
+    "id": "nsr_02",
+    "rhythm": "Normal Sinus Rhythm",
+    "category": "sinus",
+    "difficulty": 1,
+    "imagePath": "/cases/nsr_02.png",
+    "rate": 88,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Rate 88 bpm",
+      "Regular",
+      "1:1 P:QRS ratio",
+      "Narrow QRS"
+    ],
+    "teaching": "A slightly faster NSR \u2014 still within normal limits. Note how P waves are closer to the preceding T wave at higher rates."
+  },
+  {
+    "id": "brady_01",
+    "rhythm": "Sinus Bradycardia",
+    "category": "sinus",
+    "difficulty": 1,
+    "imagePath": "/cases/brady_01.png",
+    "rate": 45,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Rate <60 bpm",
+      "Regular",
+      "Normal P waves",
+      "Normal PR interval",
+      "Narrow QRS"
+    ],
+    "teaching": "All features of NSR except rate <60 bpm. Common in athletes and during sleep. Treat only if symptomatic (hypotension, altered mentation)."
+  },
+  {
+    "id": "brady_02",
+    "rhythm": "Sinus Bradycardia",
+    "category": "sinus",
+    "difficulty": 1,
+    "imagePath": "/cases/brady_02.png",
+    "rate": 38,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Rate 38 bpm \u2014 marked bradycardia",
+      "Regular",
+      "Normal P morphology"
+    ],
+    "teaching": "Marked bradycardia at 38 bpm. Wide R-R intervals are visible even on a 10-second strip. Consider atropine or pacing if symptomatic."
+  },
+  {
+    "id": "tachy_01",
+    "rhythm": "Sinus Tachycardia",
+    "category": "sinus",
+    "difficulty": 1,
+    "imagePath": "/cases/tachy_01.png",
+    "rate": 115,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Rate >100 bpm",
+      "Regular",
+      "Upright P in lead II",
+      "Normal PR",
+      "Narrow QRS"
+    ],
+    "teaching": "SA node firing >100 bpm. Always identify the underlying cause: pain, fever, hypovolemia, anxiety, or PE."
+  },
+  {
+    "id": "tachy_02",
+    "rhythm": "Sinus Tachycardia",
+    "category": "sinus",
+    "difficulty": 2,
+    "imagePath": "/cases/tachy_02.png",
+    "rate": 140,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Rate 140 bpm",
+      "P waves partially merge with T waves",
+      "Regular",
+      "Narrow QRS"
+    ],
+    "teaching": "At 140 bpm the P wave begins merging with the preceding T wave. Identify P waves carefully to distinguish from SVT."
+  },
+  {
+    "id": "sarr_01",
+    "rhythm": "Sinus Arrhythmia",
+    "category": "sinus",
+    "difficulty": 2,
+    "imagePath": "/cases/sarr_01.png",
+    "rate": 68,
+    "regularity": "regularly_irregular",
+    "keyFeatures": [
+      "Rate varies with respiration",
+      "Irregular but patterned",
+      "Normal P waves and PR interval",
+      "R-R varies >0.12 s"
+    ],
+    "teaching": "R-R intervals vary cyclically with respiration \u2014 a normal variant, especially in younger patients. Note the repeating pattern."
+  },
+  {
+    "id": "pac_01",
+    "rhythm": "Premature Atrial Contractions (PACs)",
+    "category": "atrial",
+    "difficulty": 2,
+    "imagePath": "/cases/pac_01.png",
+    "rate": 70,
+    "regularity": "irregular",
+    "keyFeatures": [
+      "Early narrow QRS",
+      "Different P wave morphology",
+      "Incomplete compensatory pause",
+      "Regular background rhythm"
+    ],
+    "teaching": "PACs originate outside the SA node. The P wave differs from sinus P waves. The pause following a PAC is incomplete (compensatory pause is <2 normal R-R)."
+  },
+  {
+    "id": "pvc_01",
+    "rhythm": "Premature Ventricular Contractions (PVCs)",
+    "category": "ventricular",
+    "difficulty": 2,
+    "imagePath": "/cases/pvc_01.png",
+    "rate": 70,
+    "regularity": "irregular",
+    "keyFeatures": [
+      "Early wide bizarre QRS (\u2265120 ms)",
+      "No preceding P wave",
+      "Full compensatory pause",
+      "Discordant T wave"
+    ],
+    "teaching": "PVCs arise from ventricular tissue. Wide, bizarre, not preceded by a P wave. The compensatory pause is complete (the next sinus beat arrives on time)."
+  },
+  {
+    "id": "svt_01",
+    "rhythm": "SVT (Supraventricular Tachycardia)",
+    "category": "supraventricular",
+    "difficulty": 2,
+    "imagePath": "/cases/svt_01.png",
+    "rate": 190,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Rate 150\u2013250 bpm",
+      "Regular",
+      "Narrow QRS",
+      "P waves absent or buried in QRS/T wave"
+    ],
+    "teaching": "Regular narrow-complex tachycardia. Abrupt onset and termination distinguish SVT from sinus tachycardia. Vagal maneuvers or adenosine to break."
+  },
+  {
+    "id": "afib_01",
+    "rhythm": "Atrial Fibrillation",
+    "category": "atrial",
+    "difficulty": 2,
+    "imagePath": "/cases/afib_01.png",
+    "rate": 80,
+    "regularity": "irregularly_irregular",
+    "keyFeatures": [
+      "Irregularly irregular rhythm",
+      "No identifiable P waves",
+      "Fibrillatory baseline",
+      "Narrow QRS"
+    ],
+    "teaching": "The hallmark of AFib: irregularly irregular with no P waves. The atria fire chaotically at 350\u2013600 bpm; the AV node filters randomly."
+  },
+  {
+    "id": "afib_02",
+    "rhythm": "Atrial Fibrillation (RVR)",
+    "category": "atrial",
+    "difficulty": 2,
+    "imagePath": "/cases/afib_02.png",
+    "rate": 130,
+    "regularity": "irregularly_irregular",
+    "keyFeatures": [
+      "Rapid irregular rhythm",
+      "No P waves",
+      "Ventricular rate >100 bpm"
+    ],
+    "teaching": "AFib with rapid ventricular response (RVR). Rate control is the priority. The irregular rhythm differentiates this from SVT."
+  },
+  {
+    "id": "aflut_01",
+    "rhythm": "Atrial Flutter (2:1)",
+    "category": "atrial",
+    "difficulty": 3,
+    "imagePath": "/cases/aflut_01.png",
+    "rate": 150,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Atrial rate ~300 bpm",
+      "Sawtooth flutter waves (best in II, III, aVF)",
+      "Regular ventricular rate ~150 bpm",
+      "2:1 conduction"
+    ],
+    "teaching": "Classic sawtooth pattern at 300 bpm. With 2:1 conduction the ventricular rate is exactly 150 \u2014 a rate of 150 should always raise suspicion for flutter."
+  },
+  {
+    "id": "avb1_01",
+    "rhythm": "1st Degree AV Block",
+    "category": "av_block",
+    "difficulty": 2,
+    "imagePath": "/cases/avb1_01.png",
+    "rate": 70,
+    "regularity": "regular",
+    "keyFeatures": [
+      "PR interval >200 ms",
+      "Regular rhythm",
+      "Every P followed by a QRS",
+      "Narrow QRS"
+    ],
+    "teaching": "PR is prolonged (>5 small boxes) but every P wave is conducted. Not a true block \u2014 a conduction delay. Rarely needs treatment alone."
+  },
+  {
+    "id": "avb2m1_01",
+    "rhythm": "2nd Degree AV Block \u2014 Mobitz I (Wenckebach)",
+    "category": "av_block",
+    "difficulty": 3,
+    "imagePath": "/cases/avb2m1_01.png",
+    "rate": 75,
+    "regularity": "regularly_irregular",
+    "keyFeatures": [
+      "PR progressively lengthens",
+      "QRS eventually dropped",
+      "Pattern repeats (group beating)",
+      "Narrow QRS"
+    ],
+    "teaching": "Progressive PR lengthening followed by a non-conducted P wave. The RR intervals shorten before the pause. Usually benign, AV node level."
+  },
+  {
+    "id": "avb2m2_01",
+    "rhythm": "2nd Degree AV Block \u2014 Mobitz II",
+    "category": "av_block",
+    "difficulty": 3,
+    "imagePath": "/cases/avb2m2_01.png",
+    "rate": 75,
+    "regularity": "regularly_irregular",
+    "keyFeatures": [
+      "Fixed PR interval",
+      "Sudden dropped QRS without warning",
+      "P:QRS ratio 3:1",
+      "Often wide QRS"
+    ],
+    "teaching": "Fixed PR with unexpected dropped beats. More ominous than Wenckebach \u2014 below the AV node (His-Purkinje). Often requires permanent pacing."
+  },
+  {
+    "id": "avb3_01",
+    "rhythm": "3rd Degree (Complete) AV Block",
+    "category": "av_block",
+    "difficulty": 4,
+    "imagePath": "/cases/avb3_01.png",
+    "rate": 33,
+    "regularity": "regular",
+    "keyFeatures": [
+      "P waves and QRS march out independently",
+      "P rate > QRS rate",
+      "Wide escape QRS",
+      "No fixed relationship between P and QRS"
+    ],
+    "teaching": "Complete dissociation \u2014 atria and ventricles beat independently. A ventricular escape rhythm keeps the patient alive. Requires pacing."
+  },
+  {
+    "id": "lbbb_01",
+    "rhythm": "Left Bundle Branch Block (LBBB)",
+    "category": "bundle_branch",
+    "difficulty": 3,
+    "imagePath": "/cases/lbbb_01.png",
+    "rate": 72,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Wide QRS \u2265120 ms",
+      "Broad monophasic R in lateral leads",
+      "No septal Q in lateral leads",
+      "Discordant ST-T"
+    ],
+    "teaching": "Left ventricle activates late via slow cell-to-cell conduction. LBBB invalidates ST analysis \u2014 never diagnose ischemia from ST segments in LBBB alone."
+  },
+  {
+    "id": "rbbb_01",
+    "rhythm": "Right Bundle Branch Block (RBBB)",
+    "category": "bundle_branch",
+    "difficulty": 3,
+    "imagePath": "/cases/rbbb_01.png",
+    "rate": 75,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Wide QRS \u2265120 ms",
+      "RSR' pattern in V1 ('rabbit ears')",
+      "Wide slurred S in lateral leads",
+      "T wave inversion V1\u2013V2"
+    ],
+    "teaching": "Delayed right ventricular activation produces the RSR' in V1. RBBB can be a normal variant; new RBBB warrants investigation."
+  },
+  {
+    "id": "junct_01",
+    "rhythm": "Junctional Rhythm",
+    "category": "junctional",
+    "difficulty": 3,
+    "imagePath": "/cases/junct_01.png",
+    "rate": 48,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Rate 40\u201360 bpm",
+      "Narrow QRS",
+      "Inverted P waves in lead II",
+      "P may be before, during, or after QRS"
+    ],
+    "teaching": "AV node serves as pacemaker when SA node fails. Retrograde atrial activation produces inverted P waves in lead II."
+  },
+  {
+    "id": "junct_02",
+    "rhythm": "Accelerated Junctional Rhythm",
+    "category": "junctional",
+    "difficulty": 3,
+    "imagePath": "/cases/junct_02.png",
+    "rate": 85,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Rate 60\u2013100 bpm",
+      "Narrow QRS",
+      "Inverted or absent P waves"
+    ],
+    "teaching": "Junctional rate exceeds 60 bpm \u2014 'accelerated'. Associated with digitalis toxicity, inferior MI, or post-cardiac surgery."
+  },
+  {
+    "id": "idio_01",
+    "rhythm": "Idioventricular Rhythm",
+    "category": "ventricular",
+    "difficulty": 3,
+    "imagePath": "/cases/idio_01.png",
+    "rate": 33,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Rate 20\u201340 bpm",
+      "Wide bizarre QRS",
+      "No P waves",
+      "Ventricular escape rhythm"
+    ],
+    "teaching": "The ventricle's last-resort pacemaker at 20\u201340 bpm. Seen in severe bradycardia, complete heart block, and post-arrest."
+  },
+  {
+    "id": "vtach_01",
+    "rhythm": "Ventricular Tachycardia (VTach)",
+    "category": "ventricular",
+    "difficulty": 3,
+    "imagePath": "/cases/vtach_01.png",
+    "rate": 175,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Rate >100 bpm",
+      "Wide QRS \u2265120 ms",
+      "Regular",
+      "AV dissociation if P waves visible",
+      "Treat immediately"
+    ],
+    "teaching": "Wide-complex, fast, regular tachycardia. Any wide-complex tachycardia is VTach until proven otherwise. Treat as VTach."
+  },
+  {
+    "id": "vtach_02",
+    "rhythm": "Ventricular Tachycardia (VTach)",
+    "category": "ventricular",
+    "difficulty": 3,
+    "imagePath": "/cases/vtach_02.png",
+    "rate": 200,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Rate 200 bpm",
+      "Wide QRS",
+      "Regular",
+      "Life-threatening"
+    ],
+    "teaching": "Faster VTach at 200 bpm. May degenerate to VFib. Immediate synchronized cardioversion if pulse present; defibrillation if pulseless."
+  },
+  {
+    "id": "vfib_01",
+    "rhythm": "Ventricular Fibrillation (VFib)",
+    "category": "ventricular",
+    "difficulty": 1,
+    "imagePath": "/cases/vfib_01.png",
+    "rate": null,
+    "regularity": "chaotic",
+    "keyFeatures": [
+      "Chaotic disorganized waveform",
+      "No identifiable P, QRS, or T",
+      "Amplitude varies",
+      "Cardiac arrest \u2014 CPR + defibrillation"
+    ],
+    "teaching": "The ventricles quiver without coordinated contraction. Immediate defibrillation and high-quality CPR are required. Do not delay."
+  },
+  {
+    "id": "asys_01",
+    "rhythm": "Asystole",
+    "category": "ventricular",
+    "difficulty": 1,
+    "imagePath": "/cases/asys_01.png",
+    "rate": 0,
+    "regularity": "none",
+    "keyFeatures": [
+      "Flat or near-flat line",
+      "No P waves, QRS, or T waves",
+      "Cardiac arrest",
+      "CPR and treat reversible causes"
+    ],
+    "teaching": "Absence of electrical activity. Confirm in two leads to rule out fine VFib. Treat reversible causes: the Hs and Ts."
+  }
+]
