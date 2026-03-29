@@ -415,5 +415,187 @@
       "CPR and treat reversible causes"
     ],
     "teaching": "Absence of electrical activity. Confirm in two leads to rule out fine VFib. Treat reversible causes: the Hs and Ts."
+  },
+  {
+    "id": "stemi_ant_01",
+    "rhythm": "Anterior STEMI",
+    "category": "stemi",
+    "difficulty": 3,
+    "imagePath": "/cases/stemi_ant_01.png",
+    "rate": 80,
+    "regularity": "regular",
+    "keyFeatures": [
+      "ST elevation V1\u2013V4 (LAD territory)",
+      "Hyperacute T waves",
+      "Reciprocal ST depression in aVL/inferior leads",
+      "May develop pathological Q waves",
+      "Immediate reperfusion required"
+    ],
+    "teaching": "Anterior STEMI is caused by LAD occlusion. ST elevation \u22651mm in 2 contiguous precordial leads (V1\u2013V4). Watch for reciprocal depression in aVL. The larger the territory, the worse the prognosis."
+  },
+  {
+    "id": "stemi_inf_01",
+    "rhythm": "Inferior STEMI",
+    "category": "stemi",
+    "difficulty": 3,
+    "imagePath": "/cases/stemi_inf_01.png",
+    "rate": 78,
+    "regularity": "regular",
+    "keyFeatures": [
+      "ST elevation in II, III, aVF (RCA territory)",
+      "Reciprocal ST depression in I and aVL",
+      "Check V4R for right ventricular involvement",
+      "Q waves may form in II, III, aVF"
+    ],
+    "teaching": "Inferior STEMI is most often caused by RCA occlusion. ST elevation in II, III, aVF with reciprocal changes in I and aVL. Always get right-sided leads (V4R) to screen for RV infarct."
+  },
+  {
+    "id": "stemi_lat_01",
+    "rhythm": "Lateral STEMI",
+    "category": "stemi",
+    "difficulty": 3,
+    "imagePath": "/cases/stemi_lat_01.png",
+    "rate": 82,
+    "regularity": "regular",
+    "keyFeatures": [
+      "ST elevation in I, aVL, V5\u2013V6 (circumflex territory)",
+      "Reciprocal depression in III and aVF",
+      "Often caused by circumflex (LCx) occlusion",
+      "May be missed without high lateral leads"
+    ],
+    "teaching": "Lateral STEMI involves the circumflex artery. ST elevation in I, aVL, V5\u2013V6 with reciprocal changes inferiorly. High lateral STEMI (I, aVL only) can be subtle \u2014 measure carefully."
+  },
+  {
+    "id": "stemi_post_01",
+    "rhythm": "Posterior STEMI",
+    "category": "stemi",
+    "difficulty": 4,
+    "imagePath": "/cases/stemi_post_01.png",
+    "rate": 76,
+    "regularity": "regular",
+    "keyFeatures": [
+      "ST depression in V1\u2013V3 (reciprocal to posterior elevation)",
+      "Tall broad R wave in V1\u2013V2 (reciprocal to posterior Q)",
+      "No obvious ST elevation on standard 12-lead",
+      "Confirm with posterior leads V7\u2013V9"
+    ],
+    "teaching": "Posterior STEMI is a 'hidden' STEMI \u2014 the posterior wall isn't covered by standard leads. You see its mirror image: ST depression and tall R in V1\u2013V3. Flip V2 upside down mentally \u2014 it looks like STEMI. Confirm with V7\u2013V9."
+  },
+  {
+    "id": "nstemi_01",
+    "rhythm": "NSTEMI \u2014 ST Depression",
+    "category": "nstemi",
+    "difficulty": 3,
+    "imagePath": "/cases/nstemi_01.png",
+    "rate": 88,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Horizontal or downsloping ST depression \u22650.5mm",
+      "T wave flattening or inversion",
+      "No ST elevation",
+      "Troponin elevation confirms myocardial injury",
+      "Urgent cardiology consult"
+    ],
+    "teaching": "NSTEMI presents with ST depression and/or T wave changes without ST elevation. The degree of ST depression correlates with ischemia severity. Horizontal or downsloping depression is more specific than upsloping."
+  },
+  {
+    "id": "wellens_a_01",
+    "rhythm": "Wellens Syndrome \u2014 Type A",
+    "category": "nstemi",
+    "difficulty": 4,
+    "imagePath": "/cases/wellens_a_01.png",
+    "rate": 72,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Biphasic T waves in V2\u2013V3 (positive then negative)",
+      "Minimal or no ST elevation",
+      "Usually pain-free at time of ECG",
+      "Indicates critical proximal LAD stenosis",
+      "Do NOT stress test \u2014 high risk of anterior STEMI"
+    ],
+    "teaching": "Wellens Syndrome indicates critical proximal LAD stenosis between pain episodes. Type A: biphasic T waves in V2\u2013V3. Type B: deep symmetric inversions. These patients are at imminent risk of massive anterior STEMI \u2014 do not discharge."
+  },
+  {
+    "id": "wellens_b_01",
+    "rhythm": "Wellens Syndrome \u2014 Type B",
+    "category": "nstemi",
+    "difficulty": 4,
+    "imagePath": "/cases/wellens_b_01.png",
+    "rate": 68,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Deep symmetric T wave inversion in V2\u2013V3",
+      "No significant ST elevation",
+      "Normal or minimally elevated troponin",
+      "Critical proximal LAD stenosis \u2014 do NOT stress test"
+    ],
+    "teaching": "Wellens Type B shows deep symmetric T inversions in V2\u2013V3 during pain-free periods. This is a pre-infarction pattern. The patient needs urgent cath, not observation. A negative troponin does not rule out the danger."
+  },
+  {
+    "id": "pe_s1q3t3_01",
+    "rhythm": "Pulmonary Embolism \u2014 S1Q3T3",
+    "category": "pe_strain",
+    "difficulty": 4,
+    "imagePath": "/cases/pe_s1q3t3_01.png",
+    "rate": 108,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Sinus tachycardia (most common ECG finding in PE)",
+      "S wave in lead I (S1)",
+      "Q wave + T wave inversion in lead III (Q3T3)",
+      "RV strain in V1 \u2014 T inversion, partial RBBB",
+      "S1Q3T3 is specific but only present in ~20% of PE"
+    ],
+    "teaching": "S1Q3T3 is the classic ECG pattern of massive PE but is neither sensitive nor specific. Sinus tachycardia is the most common finding. The pattern reflects acute right heart strain from sudden pulmonary hypertension. Always correlate with clinical picture."
+  },
+  {
+    "id": "pe_rv_strain_01",
+    "rhythm": "Pulmonary Embolism \u2014 RV Strain",
+    "category": "pe_strain",
+    "difficulty": 3,
+    "imagePath": "/cases/pe_rv_strain_01.png",
+    "rate": 112,
+    "regularity": "regular",
+    "keyFeatures": [
+      "T wave inversions in V1\u2013V4 (right precordial)",
+      "Sinus tachycardia",
+      "May have new RBBB",
+      "Indicates significant RV pressure overload",
+      "More common than classic S1Q3T3"
+    ],
+    "teaching": "Right precordial T inversions (V1\u2013V4) with tachycardia are the most common ECG manifestation of significant PE. They reflect RV strain from elevated pulmonary pressures. New RBBB in this context is a high-risk finding."
+  },
+  {
+    "id": "lv_strain_01",
+    "rhythm": "LVH with Strain Pattern",
+    "category": "pe_strain",
+    "difficulty": 3,
+    "imagePath": "/cases/lv_strain_01.png",
+    "rate": 72,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Tall R wave in V5\u2013V6 (LVH voltage criteria)",
+      "Deep S wave in V1 (Sokolow: SV1 + RV5 \u226535mm)",
+      "ST depression + T wave inversion in lateral leads",
+      "Strain pattern = pressure overload (hypertension, aortic stenosis)",
+      "Do not confuse with ischemia"
+    ],
+    "teaching": "The LV strain pattern \u2014 asymmetric ST depression with T inversion in lateral leads \u2014 accompanies LVH in pressure-overloaded ventricles (hypertension, AS). It differs from ischemic ST changes by its gradual upslope and asymmetric T wave."
+  },
+  {
+    "id": "rv_strain_01",
+    "rhythm": "RV Strain Pattern",
+    "category": "pe_strain",
+    "difficulty": 3,
+    "imagePath": "/cases/rv_strain_01.png",
+    "rate": 90,
+    "regularity": "regular",
+    "keyFeatures": [
+      "T wave inversions in V1\u2013V3 (right precordial)",
+      "May extend to V4",
+      "Right axis deviation on full 12-lead",
+      "Causes: PE, pulmonary hypertension, cor pulmonale, RVOT obstruction"
+    ],
+    "teaching": "Right precordial T inversions indicate RV pressure overload. Unlike anterior ischemia (which also inverts precordial T waves), RV strain is associated with right axis deviation and clinical signs of RV failure."
   }
 ]

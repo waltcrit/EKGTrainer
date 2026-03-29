@@ -5,7 +5,10 @@ export type RhythmCategory =
   | "av_block"
   | "bundle_branch"
   | "junctional"
-  | "ventricular";
+  | "ventricular"
+  | "stemi"
+  | "nstemi"
+  | "pe_strain";
 
 export interface EKGCase {
   id: string;
@@ -27,6 +30,9 @@ export const CATEGORY_LABELS: Record<RhythmCategory, string> = {
   bundle_branch:     "Bundle Branch Blocks",
   junctional:        "Junctional / Escape",
   ventricular:       "Ventricular",
+  stemi:             "STEMI",
+  nstemi:            "NSTEMI / ACS",
+  pe_strain:         "PE & Strain Patterns",
 };
 
 export const DIFFICULTY_LABELS: Record<number, string> = {

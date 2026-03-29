@@ -287,6 +287,237 @@ def asystole():
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# Generalised lead-signal builder
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def lead_signal(r_times,
+                pr_ms=160, qrs_ms=80, qt_ms=380,
+                p_amp=0.15, p_inverted=False, no_p=False,
+                r_amp=1.0, q_frac=0.08, s_frac=0.15,
+                st_offset=0.0,          # + elevation  – depression (mV)
+                t_amp=0.30, t_inverted=False,
+                big_q=False,            # pathological Q wave
+                wide=False,             # wide QRS (e.g. RBBB/LBBB morphology)
+                rsrp=False,             # add terminal R' after S (RBBB)
+                broad_r=False):         # broad monophasic R (LBBB)
+    """Build an arbitrary-lead ECG signal from beat-position list."""
+    sig = np.zeros(N)
+    for r in r_times:
+        if not no_p:
+            p_c = r - pr_ms / 1000.0 + 0.040
+            sig += gauss(T, p_c, 45, (-1 if p_inverted else 1) * p_amp)
+
+        hw = (qrs_ms / 1000.0) / 2
+        if big_q:
+            sig += gauss(T, r - 0.048, 38, -0.38 * r_amp)
+        else:
+            sig += gauss(T, r - hw * 0.4, qrs_ms * 0.25, -q_frac * r_amp)
+
+        if broad_r:                             # LBBB — wide monophasic R
+            sig += gauss(T, r + 0.018, 130, r_amp)
+            sig += gauss(T, r + 0.080,  28, -0.04 * r_amp)
+        elif rsrp:                              # RBBB — RSR' pattern
+            sig += gauss(T, r,           28,  0.85 * r_amp)
+            sig += gauss(T, r + 0.038,   22, -0.35 * r_amp)
+            sig += gauss(T, r + 0.078,   32,  0.50 * r_amp)
+        else:
+            sig += gauss(T, r, qrs_ms * 0.45, r_amp)
+            sig += gauss(T, r + hw * 0.7, qrs_ms * 0.30, -s_frac * r_amp)
+
+        # ST offset — broad Gaussian centred in ST segment
+        if abs(st_offset) > 0.005:
+            sig += gauss(T, r + 0.210, 175, st_offset * 0.72)
+
+        t_c = r + (qt_ms / 1000.0) * 0.63
+        sig += gauss(T, t_c, 100, (-1 if t_inverted else 1) * abs(t_amp))
+
+    return sig
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Multi-lead renderer  (stacks 2–4 leads vertically)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _style_ax(ax, label):
+    ax.set_facecolor(BG)
+    ax.set_xticks(np.arange(0, DUR + 0.04, 0.04), minor=True)
+    ax.set_yticks(np.arange(-0.6, 1.7, 0.10), minor=True)
+    ax.set_xticks(np.arange(0, DUR + 0.20, 0.20))
+    ax.set_yticks(np.arange(-0.5, 1.6, 0.50))
+    ax.grid(True, which='minor', color=MINOR, linewidth=0.30, zorder=1)
+    ax.grid(True, which='major', color=MAJOR, linewidth=0.70, zorder=2)
+    ax.set_xlim(0, DUR)
+    ax.set_ylim(-0.5, 1.5)
+    ax.tick_params(which='both', bottom=False, left=False,
+                   labelbottom=False, labelleft=False)
+    for s in ax.spines.values():
+        s.set_visible(False)
+    ax.text(0.005, 0.96, label, transform=ax.transAxes,
+            fontsize=8, fontweight='bold', va='top', color='#222222', zorder=5)
+
+
+def render_multilead(leads, rhythm_label, out_path):
+    """
+    leads: list of (signal_array, lead_name_str)
+    """
+    n = len(leads)
+    fig, axes = plt.subplots(n, 1, figsize=(12, n * 1.85), dpi=150,
+                              gridspec_kw={"hspace": 0.06})
+    fig.patch.set_facecolor(BG)
+    if n == 1:
+        axes = [axes]
+
+    for ax, (sig, name) in zip(axes, leads):
+        _style_ax(ax, name)
+        ax.plot(T, sig, color=TRACE, linewidth=1.2, zorder=3, antialiased=True)
+
+    axes[0].text(0.99, 0.96, '25 mm/s  |  10 mm/mV',
+                 transform=axes[0].transAxes, fontsize=6.5,
+                 ha='right', va='top', color='#888888', zorder=5)
+    fig.text(0.005, 0.99, rhythm_label, fontsize=9, fontweight='bold',
+             va='top', color='#111111')
+
+    plt.savefig(out_path, bbox_inches='tight', facecolor=BG)
+    plt.close(fig)
+    print(f"  ✓  {out_path.name}")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 12-lead pathology generators  (return list of (signal, lead_name))
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _rr(hr, start=0.35):
+    return list(regular_r_times(hr, start))
+
+
+def anterior_stemi(hr=80):
+    rs = _rr(hr)
+    return [
+        (lead_signal(rs, st_offset=+0.38, t_amp=0.55, big_q=False),  "V2 — ST elevation"),
+        (lead_signal(rs, st_offset=+0.28, t_amp=0.45),               "V3 — ST elevation"),
+        (lead_signal(rs, st_offset=-0.15, t_inverted=True),           "aVL — reciprocal"),
+    ]
+
+
+def inferior_stemi(hr=78):
+    rs = _rr(hr)
+    return [
+        (lead_signal(rs, st_offset=+0.35, t_amp=0.50, big_q=True),   "III — ST elevation"),
+        (lead_signal(rs, st_offset=+0.25, t_amp=0.42, big_q=True),   "II — ST elevation"),
+        (lead_signal(rs, st_offset=-0.22, t_inverted=True),           "aVL — reciprocal"),
+    ]
+
+
+def lateral_stemi(hr=82):
+    rs = _rr(hr)
+    return [
+        (lead_signal(rs, st_offset=+0.30, t_amp=0.48),               "I — ST elevation"),
+        (lead_signal(rs, st_offset=+0.28, t_amp=0.44),                "aVL — ST elevation"),
+        (lead_signal(rs, st_offset=-0.18, t_inverted=True),           "III — reciprocal"),
+    ]
+
+
+def posterior_stemi(hr=76):
+    """Posterior MI shows as ST depression + tall R in V1–V3 (reciprocal)."""
+    rs = _rr(hr)
+    # Posterior wall STEMI is electrically 'upside down' in anterior leads
+    return [
+        (lead_signal(rs, r_amp=1.35, s_frac=0.04, st_offset=-0.28, t_inverted=False, t_amp=0.55),
+         "V1 — tall R, ST depression (posterior)"),
+        (lead_signal(rs, r_amp=1.20, s_frac=0.06, st_offset=-0.22, t_amp=0.45),
+         "V2 — tall R, ST depression (posterior)"),
+        (lead_signal(rs, st_offset=-0.12),
+         "V3 — ST depression"),
+    ]
+
+
+def nstemi_st_depression(hr=88):
+    rs = _rr(hr)
+    return [
+        (lead_signal(rs, st_offset=-0.20, t_inverted=True,  t_amp=0.22),  "V4 — ST depression"),
+        (lead_signal(rs, st_offset=-0.18, t_inverted=True,  t_amp=0.20),  "V5 — ST depression"),
+        (lead_signal(rs, st_offset=-0.14, t_amp=0.28),                    "II — reference"),
+    ]
+
+
+def wellens_a(hr=72):
+    """Type A Wellens: biphasic T in V2–V3 (positive then negative deflection)."""
+    rs = _rr(hr)
+    def biphasic_t_lead(r_times):
+        sig = lead_signal(r_times, st_offset=0.0, t_amp=0.0)  # base without T
+        for r in r_times:
+            t_c = r + 0.240
+            sig += gauss(T, t_c - 0.025, 35,  0.18)   # initial positive
+            sig += gauss(T, t_c + 0.045, 45, -0.22)   # terminal negative
+        return sig
+    return [
+        (biphasic_t_lead(rs),                                "V2 — biphasic T (Wellens A)"),
+        (biphasic_t_lead(rs),                                "V3 — biphasic T (Wellens A)"),
+        (lead_signal(rs, t_amp=0.30),                        "V5 — reference (normal T)"),
+    ]
+
+
+def wellens_b(hr=68):
+    """Type B Wellens: deep symmetric T inversion V2–V3."""
+    rs = _rr(hr)
+    return [
+        (lead_signal(rs, t_inverted=True, t_amp=0.55, st_offset=0.0), "V2 — deep T inversion (Wellens B)"),
+        (lead_signal(rs, t_inverted=True, t_amp=0.48, st_offset=0.0), "V3 — deep T inversion (Wellens B)"),
+        (lead_signal(rs, t_amp=0.30),                                  "V5 — reference (normal T)"),
+    ]
+
+
+def pe_s1q3t3(hr=108):
+    """Classic PE pattern: S1Q3T3 + sinus tachycardia."""
+    rs = _rr(hr)
+    return [
+        # Lead I: prominent S wave (deep, wide S)
+        (lead_signal(rs, s_frac=0.55, t_amp=0.22),           "I — prominent S wave (S1)"),
+        # Lead III: Q wave + inverted T (Q3T3)
+        (lead_signal(rs, big_q=True, t_inverted=True, t_amp=0.30, st_offset=0.0),
+         "III — Q wave + T inversion (Q3T3)"),
+        # V1: right heart strain — T inversion, partial RBBB
+        (lead_signal(rs, rsrp=True, t_inverted=True, t_amp=0.28), "V1 — RV strain / partial RBBB"),
+    ]
+
+
+def pe_rv_strain(hr=112):
+    """PE: right precordial T inversions — right heart strain pattern."""
+    rs = _rr(hr)
+    return [
+        (lead_signal(rs, t_inverted=True, t_amp=0.35),   "V1 — T inversion (RV strain)"),
+        (lead_signal(rs, t_inverted=True, t_amp=0.40),   "V2 — T inversion (RV strain)"),
+        (lead_signal(rs, t_inverted=True, t_amp=0.32),   "V3 — T inversion (RV strain)"),
+    ]
+
+
+def lv_strain(hr=72):
+    """LVH with strain: tall lateral R, ST depression + T inversion."""
+    rs = _rr(hr)
+    return [
+        # V5: tall R (LVH criterion), strain ST-T
+        (lead_signal(rs, r_amp=2.20, s_frac=0.04, st_offset=-0.18, t_inverted=True, t_amp=0.32),
+         "V5 — tall R (LVH), strain ST-T"),
+        # I: lateral strain
+        (lead_signal(rs, r_amp=1.40, st_offset=-0.14, t_inverted=True, t_amp=0.25),
+         "I — lateral strain"),
+        # V1: deep S (LVH criterion, reciprocal)
+        (lead_signal(rs, r_amp=0.25, s_frac=1.80, t_amp=0.18),
+         "V1 — deep S wave (LVH)"),
+    ]
+
+
+def rv_strain_pattern(hr=90):
+    """RV strain without PE-specific features — right precordial T inversions."""
+    rs = _rr(hr)
+    return [
+        (lead_signal(rs, t_inverted=True, t_amp=0.38, s_frac=0.30),  "V1 — T inversion, RV strain"),
+        (lead_signal(rs, t_inverted=True, t_amp=0.42),                "V2 — T inversion"),
+        (lead_signal(rs, t_inverted=True, t_amp=0.28),                "V3 — T inversion"),
+    ]
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # Rendering
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -524,6 +755,135 @@ CASES = [
                        "Cardiac arrest", "CPR and treat reversible causes"],
          teaching="Absence of electrical activity. Confirm in two leads to rule out fine VFib. "
                   "Treat reversible causes: the Hs and Ts."),
+
+    # ── STEMI ─────────────────────────────────────────────────────────────────
+    dict(id="stemi_ant_01", rhythm="Anterior STEMI", category="stemi", difficulty=3,
+         multilead=True, generator=lambda: anterior_stemi(80),
+         rate=80, regularity="regular",
+         key_features=["ST elevation V1–V4 (LAD territory)", "Hyperacute T waves",
+                       "Reciprocal ST depression in aVL/inferior leads",
+                       "May develop pathological Q waves", "Immediate reperfusion required"],
+         teaching="Anterior STEMI is caused by LAD occlusion. ST elevation ≥1mm in 2 contiguous "
+                  "precordial leads (V1–V4). Watch for reciprocal depression in aVL. "
+                  "The larger the territory, the worse the prognosis."),
+
+    dict(id="stemi_inf_01", rhythm="Inferior STEMI", category="stemi", difficulty=3,
+         multilead=True, generator=lambda: inferior_stemi(78),
+         rate=78, regularity="regular",
+         key_features=["ST elevation in II, III, aVF (RCA territory)",
+                       "Reciprocal ST depression in I and aVL",
+                       "Check V4R for right ventricular involvement",
+                       "Q waves may form in II, III, aVF"],
+         teaching="Inferior STEMI is most often caused by RCA occlusion. "
+                  "ST elevation in II, III, aVF with reciprocal changes in I and aVL. "
+                  "Always get right-sided leads (V4R) to screen for RV infarct."),
+
+    dict(id="stemi_lat_01", rhythm="Lateral STEMI", category="stemi", difficulty=3,
+         multilead=True, generator=lambda: lateral_stemi(82),
+         rate=82, regularity="regular",
+         key_features=["ST elevation in I, aVL, V5–V6 (circumflex territory)",
+                       "Reciprocal depression in III and aVF",
+                       "Often caused by circumflex (LCx) occlusion",
+                       "May be missed without high lateral leads"],
+         teaching="Lateral STEMI involves the circumflex artery. ST elevation in I, aVL, V5–V6 "
+                  "with reciprocal changes inferiorly. High lateral STEMI (I, aVL only) "
+                  "can be subtle — measure carefully."),
+
+    dict(id="stemi_post_01", rhythm="Posterior STEMI", category="stemi", difficulty=4,
+         multilead=True, generator=lambda: posterior_stemi(76),
+         rate=76, regularity="regular",
+         key_features=["ST depression in V1–V3 (reciprocal to posterior elevation)",
+                       "Tall broad R wave in V1–V2 (reciprocal to posterior Q)",
+                       "No obvious ST elevation on standard 12-lead",
+                       "Confirm with posterior leads V7–V9"],
+         teaching="Posterior STEMI is a 'hidden' STEMI — the posterior wall isn't covered by "
+                  "standard leads. You see its mirror image: ST depression and tall R in V1–V3. "
+                  "Flip V2 upside down mentally — it looks like STEMI. Confirm with V7–V9."),
+
+    # ── NSTEMI / ACS ──────────────────────────────────────────────────────────
+    dict(id="nstemi_01", rhythm="NSTEMI — ST Depression", category="nstemi", difficulty=3,
+         multilead=True, generator=lambda: nstemi_st_depression(88),
+         rate=88, regularity="regular",
+         key_features=["Horizontal or downsloping ST depression ≥0.5mm",
+                       "T wave flattening or inversion",
+                       "No ST elevation",
+                       "Troponin elevation confirms myocardial injury",
+                       "Urgent cardiology consult"],
+         teaching="NSTEMI presents with ST depression and/or T wave changes without ST elevation. "
+                  "The degree of ST depression correlates with ischemia severity. "
+                  "Horizontal or downsloping depression is more specific than upsloping."),
+
+    dict(id="wellens_a_01", rhythm="Wellens Syndrome — Type A", category="nstemi", difficulty=4,
+         multilead=True, generator=lambda: wellens_a(72),
+         rate=72, regularity="regular",
+         key_features=["Biphasic T waves in V2–V3 (positive then negative)",
+                       "Minimal or no ST elevation",
+                       "Usually pain-free at time of ECG",
+                       "Indicates critical proximal LAD stenosis",
+                       "Do NOT stress test — high risk of anterior STEMI"],
+         teaching="Wellens Syndrome indicates critical proximal LAD stenosis between pain episodes. "
+                  "Type A: biphasic T waves in V2–V3. Type B: deep symmetric inversions. "
+                  "These patients are at imminent risk of massive anterior STEMI — do not discharge."),
+
+    dict(id="wellens_b_01", rhythm="Wellens Syndrome — Type B", category="nstemi", difficulty=4,
+         multilead=True, generator=lambda: wellens_b(68),
+         rate=68, regularity="regular",
+         key_features=["Deep symmetric T wave inversion in V2–V3",
+                       "No significant ST elevation",
+                       "Normal or minimally elevated troponin",
+                       "Critical proximal LAD stenosis — do NOT stress test"],
+         teaching="Wellens Type B shows deep symmetric T inversions in V2–V3 during pain-free periods. "
+                  "This is a pre-infarction pattern. The patient needs urgent cath, not observation. "
+                  "A negative troponin does not rule out the danger."),
+
+    # ── Pulmonary Embolism ────────────────────────────────────────────────────
+    dict(id="pe_s1q3t3_01", rhythm="Pulmonary Embolism — S1Q3T3", category="pe_strain", difficulty=4,
+         multilead=True, generator=lambda: pe_s1q3t3(108),
+         rate=108, regularity="regular",
+         key_features=["Sinus tachycardia (most common ECG finding in PE)",
+                       "S wave in lead I (S1)",
+                       "Q wave + T wave inversion in lead III (Q3T3)",
+                       "RV strain in V1 — T inversion, partial RBBB",
+                       "S1Q3T3 is specific but only present in ~20% of PE"],
+         teaching="S1Q3T3 is the classic ECG pattern of massive PE but is neither sensitive nor specific. "
+                  "Sinus tachycardia is the most common finding. The pattern reflects acute right "
+                  "heart strain from sudden pulmonary hypertension. Always correlate with clinical picture."),
+
+    dict(id="pe_rv_strain_01", rhythm="Pulmonary Embolism — RV Strain", category="pe_strain", difficulty=3,
+         multilead=True, generator=lambda: pe_rv_strain(112),
+         rate=112, regularity="regular",
+         key_features=["T wave inversions in V1–V4 (right precordial)",
+                       "Sinus tachycardia",
+                       "May have new RBBB",
+                       "Indicates significant RV pressure overload",
+                       "More common than classic S1Q3T3"],
+         teaching="Right precordial T inversions (V1–V4) with tachycardia are the most common "
+                  "ECG manifestation of significant PE. They reflect RV strain from elevated "
+                  "pulmonary pressures. New RBBB in this context is a high-risk finding."),
+
+    # ── Strain Patterns ───────────────────────────────────────────────────────
+    dict(id="lv_strain_01", rhythm="LVH with Strain Pattern", category="pe_strain", difficulty=3,
+         multilead=True, generator=lambda: lv_strain(72),
+         rate=72, regularity="regular",
+         key_features=["Tall R wave in V5–V6 (LVH voltage criteria)",
+                       "Deep S wave in V1 (Sokolow: SV1 + RV5 ≥35mm)",
+                       "ST depression + T wave inversion in lateral leads",
+                       "Strain pattern = pressure overload (hypertension, aortic stenosis)",
+                       "Do not confuse with ischemia"],
+         teaching="The LV strain pattern — asymmetric ST depression with T inversion in lateral leads "
+                  "— accompanies LVH in pressure-overloaded ventricles (hypertension, AS). "
+                  "It differs from ischemic ST changes by its gradual upslope and asymmetric T wave."),
+
+    dict(id="rv_strain_01", rhythm="RV Strain Pattern", category="pe_strain", difficulty=3,
+         multilead=True, generator=lambda: rv_strain_pattern(90),
+         rate=90, regularity="regular",
+         key_features=["T wave inversions in V1–V3 (right precordial)",
+                       "May extend to V4",
+                       "Right axis deviation on full 12-lead",
+                       "Causes: PE, pulmonary hypertension, cor pulmonale, RVOT obstruction"],
+         teaching="Right precordial T inversions indicate RV pressure overload. "
+                  "Unlike anterior ischemia (which also inverts precordial T waves), RV strain "
+                  "is associated with right axis deviation and clinical signs of RV failure."),
 ]
 
 
@@ -539,9 +899,12 @@ def main():
 
     for case in CASES:
         out_path = CASES_DIR / f"{case['id']}.png"
-        signal = case["generator"]()
-        rate_label = f"Rate: {case['rate']} bpm" if case["rate"] else None
-        render(signal, case["rhythm"], out_path, rate_label)
+        output = case["generator"]()
+        if case.get("multilead"):
+            render_multilead(output, case["rhythm"], out_path)
+        else:
+            rate_label = f"Rate: {case['rate']} bpm" if case["rate"] else None
+            render(output, case["rhythm"], out_path, rate_label)
 
         metadata.append({
             "id":          case["id"],
