@@ -45,7 +45,7 @@ function buildChoices(correct: EKGCase, all: EKGCase[]): string[] {
 }
 
 export default function QuizMode({ cases }: QuizModeProps) {
-  const [queue, setQueue] = useState<EKGCase[]>(() => shuffle(cases));
+  const [queue, setQueue] = useState<EKGCase[]>(cases);
   const [index, setIndex] = useState(0);
   const [state, setState] = useState<QuizState>("question");
   const [selected, setSelected] = useState<string | null>(null);
@@ -54,9 +54,18 @@ export default function QuizMode({ cases }: QuizModeProps) {
   const [stats, setStats] = useState<SessionStats>({
     attempted: 0, correct: 0, byCategory: {},
   });
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setQueue(shuffle(cases));
+    setMounted(true);
+  }, [cases]);
 
   const current = queue[index % queue.length];
-  const choices = useMemo(() => buildChoices(current, cases), [current, cases]);
+  const choices = useMemo(
+    () => (mounted ? buildChoices(current, cases) : []),
+    [current, cases, mounted]
+  );
 
   const isCorrect = selected === current.rhythm;
 
@@ -100,7 +109,7 @@ export default function QuizMode({ cases }: QuizModeProps) {
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageBase64: base64, mediaType: blob.type }),
+        body: JSON.stringify({ imageBase64: base64, mediaType: "image/png" }),
       });
       const data = await res.json();
       if (data.success) {
@@ -125,6 +134,8 @@ export default function QuizMode({ cases }: QuizModeProps) {
   const accuracyPct = stats.attempted > 0
     ? Math.round((stats.correct / stats.attempted) * 100)
     : null;
+
+  if (!mounted) return null;
 
   return (
     <div className="flex flex-col gap-5">

@@ -1,5 +1,6 @@
 export interface RateAnalysis {
   bpm: number;
+  rr_intervals_ms: number[];
   category: "bradycardia" | "normal" | "tachycardia";
   method: string;
   confidence: number;
@@ -19,6 +20,7 @@ export interface PWaveAnalysis {
 
 export interface PRIntervalAnalysis {
   ms: number | null;
+  measured_beats: number[];
   normal: boolean | null;
   fixed: boolean | null;
   confidence: number;
@@ -26,6 +28,7 @@ export interface PRIntervalAnalysis {
 
 export interface QRSAnalysis {
   duration_ms: number | null;
+  measured_beats_ms: number[];
   wide: boolean;
   morphology: string | null;
   confidence: number;
@@ -45,6 +48,7 @@ export interface TWaveAnalysis {
 
 export interface QTcAnalysis {
   ms: number | null;
+  measured_qt_ms: number[];
   prolonged: boolean | null;
   confidence: number;
 }

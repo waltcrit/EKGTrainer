@@ -67,7 +67,7 @@ export default function RhythmReport({ result }: RhythmReportProps) {
         <p className="text-xs uppercase tracking-wider text-gray-400 mb-3">Systematic Analysis</p>
         <Row
           label="Rate"
-          value={`${result.rate.bpm} bpm — ${result.rate.category}`}
+          value={`${result.rate.bpm} bpm — ${result.rate.category}${result.rate.rr_intervals_ms?.length ? ` (RR: ${result.rate.rr_intervals_ms.join(", ")} ms)` : ""}`}
           confidence={result.rate.confidence}
         />
         <Row
@@ -88,7 +88,7 @@ export default function RhythmReport({ result }: RhythmReportProps) {
           label="PR Interval"
           value={
             result.pr_interval.ms !== null
-              ? `${result.pr_interval.ms} ms — ${result.pr_interval.normal ? "normal" : "abnormal"}${result.pr_interval.fixed !== null ? `, ${result.pr_interval.fixed ? "fixed" : "variable"}` : ""}`
+              ? `${result.pr_interval.ms} ms — ${result.pr_interval.normal ? "normal" : "abnormal"}, ${result.pr_interval.fixed ? "fixed" : "variable"}${result.pr_interval.measured_beats?.length ? ` (beats: ${result.pr_interval.measured_beats.join(", ")} ms)` : ""}`
               : null
           }
           confidence={result.pr_interval.confidence}
@@ -97,7 +97,7 @@ export default function RhythmReport({ result }: RhythmReportProps) {
           label="QRS Duration"
           value={
             result.qrs.duration_ms !== null
-              ? `${result.qrs.duration_ms} ms — ${result.qrs.wide ? "wide" : "narrow"}${result.qrs.morphology ? ` (${result.qrs.morphology})` : ""}`
+              ? `${result.qrs.duration_ms} ms — ${result.qrs.wide ? "wide" : "narrow"}${result.qrs.morphology ? ` (${result.qrs.morphology})` : ""}${result.qrs.measured_beats_ms?.length ? ` [${result.qrs.measured_beats_ms.join(", ")} ms]` : ""}`
               : null
           }
           confidence={result.qrs.confidence}
@@ -122,7 +122,7 @@ export default function RhythmReport({ result }: RhythmReportProps) {
           label="QTc"
           value={
             result.qtc.ms !== null
-              ? `${result.qtc.ms} ms${result.qtc.prolonged !== null ? ` — ${result.qtc.prolonged ? "prolonged" : "normal"}` : ""}`
+              ? `${result.qtc.ms} ms${result.qtc.prolonged !== null ? ` — ${result.qtc.prolonged ? "prolonged" : "normal"}` : ""}${result.qtc.measured_qt_ms?.length ? ` (QT: ${result.qtc.measured_qt_ms.join(", ")} ms)` : ""}`
               : null
           }
           confidence={result.qtc.confidence}
