@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { EKG_ANALYSIS_PROMPT } from "@/lib/prompt";
+import { checkRateLimit } from "@/lib/rateLimit";
 import type {
   AnalyzeRequest,
   AnalyzeResponse,
@@ -19,6 +20,25 @@ export async function POST(
     return NextResponse.json(
       { success: false, error: "ANTHROPIC_API_KEY is not configured" },
       { status: 500 }
+    );
+  }
+
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+    req.headers.get("x-real-ip") ??
+    "unknown";
+
+  const rate = checkRateLimit(ip);
+  if (!rate.allowed) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: `Rate limit reached. Try again in ${rate.resetInSeconds} seconds.`,
+      },
+      {
+        status: 429,
+        headers: { "Retry-After": String(rate.resetInSeconds) },
+      }
     );
   }
 
