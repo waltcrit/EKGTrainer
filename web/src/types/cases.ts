@@ -8,7 +8,9 @@ export type RhythmCategory =
   | "ventricular"
   | "stemi"
   | "nstemi"
-  | "pe_strain";
+  | "pe_strain"
+  | "channelopathy"
+  | "pacemaker";
 
 export interface EKGCase {
   id: string;
@@ -34,6 +36,8 @@ export const CATEGORY_LABELS: Record<RhythmCategory, string> = {
   stemi:             "STEMI",
   nstemi:            "NSTEMI / ACS",
   pe_strain:         "PE & Strain Patterns",
+  channelopathy:     "Channelopathies",
+  pacemaker:         "Pacemaker Rhythms",
 };
 
 export const DIFFICULTY_LABELS: Record<number, string> = {

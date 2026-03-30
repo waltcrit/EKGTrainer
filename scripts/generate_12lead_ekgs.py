@@ -748,12 +748,15 @@ def inferior_stemi(hr=78):
 def lateral_stemi(hr=82):
     """LCx territory: ST elevation I, aVL, V5-V6; reciprocal in III, aVF."""
     return _normal_base(rr(hr), extra={
-        "I":   {"st": +0.28, "t_amp": 0.45},
-        "aVL": {"st": +0.30, "t_amp": 0.48},
-        "V5":  {"st": +0.25, "t_amp": 0.42},
-        "V6":  {"st": +0.20, "t_amp": 0.38},
-        "III": {"st": -0.18, "t_inv": True, "t_amp": 0.16},
-        "aVF": {"st": -0.12, "t_inv": True, "t_amp": 0.14},
+        "I":   {"st": +0.38, "t_amp": 0.55},
+        "aVL": {"st": +0.42, "t_amp": 0.58},
+        "V5":  {"st": +0.35, "t_amp": 0.50},
+        "V6":  {"st": +0.30, "t_amp": 0.45},
+        "II":  {"st": +0.08, "t_amp": 0.28},
+        "III": {"st": -0.22, "t_inv": True, "t_amp": 0.15},
+        "aVF": {"st": -0.16, "t_inv": True, "t_amp": 0.13},
+        "V1":  {"st": -0.08},
+        "V2":  {"st": -0.10, "t_amp": 0.20},
     })
 
 
@@ -861,6 +864,111 @@ def rv_strain(hr=90):
                             "V2": {"t_inv": True, "t_amp": 0.44},
                             "V3": {"t_inv": True, "t_amp": 0.30},
                         })
+
+
+def _pace_spike(sig, spike_t, amp=0.80):
+    """Narrow pacing spike artifact (~3 ms FWHM)."""
+    sig += gauss(spike_t, 3, amp)
+
+
+def atrial_paced(hr=70, pr_ms=160):
+    """AAI pacing: atrial spike + normal AV conduction → narrow QRS across all leads."""
+    r_times = rr(hr)
+    leads = {}
+    for lead in ["I","II","III","aVR","aVL","aVF","V1","V2","V3","V4","V5","V6"]:
+        sig = np.zeros(N)
+        for r in r_times:
+            spike_t = r - pr_ms / 1000.0 + 0.040 - 0.020
+            _pace_spike(sig, spike_t)
+        leads[lead] = sig
+    # Add PQRST via _normal_base then overlay spikes
+    base = _normal_base(r_times, pr_ms=pr_ms, p_amp=0.10)
+    for lead in leads:
+        leads[lead] += base[lead]
+    return leads
+
+
+def _lbbb_no_p(r_times):
+    """LBBB-morphology 12-lead with P waves suppressed (for paced rhythms)."""
+    leads = {}
+    for lead in FRONTAL:
+        if lead in ("I", "aVL"):
+            sig = build_lead(r_times, pr_ms=160, qrs_ms=140, qt_ms=440,
+                             no_p=True, r_amp=1.00, broad_r=True,
+                             t_inv=True, t_amp=0.22, st=-0.10)
+        elif lead == "aVR":
+            sig = build_lead(r_times, pr_ms=160, qrs_ms=140, qt_ms=440,
+                             no_p=True, r_amp=0.80, qs=True,
+                             t_inv=False, t_amp=0.22, st=0.10)
+        elif lead in ("II", "III"):
+            sig = build_lead(r_times, pr_ms=160, qrs_ms=140, qt_ms=440,
+                             no_p=True, r_amp=0.55, broad_r=True,
+                             t_inv=True, t_amp=0.18, st=-0.08)
+        else:  # aVF
+            sig = build_lead(r_times, pr_ms=160, qrs_ms=140, qt_ms=440,
+                             no_p=True, r_amp=0.65, broad_r=True,
+                             t_inv=True, t_amp=0.18, st=-0.08)
+        leads[lead] = sig
+    for v_num, lead in enumerate(PRECORDIAL, start=1):
+        if v_num <= 3:
+            sig = build_lead(r_times, pr_ms=160, qrs_ms=140, qt_ms=440,
+                             no_p=True, r_amp=0.65, wide_neg=True,
+                             t_amp=0.28, t_inv=False, st=0.18)
+        elif v_num == 4:
+            sig = build_lead(r_times, pr_ms=160, qrs_ms=140, qt_ms=440,
+                             no_p=True, r_amp=0.40, broad_r=True,
+                             t_inv=True, t_amp=0.20, st=-0.08)
+        else:  # V5-V6
+            sig = build_lead(r_times, pr_ms=160, qrs_ms=140, qt_ms=440,
+                             no_p=True, r_amp=0.90, broad_r=True,
+                             t_inv=True, t_amp=0.22, st=-0.12)
+        leads[lead] = sig
+    return leads
+
+
+def ventricular_paced(hr=70):
+    """VVI pacing: ventricular spike + LBBB-morphology QRS, no P waves."""
+    r_times = rr(hr)
+    leads = _lbbb_no_p(r_times)
+    spikes = np.zeros(N)
+    for r in r_times:
+        _pace_spike(spikes, r - 0.010)
+    for lead in leads:
+        leads[lead] = leads[lead] + spikes
+    return leads
+
+
+def av_paced(hr=70, pr_ms=200):
+    """DDD pacing: atrial spike + small P + ventricular spike + LBBB-wide QRS."""
+    r_times = rr(hr)
+    leads = _lbbb_no_p(r_times)
+    # Build atrial spike + paced P wave arrays; ventricular spike array
+    a_spikes = np.zeros(N)
+    v_spikes = np.zeros(N)
+    p_waves  = np.zeros(N)
+    for r in r_times:
+        a_t = r - pr_ms / 1000.0 + 0.040 - 0.020
+        _pace_spike(a_spikes, a_t, amp=0.65)
+        p_waves += gauss(a_t + 0.025, 45, 0.10)   # small paced P after atrial spike
+        _pace_spike(v_spikes, r - 0.010, amp=0.80)
+    for lead in leads:
+        leads[lead] = leads[lead] + a_spikes + p_waves + v_spikes
+    return leads
+
+
+def brugada_type1(hr=72):
+    """Brugada Type 1: coved ST elevation ≥2mm V1–V2, RBBB-like morphology,
+    terminal T-wave inversion. Rest of 12-lead is essentially normal."""
+    return _normal_base(rr(hr), extra={
+        # V1: high J-point, coved (downsloping) ST, T inversion
+        "V1": {"rsrp": True, "r_amp": 0.55, "s_frac": 0.08,
+               "st": +0.30, "t_inv": True, "t_amp": 0.24},
+        # V2: similar but slightly less pronounced
+        "V2": {"rsrp": True, "r_amp": 0.65, "s_frac": 0.10,
+               "st": +0.20, "t_inv": True, "t_amp": 0.18},
+        # V3: mild residual ST, transitional
+        "V3": {"r_amp": 0.78, "st": +0.06},
+    })
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -971,6 +1079,10 @@ CASES = [
     ("pe_rv_strain_01",  "Pulmonary Embolism — RV Strain",                  lambda: pe_rv_strain(112)),
     ("lv_strain_01",     "LVH with LV Strain Pattern",                      lambda: lv_strain(72)),
     ("rv_strain_01",     "RV Strain Pattern",                               lambda: rv_strain(90)),
+    ("brugada_01",       "Brugada Syndrome — Type 1 (coved)",               lambda: brugada_type1(72)),
+    ("pace_atrial_01",   "Atrial Pacing (AAI, 70 bpm)",                     lambda: atrial_paced(70)),
+    ("pace_ventricular_01", "Ventricular Pacing (VVI, 70 bpm)",             lambda: ventricular_paced(70)),
+    ("pace_av_01",       "AV Sequential Pacing (DDD, 70 bpm)",              lambda: av_paced(70)),
 ]
 
 

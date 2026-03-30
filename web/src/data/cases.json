@@ -634,5 +634,77 @@
       "Causes: PE, pulmonary hypertension, cor pulmonale, RVOT obstruction"
     ],
     "teaching": "Right precordial T inversions indicate RV pressure overload. Unlike anterior ischemia (which also inverts precordial T waves), RV strain is associated with right axis deviation and clinical signs of RV failure."
+  },
+  {
+    "id": "pace_atrial_01",
+    "rhythm": "Atrial Pacing (AAI)",
+    "category": "pacemaker",
+    "difficulty": 2,
+    "imagePath": "/cases/pace_atrial_01.png",
+    "twelveleadPath": "/cases/pace_atrial_01_12lead.png",
+    "rate": 70,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Pacing spike immediately before each P wave",
+      "Normal PR interval (patient's own AV conduction)",
+      "Narrow QRS (native ventricular conduction preserved)",
+      "Paced P wave may have different morphology than sinus P",
+      "Failure to capture: spike without P wave"
+    ],
+    "teaching": "Atrial pacing (AAI mode) fires in the atrium and relies on intact AV conduction. Each beat shows an atrial spike followed by a P wave and narrow QRS. It maintains AV synchrony and is used for sick sinus syndrome with normal AV node."
+  },
+  {
+    "id": "pace_ventricular_01",
+    "rhythm": "Ventricular Pacing (VVI)",
+    "category": "pacemaker",
+    "difficulty": 2,
+    "imagePath": "/cases/pace_ventricular_01.png",
+    "twelveleadPath": "/cases/pace_ventricular_01_12lead.png",
+    "rate": 70,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Pacing spike immediately before each QRS",
+      "Wide, bizarre QRS with LBBB morphology (RV apex stimulation)",
+      "Discordant ST-T changes (opposite to QRS deflection)",
+      "No consistent P wave before each QRS",
+      "Left axis deviation typical"
+    ],
+    "teaching": "Ventricular pacing (VVI mode) stimulates the RV apex, producing an LBBB-like wide QRS. The pacing spike immediately precedes each QRS. There are no P waves coordinated with the paced beats \u2014 AV synchrony is lost. Look for the telltale spike before the wide complex."
+  },
+  {
+    "id": "pace_av_01",
+    "rhythm": "AV Sequential Pacing (DDD)",
+    "category": "pacemaker",
+    "difficulty": 3,
+    "imagePath": "/cases/pace_av_01.png",
+    "twelveleadPath": "/cases/pace_av_01_12lead.png",
+    "rate": 70,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Two pacing spikes per beat: atrial spike then ventricular spike",
+      "First spike precedes P wave (atrial); second precedes QRS (ventricular)",
+      "Wide QRS with LBBB morphology",
+      "AV synchrony maintained \u2014 paced PR interval programmed",
+      "Most physiological pacing mode"
+    ],
+    "teaching": "DDD pacing is dual-chamber: the atrium and ventricle are both paced. Look for two spikes per beat \u2014 an atrial spike before the P wave and a ventricular spike before the wide QRS. The programmable AV delay preserves atrial contribution to cardiac output."
+  },
+  {
+    "id": "brugada_01",
+    "rhythm": "Brugada Syndrome \u2014 Type 1",
+    "category": "channelopathy",
+    "difficulty": 4,
+    "imagePath": "/cases/brugada_01.png",
+    "twelveleadPath": "/cases/brugada_01_12lead.png",
+    "rate": 72,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Coved ST elevation \u22652mm in V1\u2013V2 (Type 1 pattern)",
+      "Downsloping ST with terminal T-wave inversion",
+      "RBBB-like QRS morphology (rSR' or r' in V1)",
+      "Normal QTc, no ischemia elsewhere",
+      "Can precipitate ventricular fibrillation"
+    ],
+    "teaching": "Brugada syndrome is a sodium channelopathy (SCN5A) causing sudden cardiac death risk. Type 1 (coved) is the only diagnostic pattern: \u22652mm coved ST elevation in \u22651 right precordial lead (V1\u2013V2 in standard position or V1\u2013V2 one intercostal space higher). Can be spontaneous or unmasked by fever, Na-channel blockers, or cocaine. Treat symptomatic patients with an ICD. Screen all first-degree relatives."
   }
 ]

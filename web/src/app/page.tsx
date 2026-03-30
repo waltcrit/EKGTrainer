@@ -5,13 +5,14 @@ import EKGUploader from "@/components/EKGUploader";
 import RhythmReport from "@/components/RhythmReport";
 import CaseLibrary from "@/components/CaseLibrary";
 import QuizMode from "@/components/QuizMode";
+import AboutPage from "@/components/AboutPage";
 import type { EKGAnalysisResult } from "@/types/analysis";
 import type { EKGCase } from "@/types/cases";
 import casesData from "@/data/cases.json";
 
 const cases = casesData as EKGCase[];
 
-type Tab = "practice" | "library" | "analyze";
+type Tab = "practice" | "library" | "analyze" | "about";
 type AnalyzeState = "idle" | "analyzing" | "result" | "error";
 
 // Inline ECG pulse logo mark
@@ -28,9 +29,112 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "practice", label: "Practice" },
   { id: "library",  label: "Library" },
   { id: "analyze",  label: "Analyze" },
+  { id: "about",    label: "About" },
 ];
 
+function LandingPage({ onEnter }: { onEnter: (tab: Tab) => void }) {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 px-6">
+      <div className="flex flex-col items-center gap-8 max-w-lg w-full">
+
+        {/* Logo mark */}
+        <div className="flex flex-col items-center gap-3">
+          <EcgMark className="w-20 h-10 text-sky-600" />
+          <div className="text-center">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900">EKG Trainer</h1>
+            <p className="text-slate-500 text-sm mt-1">Systematic ECG interpretation · 38 teaching cases</p>
+          </div>
+        </div>
+
+        {/* Mode cards */}
+        <div className="grid grid-cols-1 gap-3 w-full">
+          <button
+            onClick={() => onEnter("practice")}
+            className="group flex items-center gap-4 rounded-xl border border-slate-200 bg-white
+                       px-5 py-4 text-left shadow-sm hover:border-sky-300 hover:shadow-md
+                       transition-all duration-150"
+          >
+            <div className="w-10 h-10 rounded-lg bg-sky-50 flex items-center justify-center shrink-0
+                            group-hover:bg-sky-100 transition-colors">
+              <svg className="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-slate-900 text-sm">Practice Mode</p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Identify rhythms from strips and 12-leads · A/B/C/D multiple choice
+              </p>
+            </div>
+            <svg className="w-4 h-4 text-slate-300 group-hover:text-sky-400 transition-colors shrink-0"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+
+          <button
+            onClick={() => onEnter("library")}
+            className="group flex items-center gap-4 rounded-xl border border-slate-200 bg-white
+                       px-5 py-4 text-left shadow-sm hover:border-emerald-300 hover:shadow-md
+                       transition-all duration-150"
+          >
+            <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0
+                            group-hover:bg-emerald-100 transition-colors">
+              <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-slate-900 text-sm">Case Library</p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Browse all 38 rhythms · Key features and teaching points
+              </p>
+            </div>
+            <svg className="w-4 h-4 text-slate-300 group-hover:text-emerald-400 transition-colors shrink-0"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+
+          <button
+            onClick={() => onEnter("analyze")}
+            className="group flex items-center gap-4 rounded-xl border border-slate-200 bg-white
+                       px-5 py-4 text-left shadow-sm hover:border-violet-300 hover:shadow-md
+                       transition-all duration-150"
+          >
+            <div className="w-10 h-10 rounded-lg bg-violet-50 flex items-center justify-center shrink-0
+                            group-hover:bg-violet-100 transition-colors">
+              <svg className="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.347.347a3.75 3.75 0 01-5.303 0l-.347-.347z" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-slate-900 text-sm">AI Analysis</p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Upload any EKG · Claude applies the 9-step framework
+              </p>
+            </div>
+            <svg className="w-4 h-4 text-slate-300 group-hover:text-violet-400 transition-colors shrink-0"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Disclaimer */}
+        <p className="text-xs text-slate-400 text-center leading-relaxed">
+          For educational use only · Not a substitute for clinical judgment
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
+  const [landed, setLanded]   = useState(false);
   const [tab, setTab] = useState<Tab>("practice");
   const [analyzeState, setAnalyzeState] = useState<AnalyzeState>("idle");
   const [result, setResult] = useState<EKGAnalysisResult | null>(null);
@@ -47,18 +151,25 @@ export default function Home() {
     setError(null);
   };
 
+  const handleEnter = (dest: Tab) => { setTab(dest); setLanded(true); };
+
+  if (!landed) return <LandingPage onEnter={handleEnter} />;
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* ── Sticky top nav ──────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
-          {/* Logo */}
-          <div className="flex items-center gap-2.5 shrink-0">
+          {/* Logo — click to return to landing */}
+          <button
+            onClick={() => setLanded(false)}
+            className="flex items-center gap-2.5 shrink-0 hover:opacity-70 transition-opacity"
+          >
             <EcgMark className="w-8 h-4 text-sky-600" />
             <span className="font-semibold text-slate-900 text-[15px] tracking-tight select-none">
               EKG Trainer
             </span>
-          </div>
+          </button>
 
           {/* Tab navigation */}
           <nav className="flex items-center gap-0.5">
@@ -87,6 +198,8 @@ export default function Home() {
         {tab === "library" && (
           <CaseLibrary cases={cases} onPractice={handlePracticeFromLibrary} />
         )}
+
+        {tab === "about" && <AboutPage />}
 
         {tab === "analyze" && (
           <div className="flex flex-col gap-5 max-w-2xl mx-auto">

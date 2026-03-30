@@ -514,6 +514,52 @@ def rv_strain_pattern(hr=90):
     ]
 
 
+def _pace_spike(sig, t, spike_t, amp=0.80):
+    """Narrow pacer spike: very tight Gaussian (~3 ms FWHM) to simulate impulse artifact."""
+    sig += gauss(t, spike_t, 3, amp)
+
+
+def atrial_paced(hr=70, pr_ms=160):
+    """AAI pacing: atrial spike + normal AV conduction → narrow QRS."""
+    sig = np.zeros(N)
+    for r in regular_r_times(hr):
+        spike_t = r - pr_ms / 1000.0 + 0.040 - 0.020  # spike just before P
+        _pace_spike(sig, T, spike_t)
+        place_normal_beat(sig, T, r, pr_ms=pr_ms, p_amp=0.10)
+    return sig
+
+
+def ventricular_paced(hr=70):
+    """VVI pacing: ventricular spike + wide LBBB-morphology QRS, no preceding P."""
+    sig = np.zeros(N)
+    for r in regular_r_times(hr):
+        _pace_spike(sig, T, r - 0.010)
+        place_wide_beat(sig, T, r, style="lbbb", r_amp=0.90)
+    return sig
+
+
+def av_paced(hr=70, pr_ms=200):
+    """DDD pacing: atrial spike + atrial activity + ventricular spike + wide QRS."""
+    sig = np.zeros(N)
+    for r in regular_r_times(hr):
+        a_spike_t = r - pr_ms / 1000.0 + 0.040 - 0.020
+        _pace_spike(sig, T, a_spike_t, amp=0.70)
+        sig += gauss(T, a_spike_t + 0.025, 45, 0.10)  # paced P wave
+        _pace_spike(sig, T, r - 0.010, amp=0.80)
+        place_wide_beat(sig, T, r, style="lbbb", r_amp=0.90)
+    return sig
+
+
+def brugada_type1_strip(hr=72):
+    """Brugada Type 1: coved ST elevation + T inversion V1–V2, RBBB-like morphology."""
+    rs = _rr(hr)
+    return [
+        (lead_signal(rs, rsrp=True, r_amp=0.55, st_offset=+0.30, t_inverted=True, t_amp=0.24), "V1"),
+        (lead_signal(rs, rsrp=True, r_amp=0.65, st_offset=+0.20, t_inverted=True, t_amp=0.18), "V2"),
+        (lead_signal(rs, r_amp=0.78, st_offset=+0.06),                                         "V3"),
+    ]
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Rendering
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -880,6 +926,58 @@ CASES = [
          teaching="Right precordial T inversions indicate RV pressure overload. "
                   "Unlike anterior ischemia (which also inverts precordial T waves), RV strain "
                   "is associated with right axis deviation and clinical signs of RV failure."),
+
+    # ── Pacemaker Rhythms ─────────────────────────────────────────────────────
+    dict(id="pace_atrial_01", rhythm="Atrial Pacing (AAI)", category="pacemaker", difficulty=2,
+         generator=lambda: atrial_paced(70),
+         rate=70, regularity="regular",
+         key_features=["Pacing spike immediately before each P wave",
+                       "Normal PR interval (patient's own AV conduction)",
+                       "Narrow QRS (native ventricular conduction preserved)",
+                       "Paced P wave may have different morphology than sinus P",
+                       "Failure to capture: spike without P wave"],
+         teaching="Atrial pacing (AAI mode) fires in the atrium and relies on intact AV conduction. "
+                  "Each beat shows an atrial spike followed by a P wave and narrow QRS. "
+                  "It maintains AV synchrony and is used for sick sinus syndrome with normal AV node."),
+
+    dict(id="pace_ventricular_01", rhythm="Ventricular Pacing (VVI)", category="pacemaker", difficulty=2,
+         generator=lambda: ventricular_paced(70),
+         rate=70, regularity="regular",
+         key_features=["Pacing spike immediately before each QRS",
+                       "Wide, bizarre QRS with LBBB morphology (RV apex stimulation)",
+                       "Discordant ST-T changes (opposite to QRS deflection)",
+                       "No consistent P wave before each QRS",
+                       "Left axis deviation typical"],
+         teaching="Ventricular pacing (VVI mode) stimulates the RV apex, producing an LBBB-like wide QRS. "
+                  "The pacing spike immediately precedes each QRS. There are no P waves coordinated with "
+                  "the paced beats — AV synchrony is lost. Look for the telltale spike before the wide complex."),
+
+    dict(id="pace_av_01", rhythm="AV Sequential Pacing (DDD)", category="pacemaker", difficulty=3,
+         generator=lambda: av_paced(70),
+         rate=70, regularity="regular",
+         key_features=["Two pacing spikes per beat: atrial spike then ventricular spike",
+                       "First spike precedes P wave (atrial); second precedes QRS (ventricular)",
+                       "Wide QRS with LBBB morphology",
+                       "AV synchrony maintained — paced PR interval programmed",
+                       "Most physiological pacing mode"],
+         teaching="DDD pacing is dual-chamber: the atrium and ventricle are both paced. "
+                  "Look for two spikes per beat — an atrial spike before the P wave and a ventricular spike "
+                  "before the wide QRS. The programmable AV delay preserves atrial contribution to cardiac output."),
+
+    # ── Channelopathies ───────────────────────────────────────────────────────
+    dict(id="brugada_01", rhythm="Brugada Syndrome — Type 1", category="channelopathy", difficulty=4,
+         multilead=True, generator=lambda: brugada_type1_strip(72),
+         rate=72, regularity="regular",
+         key_features=["Coved ST elevation ≥2mm in V1–V2 (Type 1 pattern)",
+                       "Downsloping ST with terminal T-wave inversion",
+                       "RBBB-like QRS morphology (rSR' or r' in V1)",
+                       "Normal QTc, no ischemia elsewhere",
+                       "Can precipitate ventricular fibrillation"],
+         teaching="Brugada syndrome is a sodium channelopathy (SCN5A) causing sudden cardiac death risk. "
+                  "Type 1 (coved) is the only diagnostic pattern: ≥2mm coved ST elevation in ≥1 right "
+                  "precordial lead (V1–V2 in standard position or V1–V2 one intercostal space higher). "
+                  "Can be spontaneous or unmasked by fever, Na-channel blockers, or cocaine. "
+                  "Treat symptomatic patients with an ICD. Screen all first-degree relatives."),
 ]
 
 

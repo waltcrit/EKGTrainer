@@ -89,7 +89,7 @@ export default function QuizMode({ cases }: QuizModeProps) {
     setAiResult(null);
     setAiError(null);
     try {
-      const resp = await fetch(current.imagePath);
+      const resp = await fetch(current.twelveleadPath);
       const blob = await resp.blob();
       const base64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
