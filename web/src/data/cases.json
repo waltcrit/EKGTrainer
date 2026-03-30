@@ -5,6 +5,7 @@
     "category": "sinus",
     "difficulty": 1,
     "imagePath": "/cases/nsr_01.png",
+    "twelveleadPath": "/cases/nsr_01_12lead.png",
     "rate": 75,
     "regularity": "regular",
     "keyFeatures": [
@@ -22,6 +23,7 @@
     "category": "sinus",
     "difficulty": 1,
     "imagePath": "/cases/nsr_02.png",
+    "twelveleadPath": "/cases/nsr_02_12lead.png",
     "rate": 88,
     "regularity": "regular",
     "keyFeatures": [
@@ -38,6 +40,7 @@
     "category": "sinus",
     "difficulty": 1,
     "imagePath": "/cases/brady_01.png",
+    "twelveleadPath": "/cases/brady_01_12lead.png",
     "rate": 45,
     "regularity": "regular",
     "keyFeatures": [
@@ -55,6 +58,7 @@
     "category": "sinus",
     "difficulty": 1,
     "imagePath": "/cases/brady_02.png",
+    "twelveleadPath": "/cases/brady_02_12lead.png",
     "rate": 38,
     "regularity": "regular",
     "keyFeatures": [
@@ -70,6 +74,7 @@
     "category": "sinus",
     "difficulty": 1,
     "imagePath": "/cases/tachy_01.png",
+    "twelveleadPath": "/cases/tachy_01_12lead.png",
     "rate": 115,
     "regularity": "regular",
     "keyFeatures": [
@@ -87,6 +92,7 @@
     "category": "sinus",
     "difficulty": 2,
     "imagePath": "/cases/tachy_02.png",
+    "twelveleadPath": "/cases/tachy_02_12lead.png",
     "rate": 140,
     "regularity": "regular",
     "keyFeatures": [
@@ -103,6 +109,7 @@
     "category": "sinus",
     "difficulty": 2,
     "imagePath": "/cases/sarr_01.png",
+    "twelveleadPath": "/cases/sarr_01_12lead.png",
     "rate": 68,
     "regularity": "regularly_irregular",
     "keyFeatures": [
@@ -119,6 +126,7 @@
     "category": "atrial",
     "difficulty": 2,
     "imagePath": "/cases/pac_01.png",
+    "twelveleadPath": "/cases/pac_01_12lead.png",
     "rate": 70,
     "regularity": "irregular",
     "keyFeatures": [
@@ -135,6 +143,7 @@
     "category": "ventricular",
     "difficulty": 2,
     "imagePath": "/cases/pvc_01.png",
+    "twelveleadPath": "/cases/pvc_01_12lead.png",
     "rate": 70,
     "regularity": "irregular",
     "keyFeatures": [
@@ -151,6 +160,7 @@
     "category": "supraventricular",
     "difficulty": 2,
     "imagePath": "/cases/svt_01.png",
+    "twelveleadPath": "/cases/svt_01_12lead.png",
     "rate": 190,
     "regularity": "regular",
     "keyFeatures": [
@@ -167,6 +177,7 @@
     "category": "atrial",
     "difficulty": 2,
     "imagePath": "/cases/afib_01.png",
+    "twelveleadPath": "/cases/afib_01_12lead.png",
     "rate": 80,
     "regularity": "irregularly_irregular",
     "keyFeatures": [
@@ -183,6 +194,7 @@
     "category": "atrial",
     "difficulty": 2,
     "imagePath": "/cases/afib_02.png",
+    "twelveleadPath": "/cases/afib_02_12lead.png",
     "rate": 130,
     "regularity": "irregularly_irregular",
     "keyFeatures": [
@@ -194,19 +206,20 @@
   },
   {
     "id": "aflut_01",
-    "rhythm": "Atrial Flutter (2:1)",
+    "rhythm": "Atrial Flutter (4:1)",
     "category": "atrial",
     "difficulty": 3,
     "imagePath": "/cases/aflut_01.png",
-    "rate": 150,
+    "twelveleadPath": "/cases/aflut_01_12lead.png",
+    "rate": 75,
     "regularity": "regular",
     "keyFeatures": [
       "Atrial rate ~300 bpm",
-      "Sawtooth flutter waves (best in II, III, aVF)",
-      "Regular ventricular rate ~150 bpm",
-      "2:1 conduction"
+      "Sawtooth flutter waves clearly visible (II, III, aVF)",
+      "Regular ventricular rate ~75 bpm",
+      "4:1 conduction \u2014 3 flutter waves between QRS"
     ],
-    "teaching": "Classic sawtooth pattern at 300 bpm. With 2:1 conduction the ventricular rate is exactly 150 \u2014 a rate of 150 should always raise suspicion for flutter."
+    "teaching": "Classic sawtooth at 300 bpm with 4:1 conduction. Three flutter waves are clearly visible between each QRS. When in doubt about an oddly regular rhythm, look for the telltale sawtooth in inferior leads. Flutter can conduct at 2:1, 3:1, or 4:1."
   },
   {
     "id": "avb1_01",
@@ -214,6 +227,7 @@
     "category": "av_block",
     "difficulty": 2,
     "imagePath": "/cases/avb1_01.png",
+    "twelveleadPath": "/cases/avb1_01_12lead.png",
     "rate": 70,
     "regularity": "regular",
     "keyFeatures": [
@@ -230,6 +244,7 @@
     "category": "av_block",
     "difficulty": 3,
     "imagePath": "/cases/avb2m1_01.png",
+    "twelveleadPath": "/cases/avb2m1_01_12lead.png",
     "rate": 75,
     "regularity": "regularly_irregular",
     "keyFeatures": [
@@ -246,6 +261,7 @@
     "category": "av_block",
     "difficulty": 3,
     "imagePath": "/cases/avb2m2_01.png",
+    "twelveleadPath": "/cases/avb2m2_01_12lead.png",
     "rate": 75,
     "regularity": "regularly_irregular",
     "keyFeatures": [
@@ -262,6 +278,7 @@
     "category": "av_block",
     "difficulty": 4,
     "imagePath": "/cases/avb3_01.png",
+    "twelveleadPath": "/cases/avb3_01_12lead.png",
     "rate": 33,
     "regularity": "regular",
     "keyFeatures": [
@@ -278,6 +295,7 @@
     "category": "bundle_branch",
     "difficulty": 3,
     "imagePath": "/cases/lbbb_01.png",
+    "twelveleadPath": "/cases/lbbb_01_12lead.png",
     "rate": 72,
     "regularity": "regular",
     "keyFeatures": [
@@ -294,6 +312,7 @@
     "category": "bundle_branch",
     "difficulty": 3,
     "imagePath": "/cases/rbbb_01.png",
+    "twelveleadPath": "/cases/rbbb_01_12lead.png",
     "rate": 75,
     "regularity": "regular",
     "keyFeatures": [
@@ -310,6 +329,7 @@
     "category": "junctional",
     "difficulty": 3,
     "imagePath": "/cases/junct_01.png",
+    "twelveleadPath": "/cases/junct_01_12lead.png",
     "rate": 48,
     "regularity": "regular",
     "keyFeatures": [
@@ -326,6 +346,7 @@
     "category": "junctional",
     "difficulty": 3,
     "imagePath": "/cases/junct_02.png",
+    "twelveleadPath": "/cases/junct_02_12lead.png",
     "rate": 85,
     "regularity": "regular",
     "keyFeatures": [
@@ -341,6 +362,7 @@
     "category": "ventricular",
     "difficulty": 3,
     "imagePath": "/cases/idio_01.png",
+    "twelveleadPath": "/cases/idio_01_12lead.png",
     "rate": 33,
     "regularity": "regular",
     "keyFeatures": [
@@ -357,6 +379,7 @@
     "category": "ventricular",
     "difficulty": 3,
     "imagePath": "/cases/vtach_01.png",
+    "twelveleadPath": "/cases/vtach_01_12lead.png",
     "rate": 175,
     "regularity": "regular",
     "keyFeatures": [
@@ -374,6 +397,7 @@
     "category": "ventricular",
     "difficulty": 3,
     "imagePath": "/cases/vtach_02.png",
+    "twelveleadPath": "/cases/vtach_02_12lead.png",
     "rate": 200,
     "regularity": "regular",
     "keyFeatures": [
@@ -390,6 +414,7 @@
     "category": "ventricular",
     "difficulty": 1,
     "imagePath": "/cases/vfib_01.png",
+    "twelveleadPath": "/cases/vfib_01_12lead.png",
     "rate": null,
     "regularity": "chaotic",
     "keyFeatures": [
@@ -406,6 +431,7 @@
     "category": "ventricular",
     "difficulty": 1,
     "imagePath": "/cases/asys_01.png",
+    "twelveleadPath": "/cases/asys_01_12lead.png",
     "rate": 0,
     "regularity": "none",
     "keyFeatures": [
@@ -422,6 +448,7 @@
     "category": "stemi",
     "difficulty": 3,
     "imagePath": "/cases/stemi_ant_01.png",
+    "twelveleadPath": "/cases/stemi_ant_01_12lead.png",
     "rate": 80,
     "regularity": "regular",
     "keyFeatures": [
@@ -439,6 +466,7 @@
     "category": "stemi",
     "difficulty": 3,
     "imagePath": "/cases/stemi_inf_01.png",
+    "twelveleadPath": "/cases/stemi_inf_01_12lead.png",
     "rate": 78,
     "regularity": "regular",
     "keyFeatures": [
@@ -455,6 +483,7 @@
     "category": "stemi",
     "difficulty": 3,
     "imagePath": "/cases/stemi_lat_01.png",
+    "twelveleadPath": "/cases/stemi_lat_01_12lead.png",
     "rate": 82,
     "regularity": "regular",
     "keyFeatures": [
@@ -471,6 +500,7 @@
     "category": "stemi",
     "difficulty": 4,
     "imagePath": "/cases/stemi_post_01.png",
+    "twelveleadPath": "/cases/stemi_post_01_12lead.png",
     "rate": 76,
     "regularity": "regular",
     "keyFeatures": [
@@ -487,6 +517,7 @@
     "category": "nstemi",
     "difficulty": 3,
     "imagePath": "/cases/nstemi_01.png",
+    "twelveleadPath": "/cases/nstemi_01_12lead.png",
     "rate": 88,
     "regularity": "regular",
     "keyFeatures": [
@@ -504,6 +535,7 @@
     "category": "nstemi",
     "difficulty": 4,
     "imagePath": "/cases/wellens_a_01.png",
+    "twelveleadPath": "/cases/wellens_a_01_12lead.png",
     "rate": 72,
     "regularity": "regular",
     "keyFeatures": [
@@ -521,6 +553,7 @@
     "category": "nstemi",
     "difficulty": 4,
     "imagePath": "/cases/wellens_b_01.png",
+    "twelveleadPath": "/cases/wellens_b_01_12lead.png",
     "rate": 68,
     "regularity": "regular",
     "keyFeatures": [
@@ -537,6 +570,7 @@
     "category": "pe_strain",
     "difficulty": 4,
     "imagePath": "/cases/pe_s1q3t3_01.png",
+    "twelveleadPath": "/cases/pe_s1q3t3_01_12lead.png",
     "rate": 108,
     "regularity": "regular",
     "keyFeatures": [
@@ -554,6 +588,7 @@
     "category": "pe_strain",
     "difficulty": 3,
     "imagePath": "/cases/pe_rv_strain_01.png",
+    "twelveleadPath": "/cases/pe_rv_strain_01_12lead.png",
     "rate": 112,
     "regularity": "regular",
     "keyFeatures": [
@@ -571,6 +606,7 @@
     "category": "pe_strain",
     "difficulty": 3,
     "imagePath": "/cases/lv_strain_01.png",
+    "twelveleadPath": "/cases/lv_strain_01_12lead.png",
     "rate": 72,
     "regularity": "regular",
     "keyFeatures": [
@@ -588,6 +624,7 @@
     "category": "pe_strain",
     "difficulty": 3,
     "imagePath": "/cases/rv_strain_01.png",
+    "twelveleadPath": "/cases/rv_strain_01_12lead.png",
     "rate": 90,
     "regularity": "regular",
     "keyFeatures": [

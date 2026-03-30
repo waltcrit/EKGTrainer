@@ -352,7 +352,7 @@ def _style_ax(ax, label):
                    labelbottom=False, labelleft=False)
     for s in ax.spines.values():
         s.set_visible(False)
-    ax.text(0.005, 0.96, label, transform=ax.transAxes,
+    ax.text(0.005, 0.96, label.split(" — ")[0], transform=ax.transAxes,
             fontsize=8, fontweight='bold', va='top', color='#222222', zorder=5)
 
 
@@ -374,9 +374,6 @@ def render_multilead(leads, rhythm_label, out_path):
     axes[0].text(0.99, 0.96, '25 mm/s  |  10 mm/mV',
                  transform=axes[0].transAxes, fontsize=6.5,
                  ha='right', va='top', color='#888888', zorder=5)
-    fig.text(0.005, 0.99, rhythm_label, fontsize=9, fontweight='bold',
-             va='top', color='#111111')
-
     plt.savefig(out_path, bbox_inches='tight', facecolor=BG)
     plt.close(fig)
     print(f"  ✓  {out_path.name}")
@@ -542,8 +539,6 @@ def render(signal, rhythm_label, out_path, rate_label=None):
 
     ax.plot(T, signal, color=TRACE, linewidth=1.2, zorder=3, antialiased=True)
 
-    ax.text(0.01, 0.97, rhythm_label, transform=ax.transAxes,
-            fontsize=8, fontweight='bold', va='top', color='#222222')
     ax.text(0.99, 0.97, '25 mm/s  |  10 mm/mV  |  Lead II',
             transform=ax.transAxes, fontsize=6.5, ha='right',
             va='top', color='#888888')
@@ -646,12 +641,13 @@ CASES = [
          teaching="AFib with rapid ventricular response (RVR). Rate control is the priority. "
                   "The irregular rhythm differentiates this from SVT."),
 
-    dict(id="aflut_01", rhythm="Atrial Flutter (2:1)", category="atrial", difficulty=3,
-         generator=lambda: atrial_flutter(300, 2), rate=150, regularity="regular",
-         key_features=["Atrial rate ~300 bpm", "Sawtooth flutter waves (best in II, III, aVF)",
-                       "Regular ventricular rate ~150 bpm", "2:1 conduction"],
-         teaching="Classic sawtooth pattern at 300 bpm. With 2:1 conduction the ventricular "
-                  "rate is exactly 150 — a rate of 150 should always raise suspicion for flutter."),
+    dict(id="aflut_01", rhythm="Atrial Flutter (4:1)", category="atrial", difficulty=3,
+         generator=lambda: atrial_flutter(300, 4), rate=75, regularity="regular",
+         key_features=["Atrial rate ~300 bpm", "Sawtooth flutter waves clearly visible (II, III, aVF)",
+                       "Regular ventricular rate ~75 bpm", "4:1 conduction — 3 flutter waves between QRS"],
+         teaching="Classic sawtooth at 300 bpm with 4:1 conduction. Three flutter waves are clearly "
+                  "visible between each QRS. When in doubt about an oddly regular rhythm, look for the "
+                  "telltale sawtooth in inferior leads. Flutter can conduct at 2:1, 3:1, or 4:1."),
 
     # ── AV Blocks ─────────────────────────────────────────────────────────────
     dict(id="avb1_01", rhythm="1st Degree AV Block", category="av_block", difficulty=2,
@@ -907,15 +903,16 @@ def main():
             render(output, case["rhythm"], out_path, rate_label)
 
         metadata.append({
-            "id":          case["id"],
-            "rhythm":      case["rhythm"],
-            "category":    case["category"],
-            "difficulty":  case["difficulty"],
-            "imagePath":   f"/cases/{case['id']}.png",
-            "rate":        case["rate"],
-            "regularity":  case["regularity"],
-            "keyFeatures": case["key_features"],
-            "teaching":    case["teaching"],
+            "id":              case["id"],
+            "rhythm":          case["rhythm"],
+            "category":        case["category"],
+            "difficulty":      case["difficulty"],
+            "imagePath":       f"/cases/{case['id']}.png",
+            "twelveleadPath":  f"/cases/{case['id']}_12lead.png",
+            "rate":            case["rate"],
+            "regularity":      case["regularity"],
+            "keyFeatures":     case["key_features"],
+            "teaching":        case["teaching"],
         })
 
     out = DATA_DIR / "cases.json"

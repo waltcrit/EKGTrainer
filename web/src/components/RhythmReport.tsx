@@ -6,144 +6,165 @@ interface RhythmReportProps {
   result: EKGAnalysisResult;
 }
 
-function ConfidenceBadge({ value }: { value: number }) {
+function ConfidenceBar({ value }: { value: number }) {
   const pct = Math.round(value * 100);
-  const color =
-    pct >= 80 ? "bg-green-100 text-green-800" :
-    pct >= 60 ? "bg-yellow-100 text-yellow-800" :
-                "bg-red-100 text-red-800";
+  const fill =
+    pct >= 80 ? "bg-emerald-500" :
+    pct >= 60 ? "bg-amber-400"  : "bg-red-400";
   return (
-    <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${color}`}>
-      {pct}%
-    </span>
-  );
-}
-
-function Row({ label, value, confidence }: { label: string; value: string | null; confidence?: number }) {
-  return (
-    <div className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-0">
-      <span className="text-sm text-gray-500 w-36 shrink-0">{label}</span>
-      <span className="text-sm font-medium text-gray-900 flex-1">{value ?? "—"}</span>
-      {confidence !== undefined && <ConfidenceBadge value={confidence} />}
+    <div className="flex items-center gap-2 shrink-0">
+      <div className="w-14 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full ${fill}`} style={{ width: `${pct}%` }} />
+      </div>
+      <span className="text-[10px] text-slate-400 w-7 text-right">{pct}%</span>
     </div>
   );
 }
 
+function Row({ label, value, confidence }: {
+  label: string;
+  value: string | null;
+  confidence?: number;
+}) {
+  return (
+    <div className="flex items-center gap-3 py-2.5 border-b border-slate-100 last:border-0">
+      <span className="text-xs font-semibold text-slate-400 w-24 shrink-0">{label}</span>
+      <span className="text-sm text-slate-800 flex-1 leading-snug">{value ?? "—"}</span>
+      {confidence !== undefined && <ConfidenceBar value={confidence} />}
+    </div>
+  );
+}
+
+const IMAGE_QUALITY_COLOR: Record<string, string> = {
+  good: "text-emerald-600",
+  fair: "text-amber-600",
+  poor: "text-red-600",
+};
+
 export default function RhythmReport({ result }: RhythmReportProps) {
   const overallPct = Math.round(result.overall_confidence * 100);
-  const ringColor =
-    overallPct >= 80 ? "text-green-500" :
-    overallPct >= 60 ? "text-yellow-500" :
-                       "text-red-500";
+  const ringColor  =
+    overallPct >= 80 ? "text-emerald-600" :
+    overallPct >= 60 ? "text-amber-500"   : "text-red-500";
+  const ringBg =
+    overallPct >= 80 ? "bg-emerald-50 border-emerald-200" :
+    overallPct >= 60 ? "bg-amber-50 border-amber-200"     : "bg-red-50 border-red-200";
 
   return (
-    <div className="w-full max-w-2xl mx-auto flex flex-col gap-4">
-      {/* Primary rhythm banner */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">Primary Rhythm</p>
-            <h2 className="text-2xl font-bold text-gray-900">{result.primary_rhythm}</h2>
-            {result.differentials.length > 0 && (
-              <p className="text-sm text-gray-500 mt-1">
-                Also consider: {result.differentials.join(", ")}
-              </p>
-            )}
-          </div>
-          <div className={`text-4xl font-bold ${ringColor}`}>
-            {overallPct}%
-          </div>
-        </div>
-      </div>
+    <div className="flex flex-col gap-3">
 
-      {/* Explanation */}
-      <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
-        <p className="text-sm font-medium text-blue-900 mb-1">Interpretation</p>
-        <p className="text-sm text-blue-800 leading-relaxed">{result.explanation}</p>
-      </div>
-
-      {/* 9-step parameter grid */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <p className="text-xs uppercase tracking-wider text-gray-400 mb-3">Systematic Analysis</p>
-        <Row
-          label="Rate"
-          value={`${result.rate.bpm} bpm — ${result.rate.category}${result.rate.rr_intervals_ms?.length ? ` (RR: ${result.rate.rr_intervals_ms.join(", ")} ms)` : ""}`}
-          confidence={result.rate.confidence}
-        />
-        <Row
-          label="Rhythm"
-          value={result.rhythm.regularity.replace(/_/g, " ")}
-          confidence={result.rhythm.confidence}
-        />
-        <Row
-          label="P Waves"
-          value={
-            result.p_waves.present
-              ? `Present${result.p_waves.ratio ? ` (${result.p_waves.ratio})` : ""}${result.p_waves.morphology ? ` — ${result.p_waves.morphology}` : ""}`
-              : "Absent"
-          }
-          confidence={result.p_waves.confidence}
-        />
-        <Row
-          label="PR Interval"
-          value={
-            result.pr_interval.ms !== null
-              ? `${result.pr_interval.ms} ms — ${result.pr_interval.normal ? "normal" : "abnormal"}, ${result.pr_interval.fixed ? "fixed" : "variable"}${result.pr_interval.measured_beats?.length ? ` (beats: ${result.pr_interval.measured_beats.join(", ")} ms)` : ""}`
-              : null
-          }
-          confidence={result.pr_interval.confidence}
-        />
-        <Row
-          label="QRS Duration"
-          value={
-            result.qrs.duration_ms !== null
-              ? `${result.qrs.duration_ms} ms — ${result.qrs.wide ? "wide" : "narrow"}${result.qrs.morphology ? ` (${result.qrs.morphology})` : ""}${result.qrs.measured_beats_ms?.length ? ` [${result.qrs.measured_beats_ms.join(", ")} ms]` : ""}`
-              : null
-          }
-          confidence={result.qrs.confidence}
-        />
-        <Row
-          label="ST Segment"
-          value={
-            result.st_segment.elevation
-              ? `Elevation${result.st_segment.details ? ` — ${result.st_segment.details}` : ""}`
-              : result.st_segment.depression
-              ? `Depression${result.st_segment.details ? ` — ${result.st_segment.details}` : ""}`
-              : `Isoelectric${result.st_segment.details ? ` — ${result.st_segment.details}` : ""}`
-          }
-          confidence={result.st_segment.confidence}
-        />
-        <Row
-          label="T Waves"
-          value={result.t_waves.morphology}
-          confidence={result.t_waves.confidence}
-        />
-        <Row
-          label="QTc"
-          value={
-            result.qtc.ms !== null
-              ? `${result.qtc.ms} ms${result.qtc.prolonged !== null ? ` — ${result.qtc.prolonged ? "prolonged" : "normal"}` : ""}${result.qtc.measured_qt_ms?.length ? ` (QT: ${result.qtc.measured_qt_ms.join(", ")} ms)` : ""}`
-              : null
-          }
-          confidence={result.qtc.confidence}
-        />
-      </div>
-
-      {/* Caveats / image quality */}
-      {(result.caveats || result.image_quality !== "good") && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-          <p className="text-sm font-medium text-amber-800 mb-1">
-            Image quality: {result.image_quality}
+      {/* ── Primary rhythm ────────────────────────────────────────────── */}
+      <div className={`rounded-xl border px-5 py-4 flex items-start justify-between gap-4 ${ringBg}`}>
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
+            Primary Rhythm
           </p>
-          {result.caveats && (
-            <p className="text-sm text-amber-700">{result.caveats}</p>
+          <h2 className="text-xl font-bold text-slate-900 leading-tight">{result.primary_rhythm}</h2>
+          {result.differentials.length > 0 && (
+            <p className="text-xs text-slate-500 mt-1.5">
+              Also consider: {result.differentials.join(", ")}
+            </p>
           )}
         </div>
-      )}
+        <div className="shrink-0 text-right">
+          <div className={`text-3xl font-bold ${ringColor}`}>{overallPct}%</div>
+          <div className="text-[10px] text-slate-400 mt-0.5">confidence</div>
+        </div>
+      </div>
 
-      <p className="text-xs text-center text-gray-400">
-        For educational use only. Not a substitute for clinical judgment.
-      </p>
+      {/* ── Interpretation ────────────────────────────────────────────── */}
+      <div className="rounded-xl border border-sky-100 bg-sky-50 px-4 py-3.5">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-sky-500 mb-1.5">
+          Interpretation
+        </p>
+        <p className="text-sm text-slate-700 leading-relaxed">{result.explanation}</p>
+      </div>
+
+      {/* ── Systematic analysis ───────────────────────────────────────── */}
+      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            Systematic Analysis
+          </p>
+          <span className="text-[10px] text-slate-300 font-medium">9-step framework</span>
+        </div>
+        <div className="px-4 divide-y divide-slate-50">
+          <Row label="Rate"
+            value={`${result.rate.bpm} bpm — ${result.rate.category}${result.rate.rr_intervals_ms?.length ? ` (RR: ${result.rate.rr_intervals_ms.join(", ")} ms)` : ""}`}
+            confidence={result.rate.confidence}
+          />
+          <Row label="Rhythm"
+            value={result.rhythm.regularity.replace(/_/g, " ")}
+            confidence={result.rhythm.confidence}
+          />
+          <Row label="P Waves"
+            value={
+              result.p_waves.present
+                ? `Present${result.p_waves.ratio ? ` (${result.p_waves.ratio})` : ""}${result.p_waves.morphology ? ` — ${result.p_waves.morphology}` : ""}`
+                : "Absent"
+            }
+            confidence={result.p_waves.confidence}
+          />
+          <Row label="PR Interval"
+            value={
+              result.pr_interval.ms !== null
+                ? `${result.pr_interval.ms} ms — ${result.pr_interval.normal ? "normal" : "abnormal"}, ${result.pr_interval.fixed ? "fixed" : "variable"}${result.pr_interval.measured_beats?.length ? ` (${result.pr_interval.measured_beats.join(", ")} ms)` : ""}`
+                : null
+            }
+            confidence={result.pr_interval.confidence}
+          />
+          <Row label="QRS"
+            value={
+              result.qrs.duration_ms !== null
+                ? `${result.qrs.duration_ms} ms — ${result.qrs.wide ? "wide" : "narrow"}${result.qrs.morphology ? ` (${result.qrs.morphology})` : ""}${result.qrs.measured_beats_ms?.length ? ` [${result.qrs.measured_beats_ms.join(", ")} ms]` : ""}`
+                : null
+            }
+            confidence={result.qrs.confidence}
+          />
+          <Row label="ST Segment"
+            value={
+              result.st_segment.elevation
+                ? `Elevation${result.st_segment.details ? ` — ${result.st_segment.details}` : ""}`
+                : result.st_segment.depression
+                ? `Depression${result.st_segment.details ? ` — ${result.st_segment.details}` : ""}`
+                : `Isoelectric${result.st_segment.details ? ` — ${result.st_segment.details}` : ""}`
+            }
+            confidence={result.st_segment.confidence}
+          />
+          <Row label="T Waves"
+            value={result.t_waves.morphology}
+            confidence={result.t_waves.confidence}
+          />
+          <Row label="QTc"
+            value={
+              result.qtc.ms !== null
+                ? `${result.qtc.ms} ms${result.qtc.prolonged !== null ? ` — ${result.qtc.prolonged ? "prolonged" : "normal"}` : ""}${result.qtc.measured_qt_ms?.length ? ` (QT: ${result.qtc.measured_qt_ms.join(", ")} ms)` : ""}`
+                : null
+            }
+            confidence={result.qtc.confidence}
+          />
+        </div>
+      </div>
+
+      {/* ── Caveats ───────────────────────────────────────────────────── */}
+      {(result.caveats || result.image_quality !== "good") && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5 flex items-start gap-3">
+          <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+          </svg>
+          <div>
+            <p className="text-xs font-semibold text-amber-800">
+              Image quality:{" "}
+              <span className={IMAGE_QUALITY_COLOR[result.image_quality] ?? "text-amber-700"}>
+                {result.image_quality}
+              </span>
+            </p>
+            {result.caveats && (
+              <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">{result.caveats}</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -15,7 +15,8 @@ export interface EKGCase {
   rhythm: string;
   category: RhythmCategory;
   difficulty: 1 | 2 | 3 | 4;   // 1 = easiest, 4 = hardest
-  imagePath: string;
+  imagePath: string;            // single rhythm strip (bedside monitor view)
+  twelveleadPath: string;       // full 12-lead layout (anonymized, no diagnosis title)
   rate: number | null;
   regularity: "regular" | "regularly_irregular" | "irregularly_irregular" | "chaotic" | "none";
   keyFeatures: string[];
