@@ -1,3 +1,7 @@
+# HTTP server
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+
 # ECG image digitization
 # ECG-Digitiser (PhysioNet 2024 Challenge winner)
 # Install from GitHub — not yet on PyPI

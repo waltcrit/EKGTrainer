@@ -7,23 +7,16 @@ import type {
   AnalyzeErrorResponse,
   EKGAnalysisResult,
 } from "@/types/analysis";
-import { spawn } from "child_process";
-import { writeFile, unlink } from "fs/promises";
-import { tmpdir } from "os";
-import { join } from "path";
-import { randomUUID } from "crypto";
 import measurementsData from "@/data/measurements.json";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-// Path to the Python script, relative to project root
-const PYTHON_SCRIPT = join(process.cwd(), "..", "python", "analyze_ecg.py");
-const PYTHON_BIN = process.env.PYTHON_BIN ?? "python3";
+const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL ?? "http://localhost:8000";
 
 // ---------------------------------------------------------------------------
-// Run the Python digitizer + BioSPPy pipeline
+// Types
 // ---------------------------------------------------------------------------
 
 interface PipelineData {
@@ -34,56 +27,41 @@ interface PipelineData {
   sampling_rate: number;
 }
 
-interface PythonResult extends PipelineData {
+interface PythonServiceResult extends PipelineData {
   success: true;
 }
 
-interface PythonError {
-  success: false;
-  error: string;
-  traceback?: string;
-}
+// ---------------------------------------------------------------------------
+// Call the Python HTTP service to digitize + measure
+// ---------------------------------------------------------------------------
 
-async function runPythonPipeline(imagePath: string): Promise<PythonResult> {
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    const errChunks: Buffer[] = [];
-
-    const proc = spawn(PYTHON_BIN, [PYTHON_SCRIPT, "--image", imagePath]);
-
-    proc.stdout.on("data", (chunk: Buffer) => chunks.push(chunk));
-    proc.stderr.on("data", (chunk: Buffer) => errChunks.push(chunk));
-
-    proc.on("close", (code) => {
-      const stdout = Buffer.concat(chunks).toString("utf8").trim();
-      const stderr = Buffer.concat(errChunks).toString("utf8").trim();
-
-      if (code !== 0) {
-        let errMsg = `Python pipeline exited with code ${code}`;
-        try {
-          const parsed: PythonError = JSON.parse(stderr);
-          errMsg = parsed.error ?? errMsg;
-        } catch {
-          if (stderr) errMsg += `: ${stderr}`;
-        }
-        return reject(new Error(errMsg));
-      }
-
-      try {
-        const result = JSON.parse(stdout) as PythonResult | PythonError;
-        if (!result.success) {
-          return reject(new Error((result as PythonError).error));
-        }
-        resolve(result as PythonResult);
-      } catch {
-        reject(new Error(`Python pipeline returned unparseable output: ${stdout.slice(0, 200)}`));
-      }
+async function runPythonPipeline(
+  imageBase64: string,
+  mediaType: string
+): Promise<PythonServiceResult> {
+  let res: Response;
+  try {
+    res = await fetch(`${PYTHON_SERVICE_URL}/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image_base64: imageBase64, media_type: mediaType }),
     });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`Python service unreachable (${PYTHON_SERVICE_URL}): ${msg}`);
+  }
 
-    proc.on("error", (err) => {
-      reject(new Error(`Failed to start Python process: ${err.message}`));
-    });
-  });
+  if (!res.ok) {
+    let detail = `HTTP ${res.status}`;
+    try {
+      const body = await res.json() as { detail?: { error?: string } | string };
+      if (typeof body.detail === "string") detail = body.detail;
+      else if (typeof body.detail?.error === "string") detail = body.detail.error;
+    } catch { /* ignore parse errors */ }
+    throw new Error(`Python pipeline failed: ${detail}`);
+  }
+
+  return res.json() as Promise<PythonServiceResult>;
 }
 
 // ---------------------------------------------------------------------------
@@ -216,18 +194,18 @@ export async function POST(
   }
 
   // ---------------------------------------------------------------------------
-  // Full pipeline for user-uploaded images
+  // Full pipeline — call Python HTTP service for user-uploaded images
   // ---------------------------------------------------------------------------
-  const ext = mediaType.split("/")[1].replace("jpeg", "jpg");
-  const tmpPath = join(tmpdir(), `ecg-${randomUUID()}.${ext}`);
+  if (!process.env.PYTHON_SERVICE_URL) {
+    return NextResponse.json(
+      { success: false, error: "PYTHON_SERVICE_URL is not configured. Cannot analyze uploaded images." },
+      { status: 503 }
+    );
+  }
 
   try {
-    await writeFile(tmpPath, Buffer.from(imageBase64, "base64"));
+    const pythonResult = await runPythonPipeline(imageBase64, mediaType);
 
-    // Step 1: digitize + measure
-    const pythonResult = await runPythonPipeline(tmpPath);
-
-    // Step 2: Claude interprets measurements + image
     const result = await runClaudeInterpretation(
       imageBase64,
       mediaType,
@@ -244,7 +222,5 @@ export async function POST(
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json({ success: false, error: message }, { status: 500 });
-  } finally {
-    await unlink(tmpPath).catch(() => {});
   }
 }
