@@ -124,10 +124,18 @@ function LandingPage({ onEnter }: { onEnter: (tab: Tab) => void }) {
           </button>
         </div>
 
-        {/* Disclaimer */}
-        <p className="text-xs text-slate-400 text-center leading-relaxed">
-          For educational use only · Not a substitute for clinical judgment
-        </p>
+        {/* About + Disclaimer */}
+        <div className="flex flex-col items-center gap-2">
+          <button
+            onClick={() => onEnter("about")}
+            className="text-xs text-slate-400 hover:text-slate-600 transition-colors underline underline-offset-2"
+          >
+            About &amp; Credits
+          </button>
+          <p className="text-xs text-slate-400 text-center leading-relaxed">
+            For educational use only · Not a substitute for clinical judgment
+          </p>
+        </div>
       </div>
     </div>
   );
