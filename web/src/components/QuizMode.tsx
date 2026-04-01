@@ -128,7 +128,7 @@ export default function QuizMode({ cases }: QuizModeProps) {
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageBase64: base64, mediaType: "image/png" }),
+        body: JSON.stringify({ imageBase64: base64, mediaType: "image/png", caseId: current.id }),
       });
       const data = await res.json();
       if (data.success) setAiResult(data.result);

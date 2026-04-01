@@ -12,6 +12,7 @@ import { writeFile, unlink } from "fs/promises";
 import { tmpdir } from "os";
 import { join } from "path";
 import { randomUUID } from "crypto";
+import measurementsData from "@/data/measurements.json";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -25,13 +26,16 @@ const PYTHON_BIN = process.env.PYTHON_BIN ?? "python3";
 // Run the Python digitizer + BioSPPy pipeline
 // ---------------------------------------------------------------------------
 
-interface PythonResult {
-  success: true;
+interface PipelineData {
   measurements: Record<string, unknown>;
   claude_prompt: string;
   digitizer_method: string;
   leads_available: string[];
   sampling_rate: number;
+}
+
+interface PythonResult extends PipelineData {
+  success: true;
 }
 
 interface PythonError {
@@ -153,7 +157,7 @@ export async function POST(
     return NextResponse.json({ success: false, error: "Invalid request body" }, { status: 400 });
   }
 
-  const { imageBase64, mediaType } = body;
+  const { imageBase64, mediaType, caseId } = body;
   if (!imageBase64 || !mediaType) {
     return NextResponse.json(
       { success: false, error: "imageBase64 and mediaType are required" },
@@ -161,7 +165,35 @@ export async function POST(
     );
   }
 
-  // Write image to a temp file so the Python script can read it
+  // ---------------------------------------------------------------------------
+  // Use pre-computed measurements for known training cases (fast path)
+  // ---------------------------------------------------------------------------
+  const precomputed = caseId
+    ? (measurementsData as Record<string, PipelineData>)[caseId]
+    : undefined;
+
+  if (precomputed) {
+    try {
+      const result = await runClaudeInterpretation(
+        imageBase64,
+        mediaType,
+        precomputed.claude_prompt
+      );
+      if (!result.caveats) {
+        result.caveats =
+          `Pre-computed via ${precomputed.digitizer_method} at ${precomputed.sampling_rate} Hz. ` +
+          `Leads: ${precomputed.leads_available.join(", ")}.`;
+      }
+      return NextResponse.json({ success: true, result });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      return NextResponse.json({ success: false, error: message }, { status: 500 });
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Full pipeline for user-uploaded images
+  // ---------------------------------------------------------------------------
   const ext = mediaType.split("/")[1].replace("jpeg", "jpg");
   const tmpPath = join(tmpdir(), `ecg-${randomUUID()}.${ext}`);
 
@@ -178,7 +210,6 @@ export async function POST(
       pythonResult.claude_prompt
     );
 
-    // Attach signal metadata as a caveat note if not already present
     if (!result.caveats) {
       result.caveats =
         `Digitized via ${pythonResult.digitizer_method} at ${pythonResult.sampling_rate} Hz. ` +
@@ -190,7 +221,6 @@ export async function POST(
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   } finally {
-    // Always clean up the temp file
     await unlink(tmpPath).catch(() => {});
   }
 }

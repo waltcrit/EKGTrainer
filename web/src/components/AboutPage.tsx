@@ -13,13 +13,20 @@ export default function AboutPage() {
           <p className="text-sm text-slate-700 leading-relaxed">
             EKG Trainer is an educational tool for learning systematic ECG interpretation. It
             presents rhythm strips and 12-lead tracings in quiz and reference modes, backed by
-            AI-powered 9-step analysis using Claude. It is intended for medical students,
+            AI-powered analysis using Claude. It is intended for medical students,
             residents, nurses, and paramedics — not for clinical diagnosis.
           </p>
           <p className="text-sm text-slate-700 leading-relaxed">
             The systematic framework used throughout follows the standard 9-step approach: rate,
             rhythm, P waves, PR interval, QRS complex, ST segment, T waves, QTc, and clinical
             interpretation.
+          </p>
+          <p className="text-sm text-slate-700 leading-relaxed">
+            ECG analysis uses a signal processing pipeline: uploaded images are digitized to
+            extract waveform data, then BioSPPy measures intervals and detects features
+            algorithmically. These measurements are passed to Claude, which provides the
+            plain-language interpretation. This approach is significantly more accurate than
+            pure image-based AI analysis.
           </p>
         </div>
       </div>
@@ -96,6 +103,104 @@ export default function AboutPage() {
               . Derived ECG images in this app are used and distributed in compliance with that license.
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* ── Software credits ─────────────────────────────────────────────── */}
+      <div className="rounded-xl border border-emerald-100 bg-emerald-50 overflow-hidden">
+        <div className="px-5 py-4 border-b border-emerald-100">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">
+            Analysis Software
+          </p>
+        </div>
+        <div className="px-5 py-4 flex flex-col gap-3">
+
+          {/* BioSPPy */}
+          <div className="rounded-lg bg-white border border-emerald-100 px-4 py-3 flex flex-col gap-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
+              BioSPPy — Signal Processing
+            </p>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              Carreiras C, Alves AP, Lourenço A, Canento F, Silva H, Fred A, et al.
+              BioSPPy: Biosignal Processing in Python. 2015.{" "}
+              <a
+                href="https://github.com/PIA-Group/BioSPPy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-700 hover:text-emerald-900 underline underline-offset-2"
+              >
+                github.com/PIA-Group/BioSPPy
+              </a>
+            </p>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Used for R-peak detection, RR interval measurement, QRS width estimation,
+              and rhythm regularity classification.
+            </p>
+          </div>
+
+          {/* ECG-Digitiser */}
+          <div className="rounded-lg bg-white border border-emerald-100 px-4 py-3 flex flex-col gap-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
+              ECG-Digitiser — Image Digitization
+            </p>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              Krones F. ECG-Digitiser. Winner, George B. Moody PhysioNet Challenge 2024:
+              Digitization and Classification of ECG Images. 2024.{" "}
+              <a
+                href="https://github.com/felixkrones/ECG-Digitiser"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-700 hover:text-emerald-900 underline underline-offset-2"
+              >
+                github.com/felixkrones/ECG-Digitiser
+              </a>
+            </p>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Used to convert uploaded ECG images to digital waveforms prior to signal analysis.
+            </p>
+          </div>
+
+          {/* PhysioNet Challenge */}
+          <div className="rounded-lg bg-white border border-emerald-100 px-4 py-3 flex flex-col gap-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
+              George B. Moody PhysioNet Challenge 2024
+            </p>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              Reyna MA, Deepanshi, Weigle J, Kiyasseh D, Elola A, Rad AB, Seyedi S,
+              McDonald A, Clifford GD, Sameni R. Digitization and Classification of ECG Images:
+              The PhysioNet/Computing in Cardiology Challenge 2024.{" "}
+              <a
+                href="https://moody-challenge.physionet.org/2024/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-700 hover:text-emerald-900 underline underline-offset-2"
+              >
+                moody-challenge.physionet.org/2024
+              </a>
+            </p>
+          </div>
+
+          {/* Claude / Anthropic */}
+          <div className="rounded-lg bg-white border border-emerald-100 px-4 py-3 flex flex-col gap-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
+              Claude — AI Interpretation
+            </p>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              Anthropic. Claude (claude-sonnet-4-6). 2024.{" "}
+              <a
+                href="https://www.anthropic.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-700 hover:text-emerald-900 underline underline-offset-2"
+              >
+                anthropic.com
+              </a>
+            </p>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Provides plain-language rhythm interpretation guided by signal-derived measurements.
+            </p>
+          </div>
+
         </div>
       </div>
 
