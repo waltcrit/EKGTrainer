@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(git checkout:*)",
+      "Bash(pip3 --version)",
+      "Bash(python3 -m venv /Users/waltcrit/EKGTrainer/.venv)",
+      "Bash(source /Users/waltcrit/EKGTrainer/.venv/bin/activate)",
+      "Bash(python3 -c \"import biosppy; import cv2; import numpy; print\\(''biosppy:'', biosppy.__version__\\); print\\(''numpy:'', numpy.__version__\\); print\\(''cv2:'', cv2.__version__\\)\")",
+      "Bash(python3 -c \"import biosppy; print\\(''''biosppy OK:'''', biosppy.__version__\\)\")",
+      "Bash(python3 /Users/waltcrit/EKGTrainer/python/analyze_ecg.py --image /Users/waltcrit/EKGTrainer/web/public/cases/nsr_01.png)",
+      "Bash(python3 -c \":*)",
+      "Bash(python3 -m json.tool)",
+      "Bash(for case:*)",
+      "Bash(do echo:*)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); m=d[''''measurements'''']; print\\(f''''  HR: {m[\"\"heart_rate_bpm\"\"]:.0f} bpm | regularity: {m[\"\"regularity\"\"]} | beats: {m[\"\"num_beats\"\"]} | P-waves: {m[\"\"p_waves_present\"\"]} | QRS: {m[\"\"qrs_duration_ms\"\"]} ms | QRS wide: {m[\"\"qrs_wide\"\"]}''''\\)\" done)",
+      "Bash(npx tsc:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(source .venv/bin/activate)",
+      "Bash(python python/precompute_measurements.py)",
+      "Bash(python3 -c \"from ecg_digitiser.digitiser import ECGDigitiser; print\\(''installed''\\)\")",
+      "Bash(python3 -c \"from ecg_digitiser.digitiser import ECGDigitiser; print\\(''installed OK''\\)\")",
+      "Bash(python3 -c \"import pkg_resources; [print\\(p\\) for p in pkg_resources.working_set if ''ecg'' in p.project_name.lower\\(\\) or ''digit'' in p.project_name.lower\\(\\)]\")",
+      "Bash(pip show:*)",
+      "Bash(python3 -c \"import importlib; print\\(importlib.util.find_spec\\(''ecg_digitiser''\\)\\)\")",
+      "Bash(python3 -c \"import run.digitize as d; print\\(''''OK''''\\)\")",
+      "Read(//private/tmp/ecg-digitiser/src/**)",
+      "Read(//private/tmp/ecg-digitiser/**)"
+    ]
+  }
+}

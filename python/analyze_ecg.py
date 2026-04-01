@@ -66,48 +66,120 @@ def digitize_image(image_path: str) -> dict:
     return _fallback_digitize(image_path)
 
 
+def _detect_grid_calibration(gray: np.ndarray) -> dict:
+    """
+    Detect ECG paper grid spacing using FFT on row/column projections.
+
+    Standard ECG paper: 25 mm/s, 10 mm/mV.
+    Small squares: 1 mm = 40 ms horizontal, 0.1 mV vertical.
+
+    Returns dict with keys: sampling_rate_hz, pixels_per_mv, grid_px_horiz.
+    Returns None if grid cannot be confidently detected.
+    """
+    h, w = gray.shape
+
+    # ── Horizontal axis (time) ────────────────────────────────────────────
+    col_sum = gray.astype(float).sum(axis=0)
+    col_sum -= col_sum.mean()
+    fft_h = np.abs(np.fft.rfft(col_sum))
+    freqs_h = np.fft.rfftfreq(w)
+
+    # Search for the 1 mm small-square period: typically 4–25 px at 96–300 dpi
+    with np.errstate(divide="ignore", invalid="ignore"):
+        periods_h = np.where(freqs_h > 0, 1.0 / freqs_h, np.inf)
+    mask_h = (4 < periods_h) & (periods_h < 25)
+    if not mask_h.any():
+        return None
+    grid_px_horiz = float(periods_h[np.argmax(fft_h * mask_h)])
+
+    # Confidence check: peak should be meaningfully above neighbours
+    peak_mag = float(np.max(fft_h * mask_h))
+    mean_mag = float(np.mean(fft_h[mask_h]))
+    if peak_mag < mean_mag * 3:
+        return None  # no clear periodic signal
+
+    # 1 mm small square = 40 ms at 25 mm/s
+    sampling_rate_hz = grid_px_horiz / 0.040
+
+    # ── Vertical axis (amplitude) ─────────────────────────────────────────
+    # If vertical grid detection is unreliable, derive from horizontal
+    # (both axes share the same mm/px ratio on square-grid paper).
+    # pixels_per_mv = px_per_mm × 10 mm/mV = grid_px_horiz × 10
+    pixels_per_mv = grid_px_horiz * 10.0
+
+    return {
+        "sampling_rate_hz": sampling_rate_hz,
+        "pixels_per_mv":    pixels_per_mv,
+        "grid_px_horiz":    grid_px_horiz,
+    }
+
+
 def _fallback_digitize(image_path: str) -> dict:
     """
-    Minimal fallback digitizer: finds the darkest horizontal trace in a
-    rhythm strip image and converts it to a 1-D signal.
+    Grid-calibrated OpenCV digitizer.
 
-    This is intentionally simple — if ECG-Digitiser is installed this is
-    never called.
+    Detects the ECG paper grid via FFT to determine the true sampling rate,
+    then traces the waveform and normalizes the signal for BioSPPy.
     """
     try:
         import cv2
     except ImportError:
         raise RuntimeError(
-            "Neither ecg-digitiser nor opencv-python is installed. "
-            "Cannot digitize ECG image."
+            "opencv-python is not installed. Cannot digitize ECG image."
         )
 
-    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    if img is None:
+    img_bgr = cv2.imread(image_path)
+    if img_bgr is None:
         raise RuntimeError(f"Could not read image: {image_path}")
 
-    # Invert so the dark ECG trace becomes bright
-    img = 255 - img
+    gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
+    h, w = gray.shape
 
-    # For each column, find the y-coordinate of the brightest pixel (= trace peak)
-    signal = np.argmax(img, axis=0).astype(float)
+    # ── Step 1: calibrate sampling rate from grid ─────────────────────────
+    cal = _detect_grid_calibration(gray)
+    if cal:
+        sampling_rate = int(round(cal["sampling_rate_hz"]))
+        method = f"fallback-opencv-calibrated({sampling_rate}Hz)"
+    else:
+        sampling_rate = 179   # observed default across our image set
+        method = "fallback-opencv-uncalibrated"
 
-    # Flip so upward deflection = positive
-    signal = (img.shape[0] - 1) - signal
+    # ── Step 2: isolate and trace the ECG waveform ────────────────────────
+    # Invert so the dark ECG trace becomes the brightest feature per column.
+    inv = (255 - gray).astype(float)
 
-    # Normalize to approximate mV range (-2 to +2 mV)
-    signal = signal - np.mean(signal)
+    # Trim the leftmost and rightmost 1% of columns — they often contain
+    # border lines or labels that would be picked up by argmax.
+    margin = max(1, w // 100)
+    inv[:, :margin]  = 0
+    inv[:, -margin:] = 0
+
+    # Also zero out the top and bottom 5% of rows to ignore frame borders.
+    v_margin = max(1, h // 20)
+    inv[:v_margin, :] = 0
+    inv[-v_margin:, :] = 0
+
+    # For each column, find the row of the darkest (brightest-after-invert) pixel.
+    trace_row = np.argmax(inv, axis=0).astype(float)
+
+    # Flip: row 0 is top of image; upward deflections → smaller row index.
+    signal = (h - 1) - trace_row
+
+    # ── Step 3: baseline-correct and normalize ────────────────────────────
+    # Remove slow baseline wander with a wide median filter, then scale to
+    # a physiologically plausible mV range so BioSPPy's thresholds work.
+    from scipy.ndimage import median_filter
+    bl_window = max(3, int(sampling_rate * 0.6) | 1)  # must be odd
+    baseline = median_filter(signal, size=bl_window, mode="nearest")
+    signal = signal - baseline
+
     if signal.std() > 0:
-        signal = signal / signal.std() * 0.5  # rough mV normalization
-
-    # Assume ~25 mm/s paper speed, ~300 dpi => ~295 pixels/s => ~295 Hz
-    # Use 300 Hz as a safe round estimate
-    sampling_rate = 300
+        signal = signal / signal.std() * 0.5   # normalize to ≈ ±0.5 mV std
 
     return {
-        "signals": {"II": signal},
+        "signals":       {"II": signal},
         "sampling_rate": sampling_rate,
-        "method": "fallback-opencv",
+        "method":        method,
     }
 
 
