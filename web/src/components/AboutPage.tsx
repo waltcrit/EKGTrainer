@@ -186,7 +186,7 @@ export default function AboutPage() {
               Claude — AI Interpretation
             </p>
             <p className="text-xs text-slate-700 leading-relaxed">
-              Anthropic. Claude (claude-sonnet-4-6). 2024.{" "}
+              Anthropic. Claude (claude-haiku-4-5). 2024.{" "}
               <a
                 href="https://www.anthropic.com"
                 target="_blank"
