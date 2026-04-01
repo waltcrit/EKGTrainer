@@ -96,8 +96,8 @@ async function runClaudeInterpretation(
   claudePrompt: string
 ): Promise<EKGAnalysisResult> {
   const message = await anthropic.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 1024,
+    model: process.env.CLAUDE_MODEL ?? "claude-haiku-4-5-20251001",
+    max_tokens: 4096,
     messages: [
       {
         role: "user",
@@ -150,6 +150,16 @@ export async function POST(
     );
   }
 
+  // Reject oversized requests before parsing JSON (~4 MB base64 ≈ ~3 MB image)
+  const contentLength = Number(req.headers.get("content-length") ?? 0);
+  const MAX_BYTES = 4 * 1024 * 1024; // 4 MB
+  if (contentLength > MAX_BYTES) {
+    return NextResponse.json(
+      { success: false, error: "Request too large. Maximum image size is ~3 MB." },
+      { status: 413 }
+    );
+  }
+
   let body: AnalyzeRequest;
   try {
     body = await req.json();
@@ -158,10 +168,24 @@ export async function POST(
   }
 
   const { imageBase64, mediaType, caseId } = body;
-  if (!imageBase64 || !mediaType) {
+
+  const VALID_MEDIA_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"] as const;
+  if (
+    typeof imageBase64 !== "string" || !imageBase64 ||
+    !VALID_MEDIA_TYPES.includes(mediaType as (typeof VALID_MEDIA_TYPES)[number])
+  ) {
     return NextResponse.json(
-      { success: false, error: "imageBase64 and mediaType are required" },
+      { success: false, error: "imageBase64 (string) and valid mediaType are required" },
       { status: 400 }
+    );
+  }
+
+  // Guard against Content-Length bypass: check actual decoded size
+  const decodedBytes = Math.floor(imageBase64.length * 0.75);
+  if (decodedBytes > MAX_BYTES) {
+    return NextResponse.json(
+      { success: false, error: "Image too large. Maximum size is ~3 MB." },
+      { status: 413 }
     );
   }
 

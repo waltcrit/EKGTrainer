@@ -147,9 +147,10 @@ export default function Home() {
   const [analyzeState, setAnalyzeState] = useState<AnalyzeState>("idle");
   const [result, setResult] = useState<EKGAnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [practiceCase, setPracticeCase] = useState<EKGCase | null>(null);
 
   const handlePracticeFromLibrary = (c: EKGCase) => {
-    void c; // handed off through QuizMode's initial case prop in future
+    setPracticeCase(c);
     setTab("practice");
   };
 
@@ -211,7 +212,7 @@ export default function Home() {
       {/* ── Main content ────────────────────────────────────────────────── */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-6">
 
-        {tab === "practice" && <QuizMode cases={cases} />}
+        {tab === "practice" && <QuizMode cases={cases} initialCase={practiceCase} />}
 
         {tab === "library" && (
           <CaseLibrary cases={cases} onPractice={handlePracticeFromLibrary} />

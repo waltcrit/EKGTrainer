@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { EKGCase, RhythmCategory } from "@/types/cases";
 import { CATEGORY_LABELS } from "@/types/cases";
 import type { EKGAnalysisResult as AnalysisResult } from "@/types/analysis";
@@ -8,6 +8,7 @@ import RhythmReport from "./RhythmReport";
 
 interface QuizModeProps {
   cases: EKGCase[];
+  initialCase?: EKGCase | null;
 }
 
 type QuizState = "question" | "revealed" | "analyzing";
@@ -51,7 +52,7 @@ function buildChoices(correct: EKGCase, all: EKGCase[]): string[] {
   return shuffle([correct.rhythm, ...wrong]);
 }
 
-export default function QuizMode({ cases }: QuizModeProps) {
+export default function QuizMode({ cases, initialCase }: QuizModeProps) {
   const [queue, setQueue]               = useState<EKGCase[]>(cases);
   const [index, setIndex]               = useState(0);
   const [state, setState]               = useState<QuizState>("question");
@@ -80,6 +81,23 @@ export default function QuizMode({ cases }: QuizModeProps) {
     setAiError(null);
     setShowTwelveLead(false);
   }, [cases, selectedCategories]);
+
+  // Jump to a specific case when launched from the Library
+  useEffect(() => {
+    if (!initialCase) return;
+    // Reset filter so the case is always reachable
+    setSelectedCategories(new Set(ALL_CATEGORIES));
+    // Place the target case first in a freshly shuffled queue
+    const rest = shuffle(cases.filter((c) => c.id !== initialCase.id));
+    setQueue([initialCase, ...rest]);
+    setIndex(0);
+    setState("question");
+    setSelected(null);
+    setAiResult(null);
+    setAiError(null);
+    setShowTwelveLead(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-run when the target case id changes
+  }, [initialCase?.id]);
 
   const current = queue[index % queue.length];
   const choices = useMemo(
