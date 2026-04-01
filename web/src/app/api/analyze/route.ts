@@ -1,6 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
-import { EKG_ANALYSIS_PROMPT } from "@/lib/prompt";
 import { checkRateLimit } from "@/lib/rateLimit";
 import type {
   AnalyzeRequest,
@@ -8,10 +7,121 @@ import type {
   AnalyzeErrorResponse,
   EKGAnalysisResult,
 } from "@/types/analysis";
+import { spawn } from "child_process";
+import { writeFile, unlink } from "fs/promises";
+import { tmpdir } from "os";
+import { join } from "path";
+import { randomUUID } from "crypto";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
+
+// Path to the Python script, relative to project root
+const PYTHON_SCRIPT = join(process.cwd(), "..", "python", "analyze_ecg.py");
+const PYTHON_BIN = process.env.PYTHON_BIN ?? "python3";
+
+// ---------------------------------------------------------------------------
+// Run the Python digitizer + BioSPPy pipeline
+// ---------------------------------------------------------------------------
+
+interface PythonResult {
+  success: true;
+  measurements: Record<string, unknown>;
+  claude_prompt: string;
+  digitizer_method: string;
+  leads_available: string[];
+  sampling_rate: number;
+}
+
+interface PythonError {
+  success: false;
+  error: string;
+  traceback?: string;
+}
+
+async function runPythonPipeline(imagePath: string): Promise<PythonResult> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    const errChunks: Buffer[] = [];
+
+    const proc = spawn(PYTHON_BIN, [PYTHON_SCRIPT, "--image", imagePath]);
+
+    proc.stdout.on("data", (chunk: Buffer) => chunks.push(chunk));
+    proc.stderr.on("data", (chunk: Buffer) => errChunks.push(chunk));
+
+    proc.on("close", (code) => {
+      const stdout = Buffer.concat(chunks).toString("utf8").trim();
+      const stderr = Buffer.concat(errChunks).toString("utf8").trim();
+
+      if (code !== 0) {
+        let errMsg = `Python pipeline exited with code ${code}`;
+        try {
+          const parsed: PythonError = JSON.parse(stderr);
+          errMsg = parsed.error ?? errMsg;
+        } catch {
+          if (stderr) errMsg += `: ${stderr}`;
+        }
+        return reject(new Error(errMsg));
+      }
+
+      try {
+        const result = JSON.parse(stdout) as PythonResult | PythonError;
+        if (!result.success) {
+          return reject(new Error((result as PythonError).error));
+        }
+        resolve(result as PythonResult);
+      } catch {
+        reject(new Error(`Python pipeline returned unparseable output: ${stdout.slice(0, 200)}`));
+      }
+    });
+
+    proc.on("error", (err) => {
+      reject(new Error(`Failed to start Python process: ${err.message}`));
+    });
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Call Claude with measurements + image for final interpretation
+// ---------------------------------------------------------------------------
+
+async function runClaudeInterpretation(
+  imageBase64: string,
+  mediaType: AnalyzeRequest["mediaType"],
+  claudePrompt: string
+): Promise<EKGAnalysisResult> {
+  const message = await anthropic.messages.create({
+    model: "claude-sonnet-4-6",
+    max_tokens: 1024,
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "image",
+            source: { type: "base64", media_type: mediaType, data: imageBase64 },
+          },
+          { type: "text", text: claudePrompt },
+        ],
+      },
+    ],
+  });
+
+  const responseText =
+    message.content[0].type === "text" ? message.content[0].text : "";
+
+  const cleaned = responseText
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+
+  return JSON.parse(cleaned) as EKGAnalysisResult;
+}
+
+// ---------------------------------------------------------------------------
+// Route handler
+// ---------------------------------------------------------------------------
 
 export async function POST(
   req: NextRequest
@@ -31,14 +141,8 @@ export async function POST(
   const rate = checkRateLimit(ip);
   if (!rate.allowed) {
     return NextResponse.json(
-      {
-        success: false,
-        error: `Rate limit reached. Try again in ${rate.resetInSeconds} seconds.`,
-      },
-      {
-        status: 429,
-        headers: { "Retry-After": String(rate.resetInSeconds) },
-      }
+      { success: false, error: `Rate limit reached. Try again in ${rate.resetInSeconds} seconds.` },
+      { status: 429, headers: { "Retry-After": String(rate.resetInSeconds) } }
     );
   }
 
@@ -46,14 +150,10 @@ export async function POST(
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json(
-      { success: false, error: "Invalid request body" },
-      { status: 400 }
-    );
+    return NextResponse.json({ success: false, error: "Invalid request body" }, { status: 400 });
   }
 
   const { imageBase64, mediaType } = body;
-
   if (!imageBase64 || !mediaType) {
     return NextResponse.json(
       { success: false, error: "imageBase64 and mediaType are required" },
@@ -61,56 +161,36 @@ export async function POST(
     );
   }
 
+  // Write image to a temp file so the Python script can read it
+  const ext = mediaType.split("/")[1].replace("jpeg", "jpg");
+  const tmpPath = join(tmpdir(), `ecg-${randomUUID()}.${ext}`);
+
   try {
-    const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 1024,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "image",
-              source: {
-                type: "base64",
-                media_type: mediaType,
-                data: imageBase64,
-              },
-            },
-            {
-              type: "text",
-              text: EKG_ANALYSIS_PROMPT,
-            },
-          ],
-        },
-      ],
-    });
+    await writeFile(tmpPath, Buffer.from(imageBase64, "base64"));
 
-    const responseText =
-      message.content[0].type === "text" ? message.content[0].text : "";
+    // Step 1: digitize + measure
+    const pythonResult = await runPythonPipeline(tmpPath);
 
-    // Strip any markdown code fences if present
-    const cleaned = responseText
-      .replace(/^```(?:json)?\s*/i, "")
-      .replace(/\s*```$/, "")
-      .trim();
+    // Step 2: Claude interprets measurements + image
+    const result = await runClaudeInterpretation(
+      imageBase64,
+      mediaType,
+      pythonResult.claude_prompt
+    );
 
-    let result: EKGAnalysisResult;
-    try {
-      result = JSON.parse(cleaned);
-    } catch {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Model returned unparseable response: " + responseText,
-        },
-        { status: 502 }
-      );
+    // Attach signal metadata as a caveat note if not already present
+    if (!result.caveats) {
+      result.caveats =
+        `Digitized via ${pythonResult.digitizer_method} at ${pythonResult.sampling_rate} Hz. ` +
+        `Leads: ${pythonResult.leads_available.join(", ")}.`;
     }
 
     return NextResponse.json({ success: true, result });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json({ success: false, error: message }, { status: 500 });
+  } finally {
+    // Always clean up the temp file
+    await unlink(tmpPath).catch(() => {});
   }
 }

@@ -1,0 +1,18 @@
+# ECG image digitization
+# ECG-Digitiser (PhysioNet 2024 Challenge winner)
+# Install from GitHub — not yet on PyPI
+# In Dockerfile: RUN pip install git+https://github.com/felixkrones/ECG-Digitiser.git
+# Listed here for documentation; the Dockerfile handles the actual install.
+# ecg-digitiser
+
+# Fallback digitizer dependency (used if ecg-digitiser not available)
+opencv-python-headless>=4.8.0
+
+# Signal processing
+biosppy>=0.8.0
+peakutils>=1.3.0
+numpy>=1.24.0
+scipy>=1.11.0
+
+# Image handling
+Pillow>=10.0.0

@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { EKGCase } from "@/types/cases";
+import type { EKGCase, RhythmCategory } from "@/types/cases";
+import { CATEGORY_LABELS } from "@/types/cases";
 import type { EKGAnalysisResult as AnalysisResult } from "@/types/analysis";
 import RhythmReport from "./RhythmReport";
 
@@ -25,6 +26,11 @@ const DIFF_CONFIG: Record<number, { label: string; dot: string; text: string }> 
   3: { label: "Advanced",     dot: "bg-orange-400",  text: "text-orange-700"  },
   4: { label: "Expert",       dot: "bg-red-400",     text: "text-red-700"     },
 };
+
+const ALL_CATEGORIES = new Set<RhythmCategory>([
+  "sinus", "atrial", "supraventricular", "av_block", "bundle_branch",
+  "junctional", "ventricular", "stemi", "nstemi", "pe_strain", "channelopathy", "pacemaker",
+]);
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -55,8 +61,25 @@ export default function QuizMode({ cases }: QuizModeProps) {
   const [aiError, setAiError]           = useState<string | null>(null);
   const [stats, setStats]               = useState<SessionStats>({ attempted: 0, correct: 0, byCategory: {} });
   const [mounted, setMounted]           = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<Set<RhythmCategory>>(
+    new Set(ALL_CATEGORIES)
+  );
 
-  useEffect(() => { setQueue(shuffle(cases)); setMounted(true); }, [cases]);
+  useEffect(() => { setMounted(true); }, []);
+
+  useEffect(() => {
+    const active = selectedCategories.size === ALL_CATEGORIES.size
+      ? cases
+      : cases.filter((c) => selectedCategories.has(c.category));
+    if (active.length === 0) return;
+    setQueue(shuffle(active));
+    setIndex(0);
+    setState("question");
+    setSelected(null);
+    setAiResult(null);
+    setAiError(null);
+    setShowTwelveLead(false);
+  }, [cases, selectedCategories]);
 
   const current = queue[index % queue.length];
   const choices = useMemo(
@@ -68,6 +91,11 @@ export default function QuizMode({ cases }: QuizModeProps) {
   const accuracyPct = stats.attempted > 0
     ? Math.round((stats.correct / stats.attempted) * 100)
     : null;
+  const isAllSelected = selectedCategories.size === ALL_CATEGORIES.size;
+  const activeCaseCount = isAllSelected
+    ? cases.length
+    : cases.filter((c) => selectedCategories.has(c.category)).length;
+  const tooFewCases = activeCaseCount < 4;
 
   const handleSelect = (choice: string) => {
     if (state !== "question") return;
@@ -120,6 +148,29 @@ export default function QuizMode({ cases }: QuizModeProps) {
     setShowTwelveLead(false);
   };
 
+  const handleSkip = () => {
+    setIndex((i) => i + 1);
+    setState("question");
+    setSelected(null);
+    setAiResult(null);
+    setAiError(null);
+    setShowTwelveLead(false);
+    // does NOT update stats
+  };
+
+  const toggleCategory = useCallback((cat: RhythmCategory) => {
+    setSelectedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat); else next.add(cat);
+      if (next.size === 0) return prev;
+      return next;
+    });
+  }, []);
+
+  const resetToAll = useCallback(() => {
+    setSelectedCategories(new Set(ALL_CATEGORIES));
+  }, []);
+
   if (!mounted) return null;
 
   const showingTwelveLead = showTwelveLead || state === "revealed" || state === "analyzing";
@@ -152,6 +203,52 @@ export default function QuizMode({ cases }: QuizModeProps) {
             <span className="font-medium">{accuracyPct}%</span>
           </div>
         )}
+      </div>
+
+      {/* ── Category filter ────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap gap-1.5">
+          <button
+            onClick={resetToAll}
+            className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+              isAllSelected
+                ? "bg-slate-900 text-white shadow-sm"
+                : "bg-white border border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-800"
+            }`}
+          >
+            All · {cases.length}
+          </button>
+          {Array.from(ALL_CATEGORIES).map((cat) => {
+            const count = cases.filter((c) => c.category === cat).length;
+            const isActive = !isAllSelected && selectedCategories.has(cat);
+            return (
+              <button
+                key={cat}
+                onClick={() => toggleCategory(cat)}
+                className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                  isActive
+                    ? "bg-slate-900 text-white shadow-sm"
+                    : "bg-white border border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-800"
+                }`}
+              >
+                {CATEGORY_LABELS[cat]} · {count}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-2 px-0.5">
+          <span className="text-xs text-slate-500">
+            <span className="font-semibold text-slate-700">{activeCaseCount}</span> case{activeCaseCount !== 1 ? "s" : ""}
+          </span>
+          {tooFewCases && (
+            <span className="flex items-center gap-1 text-xs text-amber-600 font-medium">
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+              </svg>
+              Need ≥ 4 cases for varied choices
+            </span>
+          )}
+        </div>
       </div>
 
       {/* ── EKG image ──────────────────────────────────────────────────── */}
@@ -214,6 +311,24 @@ export default function QuizMode({ cases }: QuizModeProps) {
               </button>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* ── Skip button (question phase only) ─────────────────────────── */}
+      {state === "question" && (
+        <div className="flex justify-center">
+          <button
+            onClick={handleSkip}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-slate-200
+                       bg-white text-slate-500 text-sm
+                       hover:border-slate-300 hover:text-slate-600 transition-all duration-150"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+            Skip
+          </button>
         </div>
       )}
 
