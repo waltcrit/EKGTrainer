@@ -65,6 +65,67 @@ async function runPythonPipeline(
 }
 
 // ---------------------------------------------------------------------------
+// Direct Claude vision analysis — used when PYTHON_SERVICE_URL is not set
+// ---------------------------------------------------------------------------
+
+const DIRECT_CLAUDE_PROMPT = `You are an expert cardiologist performing a systematic ECG interpretation. Analyze this ECG image carefully and return ONLY a valid JSON object matching exactly this structure (no markdown, no extra text):
+
+{
+  "rate": { "bpm": <number>, "rr_intervals_ms": [<numbers>], "category": "bradycardia"|"normal"|"tachycardia", "method": "visual", "confidence": <0-1> },
+  "rhythm": { "regularity": "regular"|"regularly_irregular"|"irregularly_irregular", "confidence": <0-1> },
+  "p_waves": { "present": <bool>, "morphology": <string|null>, "ratio": <string|null>, "confidence": <0-1> },
+  "pr_interval": { "ms": <number|null>, "measured_beats": [<numbers>], "normal": <bool|null>, "fixed": <bool|null>, "confidence": <0-1> },
+  "qrs": { "duration_ms": <number|null>, "measured_beats_ms": [<numbers>], "wide": <bool>, "morphology": <string|null>, "confidence": <0-1> },
+  "st_segment": { "elevation": <bool>, "depression": <bool>, "details": <string|null>, "confidence": <0-1> },
+  "t_waves": { "morphology": <string|null>, "confidence": <0-1> },
+  "qtc": { "ms": <number|null>, "measured_qt_ms": [<numbers>], "prolonged": <bool|null>, "confidence": <0-1> },
+  "primary_rhythm": "<string>",
+  "overall_confidence": <0-1>,
+  "differentials": ["<string>", ...],
+  "explanation": "<detailed systematic interpretation>",
+  "image_quality": "good"|"fair"|"poor",
+  "caveats": "<string|null>"
+}
+
+Be systematic: rate → rhythm → axis → P waves → PR → QRS → ST/T → QTc → impression.`;
+
+async function runDirectClaudeAnalysis(
+  imageBase64: string,
+  mediaType: AnalyzeRequest["mediaType"]
+): Promise<EKGAnalysisResult> {
+  const message = await anthropic.messages.create({
+    model: process.env.CLAUDE_MODEL ?? "claude-haiku-4-5-20251001",
+    max_tokens: 4096,
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "image",
+            source: { type: "base64", media_type: mediaType, data: imageBase64 },
+          },
+          { type: "text", text: DIRECT_CLAUDE_PROMPT },
+        ],
+      },
+    ],
+  });
+
+  const responseText =
+    message.content[0].type === "text" ? message.content[0].text : "";
+
+  const cleaned = responseText
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+
+  const result = JSON.parse(cleaned) as EKGAnalysisResult;
+  if (!result.caveats) {
+    result.caveats = "Visual analysis only — no signal digitization was performed. Measurements are estimates.";
+  }
+  return result;
+}
+
+// ---------------------------------------------------------------------------
 // Call Claude with measurements + image for final interpretation
 // ---------------------------------------------------------------------------
 
@@ -194,13 +255,17 @@ export async function POST(
   }
 
   // ---------------------------------------------------------------------------
-  // Full pipeline — call Python HTTP service for user-uploaded images
+  // Full pipeline — call Python HTTP service for user-uploaded images,
+  // or fall back to direct Claude vision analysis if service is not configured.
   // ---------------------------------------------------------------------------
   if (!process.env.PYTHON_SERVICE_URL) {
-    return NextResponse.json(
-      { success: false, error: "PYTHON_SERVICE_URL is not configured. Cannot analyze uploaded images." },
-      { status: 503 }
-    );
+    try {
+      const result = await runDirectClaudeAnalysis(imageBase64, mediaType);
+      return NextResponse.json({ success: true, result });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      return NextResponse.json({ success: false, error: message }, { status: 500 });
+    }
   }
 
   try {
