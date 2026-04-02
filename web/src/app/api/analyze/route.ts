@@ -126,12 +126,10 @@ async function runDirectClaudeAnalysis(
 }
 
 // ---------------------------------------------------------------------------
-// Call Claude with measurements + image for final interpretation
+// Call Claude with measurements only for final interpretation (no image)
 // ---------------------------------------------------------------------------
 
 async function runClaudeInterpretation(
-  imageBase64: string,
-  mediaType: AnalyzeRequest["mediaType"],
   claudePrompt: string
 ): Promise<EKGAnalysisResult> {
   const message = await anthropic.messages.create({
@@ -141,10 +139,6 @@ async function runClaudeInterpretation(
       {
         role: "user",
         content: [
-          {
-            type: "image",
-            source: { type: "base64", media_type: mediaType, data: imageBase64 },
-          },
           { type: "text", text: claudePrompt },
         ],
       },
@@ -237,11 +231,7 @@ export async function POST(
 
   if (precomputed) {
     try {
-      const result = await runClaudeInterpretation(
-        imageBase64,
-        mediaType,
-        precomputed.claude_prompt
-      );
+      const result = await runClaudeInterpretation(precomputed.claude_prompt);
       if (!result.caveats) {
         result.caveats =
           `Pre-computed via ${precomputed.digitizer_method} at ${precomputed.sampling_rate} Hz. ` +
@@ -271,11 +261,7 @@ export async function POST(
   try {
     const pythonResult = await runPythonPipeline(imageBase64, mediaType);
 
-    const result = await runClaudeInterpretation(
-      imageBase64,
-      mediaType,
-      pythonResult.claude_prompt
-    );
+    const result = await runClaudeInterpretation(pythonResult.claude_prompt);
 
     if (!result.caveats) {
       result.caveats =
