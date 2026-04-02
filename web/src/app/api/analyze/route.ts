@@ -231,6 +231,7 @@ export async function POST(
 
   if (precomputed) {
     try {
+      console.log(`\n=== CLAUDE PROMPT for caseId=${caseId} ===\n${precomputed.claude_prompt}\n=== END PROMPT ===\n`);
       const result = await runClaudeInterpretation(precomputed.claude_prompt);
       if (!result.caveats) {
         result.caveats =
