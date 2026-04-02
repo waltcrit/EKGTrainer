@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   getAcademyLocation,
@@ -16,17 +16,24 @@ import {
  * Mount this component anywhere inside the Trainer page (e.g. just below the
  * tab navigation bar). It is invisible when there is no saved return path.
  *
- * Hydration safety: all sessionStorage access is deferred to useEffect,
- * so the component renders null on the server and on first client paint,
- * then shows the banner after hydration if a return path exists.
+ * Hydration safety:
+ *   This component is only ever mounted client-side — it is behind the
+ *   `landed` conditional inside app/page.tsx, whose initial render (server +
+ *   first client paint) always shows <LandingPage>, not this banner.
+ *   Because there is no server-rendered HTML to hydrate against, we can safely
+ *   read sessionStorage in the useState lazy initializer without triggering a
+ *   hydration mismatch. No useEffect is needed.
+ *
+ *   getAcademyLocation() already guards `typeof window === "undefined"` and
+ *   returns null on the server, so the lazy initializer is SSR-safe.
  */
 export default function ReturnToAcademy() {
-  const [location, setLocation] = useState<AcademyLocation | null>(null);
+  // Lazy initializer: reads sessionStorage on first client render.
+  // Safe — see hydration note above.
+  const [location, setLocation] = useState<AcademyLocation | null>(
+    () => getAcademyLocation()
+  );
   const router = useRouter();
-
-  useEffect(() => {
-    setLocation(getAcademyLocation());
-  }, []);
 
   if (!location) return null;
 
@@ -36,12 +43,11 @@ export default function ReturnToAcademy() {
 
   function handleReturn() {
     if (!location) return;
-    // Write the scroll target before navigating so ScrollRestorer can pick it up.
+    // Write scroll target before navigating so ScrollRestorer can pick it up.
     savePendingScroll(location.scrollY);
     clearAcademyLocation();
     setLocation(null);
-    // Next.js App Router: push to the full href.
-    // pathname + search + hash is enough; origin is stripped by the router.
+    // Strip origin; Next.js router handles pathname + search + hash.
     const url = new URL(location.href);
     router.push(url.pathname + url.search + url.hash);
   }
