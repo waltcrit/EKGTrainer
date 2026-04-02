@@ -9,18 +9,38 @@ import LoadStripButton from "@/components/learn/LoadStripButton";
 import IdentifyPWave from "@/components/learn/IdentifyPWave";
 import MeasureInterval from "@/components/learn/MeasureInterval";
 import SystematicChecklist from "@/components/learn/SystematicChecklist";
+import { Table, MdxTableOverride } from "@/components/learn/Table";
+import { remarkFixCollapsedTables } from "@/lib/mdx/remark-fix-tables";
+import QTIntervalDrag from "@/components/learn/QTIntervalDrag";
+import PQRSTDiagram from "@/components/learn/PQRSTDiagram";
+import ScrollRestorer from "@/components/learn/ScrollRestorer";
 import MarkCompleteButton from "./MarkCompleteButton";
 
 const VALID_LEVELS: Level[] = ["beginner", "intermediate", "advanced"];
 
-// MDX component map — all custom components available in lessons
+// MDX component map — all custom components available in lessons.
+// `table` (lowercase) overrides the HTML element emitted for every Markdown
+// table, routing it through our styled + accessible Table component.
+// `Table` (capitalised) allows explicit <Table data={...} /> usage in MDX.
 const MDX_COMPONENTS = {
   DiagramPQRST,
   LoadStripButton,
   IdentifyPWave,
   MeasureInterval,
   SystematicChecklist,
+  QTIntervalDrag,
+  PQRSTDiagram,
+  Table,
+  table: MdxTableOverride,
 };
+
+// Remark plugins for the MDX pipeline (Layer 2 of the collapsed-table fix).
+// Layer 1 is the string preprocessor applied in lesson-loader.ts.
+const MDX_OPTIONS = {
+  mdxOptions: {
+    remarkPlugins: [remarkFixCollapsedTables],
+  },
+} as const;
 
 interface PageProps {
   params: Promise<{ level: string; slug: string }>;
@@ -106,6 +126,9 @@ export default async function LessonPage({ params }: PageProps) {
 
         {/* Main content */}
         <main className="flex-1 min-w-0">
+          {/* Restores scroll position when returning from the Trainer */}
+          <ScrollRestorer />
+
           {/* Breadcrumb */}
           <nav className="mb-5 text-xs text-slate-400 flex items-center gap-1.5">
             <Link href="/learn" className="hover:text-slate-700 transition-colors">
@@ -129,7 +152,11 @@ export default async function LessonPage({ params }: PageProps) {
 
           {/* MDX content */}
           <div className="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-slate-900 prose-a:text-sky-600 prose-code:text-sky-700 prose-code:bg-sky-50 prose-code:px-1 prose-code:rounded prose-table:text-sm">
-            <MDXRemote source={source} components={MDX_COMPONENTS} />
+            <MDXRemote
+              source={source}
+              components={MDX_COMPONENTS}
+              options={MDX_OPTIONS}
+            />
           </div>
 
           {/* Mark complete + navigation */}

@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(where node:*)",
+      "Bash(cmd.exe /c \"npm install unist-util-visit 2>&1\")",
+      "Bash(cmd.exe /c \"cd c:\\\\Users\\\\waltc\\\\Documents\\\\Programming\\\\EKGTrainer\\\\web && npm install unist-util-visit 2>&1\")",
+      "Bash(cmd.exe /c \"cd c:\\\\Users\\\\waltc\\\\Documents\\\\Programming\\\\EKGTrainer\\\\web && npm install unist-util-visit\")",
+      "Bash(cmd /c \"cd /d c:\\\\Users\\\\waltc\\\\Documents\\\\Programming\\\\EKGTrainer\\\\web && npm install unist-util-visit && echo DONE\")",
+      "Bash(powershell.exe -Command \"Get-Command npm, node -ErrorAction SilentlyContinue | Select-Object Name, Source\")",
+      "Bash(powershell.exe -Command \"Get-ChildItem 'C:\\\\Program Files\\\\nodejs\\\\' -ErrorAction SilentlyContinue | Select-Object Name\")",
+      "Bash(cmd.exe /c \"where node 2>&1 & where npm 2>&1\")",
+      "Bash(cmd.exe /c \"where node\")",
+      "Bash(echo \"exit: $?\")",
+      "Bash(cmd.exe /c \"where node > C:\\\\Users\\\\waltc\\\\AppData\\\\Local\\\\Temp\\\\nodepath.txt 2>&1 & type C:\\\\Users\\\\waltc\\\\AppData\\\\Local\\\\Temp\\\\nodepath.txt\")",
+      "Bash(ls /c/Users/waltc/scoop/apps/nodejs*)",
+      "Read(//c//**)",
+      "Bash(cmd.exe /c \"set PATH\")",
+      "Bash(powershell.exe -NoProfile -Command \"[System.Environment]::GetEnvironmentVariable\\('PATH','Machine'\\) + ';' + [System.Environment]::GetEnvironmentVariable\\('PATH','User'\\)\")",
+      "Bash(powershell.exe -NoProfile -Command 'Get-ChildItem '\\\\''C:\\\\Users\\\\waltc\\\\AppData\\\\Local\\\\'\\\\'' | Where-Object { $_.Name -match '\\\\''node|nvm|fnm|volta'\\\\'' }')",
+      "Bash(powershell.exe -NoProfile -Command '$env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Write-Host $env:PATH')",
+      "Bash(powershell.exe -NoProfile -File -)",
+      "Bash(powershell.exe -NoProfile -Command \"Get-ChildItem 'C:\\\\' -Recurse -Filter 'node.exe' -ErrorAction SilentlyContinue -Depth 5 | Select-Object FullName\")",
+      "Bash(powershell.exe -NoProfile -Command \"Get-ChildItem 'D:\\\\','E:\\\\' -ErrorAction SilentlyContinue | Select-Object FullName\")",
+      "Bash(powershell.exe -NoProfile -Command \"Get-PSDrive -PSProvider FileSystem | Select-Object Name,Root\")",
+      "Bash(powershell.exe -NoProfile -Command \"Get-ChildItem 'C:\\\\Users\\\\waltc' -Recurse -Filter 'node.exe' -ErrorAction SilentlyContinue | Select-Object FullName\")",
+      "Bash(powershell.exe -NoProfile -Command \"Get-ChildItem 'C:\\\\Windows' -Recurse -Filter 'node.exe' -ErrorAction SilentlyContinue -Depth 4 | Select-Object FullName\")",
+      "Bash(powershell.exe -NoProfile -Command \"Get-ChildItem 'C:\\\\ProgramData' -Recurse -Filter 'node.exe' -ErrorAction SilentlyContinue -Depth 5 | Select-Object FullName\")",
+      "Bash(powershell.exe -NoProfile -Command \"Get-ChildItem 'C:\\\\Program Files' -Recurse -Filter 'node.exe' -ErrorAction SilentlyContinue -Depth 4 | Select-Object FullName\")",
+      "Bash(\"C:/Users/waltc/AppData/Local/Microsoft/WindowsApps/winget.exe\" install:*)",
+      "Bash(xargs grep:*)",
+      "Bash(head -20 \"c:/Users/waltc/Documents/Programming/EKGTrainer/content/learn/beginner/\"*.mdx)"
+    ]
+  }
+}

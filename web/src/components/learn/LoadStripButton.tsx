@@ -1,26 +1,37 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { saveAcademyLocation } from "@/lib/learn/academy-return";
 
 interface Props {
   /** Case ID matching cases.json, e.g. "nsr_01" */
   stripId: string;
   label?: string;
   className?: string;
+  /**
+   * The lesson title displayed in the ReturnToAcademy banner.
+   * Pass the current lesson's title so the banner reads
+   * "Back to Academy — continue 'The QT Interval'".
+   */
+  lessonTitle?: string;
 }
 
 /**
  * Navigates to the main Trainer with a specific case pre-loaded.
- * The home page reads ?caseId= on mount.
+ * Before navigating, saves the current Academy URL and scroll position to
+ * sessionStorage so ReturnToAcademy can offer a one-click path back.
  */
 export default function LoadStripButton({
   stripId,
   label,
   className = "",
+  lessonTitle,
 }: Props) {
   const router = useRouter();
 
   function handleClick() {
+    // Snapshot current location before leaving the Academy.
+    saveAcademyLocation(lessonTitle);
     router.push(`/?caseId=${encodeURIComponent(stripId)}&tab=practice`);
   }
 

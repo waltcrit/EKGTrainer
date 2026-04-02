@@ -8,6 +8,7 @@ import CaseLibrary from "@/components/CaseLibrary";
 import QuizMode from "@/components/QuizMode";
 import AboutPage from "@/components/AboutPage";
 import SystematicChecklist from "@/components/learn/SystematicChecklist";
+import ReturnToAcademy from "@/components/learn/ReturnToAcademy";
 import type { EKGAnalysisResult } from "@/types/analysis";
 import type { EKGCase } from "@/types/cases";
 import casesData from "@/data/cases.json";
@@ -314,6 +315,11 @@ export default function Home() {
 
       {/* ── Main content ────────────────────────────────────────────────── */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-6">
+
+        {/* Return-to-Academy banner — visible only after navigating from a lesson */}
+        <div className="mb-4">
+          <ReturnToAcademy />
+        </div>
 
         {tab === "practice" && (
           <div className="space-y-4">
