@@ -20,3 +20,20 @@ scipy>=1.11.0
 
 # Image handling
 Pillow>=10.0.0
+
+# ── Arrhythmia pipeline (python/arrhythmia/) ──────────────────────────────
+
+# WFDB record ingestion (PhysioNet-compatible format)
+# Enables load_record() in arrhythmia/ingest.py
+wfdb>=4.1.0
+
+# Wavelet features in arrhythmia/features.py
+# Optional — pipeline degrades gracefully without it
+PyWavelets>=1.4.0
+
+# Machine-learning utilities used by arrhythmia/scoring.py
+scikit-learn>=1.3.0
+
+# Deep learning models (arrhythmia/models/)
+# Optional — classical pipeline runs without PyTorch
+# torch>=2.1.0
