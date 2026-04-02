@@ -423,11 +423,13 @@ def run_pipeline_classification(signals: dict, sampling_rate: int) -> dict | Non
             target_fs=250,
             rpeak_method="hamilton",
         )
-        display = _ARR_DISPLAY_NAMES.get(result.primary_rhythm, result.primary_rhythm)
+        primary = result.primary_rhythm.value if hasattr(result.primary_rhythm, "value") else str(result.primary_rhythm)
+        strip   = result.strip_label.value   if hasattr(result.strip_label, "value")   else str(result.strip_label)
+        display = _ARR_DISPLAY_NAMES.get(primary, primary)
         return {
-            "primary_rhythm":  result.primary_rhythm,
+            "primary_rhythm":  primary,
             "display_name":    display,
-            "strip_label":     result.strip_label,
+            "strip_label":     strip,
             "confidence":      round(result.confidence, 3),
             "beat_labels":     result.beat_labels[:20],   # cap for JSON size
             "used_deep_learning": result.used_deep_learning,

@@ -71,7 +71,8 @@ def _classical_classify(features: dict) -> tuple[str, float]:
     rr_rmssd = features.get("rr_rmssd", float("nan"))
     num_beats = features.get("num_beats", 0.0)
     signal_power = features.get("signal_power", float("nan"))
-    baseline_flat = features.get("baseline_flatness", float("nan"))
+    # qrs_wide may be injected by _pipeline_from_measurements; None = unknown
+    qrs_wide: bool | None = features.get("qrs_wide")
 
     import math
 
@@ -90,11 +91,11 @@ def _classical_classify(features: dict) -> tuple[str, float]:
             not _nan(signal_power) and signal_power > 0.1):
         return ArrhythmiaClass.VF, 0.65
 
-    # VT — fast + moderately irregular (wide QRS not measurable here)
-    if hr > 100 and not _nan(rr_cv) and 0.05 < rr_cv < 0.25:
-        return ArrhythmiaClass.VT, 0.55
+    # VT — fast + wide QRS (most specific rule when morphology is known)
+    if hr > 100 and qrs_wide is True and not _nan(rr_cv) and rr_cv < 0.15:
+        return ArrhythmiaClass.VT, 0.75
 
-    # AF — irregularly irregular (high RMSSD, high CV)
+    # AF — irregularly irregular (high RMSSD, high CV); exclude if clearly wide + fast (VT above)
     if not _nan(rr_cv, rr_rmssd) and rr_cv > 0.15 and rr_rmssd > 60:
         return ArrhythmiaClass.AF, 0.70
 
@@ -102,8 +103,8 @@ def _classical_classify(features: dict) -> tuple[str, float]:
     if 140 <= hr <= 165 and not _nan(rr_cv) and rr_cv < 0.05:
         return ArrhythmiaClass.AFL, 0.65
 
-    # SVT — very fast narrow (no wide-QRS check here)
-    if hr > 150 and not _nan(rr_cv) and rr_cv < 0.10:
+    # SVT — very fast, narrow (or unknown QRS width), regular
+    if hr > 150 and not _nan(rr_cv) and rr_cv < 0.10 and qrs_wide is not True:
         return ArrhythmiaClass.SVT, 0.60
 
     # Sinus Tachycardia

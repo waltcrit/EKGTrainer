@@ -95,13 +95,18 @@ def _pipeline_from_measurements(measurements: dict) -> dict | None:
         feats = extract_rr_features(rr_ms) if rr_ms else {}
         feats["num_beats"] = float(measurements.get("num_beats", 0))
         feats["signal_power"] = 0.25  # assume reasonable signal for pre-computed cases
+        # Pass QRS width so VT can be distinguished from SVT
+        qrs_wide = measurements.get("qrs_wide")
+        if qrs_wide is not None:
+            feats["qrs_wide"] = bool(qrs_wide)
 
         label, confidence = _classical_classify(feats)
-        display = _ARR_DISPLAY_NAMES.get(label, label)
+        label_str = label.value if hasattr(label, "value") else str(label)
+        display = _ARR_DISPLAY_NAMES.get(label_str, label_str)
         return {
-            "primary_rhythm": label,
+            "primary_rhythm": label_str,
             "display_name": display,
-            "strip_label": label,
+            "strip_label": label_str,
             "confidence": round(confidence, 3),
             "beat_labels": [],
             "used_deep_learning": False,
@@ -377,7 +382,7 @@ def main():
             "pipeline_classification": pipeline_classification,
         }
         updated += 1
-        pc_label = (pipeline_classification or {}).get("primary_rhythm", "n/a")
+        pc_label = str((pipeline_classification or {}).get("primary_rhythm", "n/a"))
         print(f"  {case_id}: HR={measurements['heart_rate_bpm']:.0f}  "
               f"reg={measurements['regularity']}  "
               f"P={measurements['p_waves_present']}  "
