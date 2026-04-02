@@ -11,6 +11,7 @@ import MeasureInterval from "@/components/learn/MeasureInterval";
 import SystematicChecklist from "@/components/learn/SystematicChecklist";
 import { Table, MdxTableOverride } from "@/components/learn/Table";
 import { remarkFixCollapsedTables } from "@/lib/mdx/remark-fix-tables";
+import type { MDXRemoteProps } from "next-mdx-remote/rsc";
 import QTIntervalDrag from "@/components/learn/QTIntervalDrag";
 import PQRSTDiagram from "@/components/learn/PQRSTDiagram";
 import ScrollRestorer from "@/components/learn/ScrollRestorer";
@@ -36,11 +37,14 @@ const MDX_COMPONENTS = {
 
 // Remark plugins for the MDX pipeline (Layer 2 of the collapsed-table fix).
 // Layer 1 is the string preprocessor applied in lesson-loader.ts.
-const MDX_OPTIONS = {
+//
+// NOTE: do NOT use `as const` here. next-mdx-remote's SerializeOptions requires
+// remarkPlugins to be a mutable Pluggable[], not a readonly tuple.
+const MDX_OPTIONS: MDXRemoteProps["options"] = {
   mdxOptions: {
     remarkPlugins: [remarkFixCollapsedTables],
   },
-} as const;
+};
 
 interface PageProps {
   params: Promise<{ level: string; slug: string }>;
