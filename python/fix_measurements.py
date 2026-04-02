@@ -15,6 +15,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from analyze_ecg import build_claude_prompt, _NumpyEncoder
 
+# Arrhythmia pipeline — optional; produces pipeline_classification for pre-computed cases
+try:
+    from arrhythmia.postprocess import apply_physiologic_constraints, smooth_predictions
+    from arrhythmia.constants import DISPLAY_NAMES as _ARR_DISPLAY_NAMES
+    _PIPELINE_AVAILABLE = True
+except Exception:
+    _PIPELINE_AVAILABLE = False
+
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
@@ -70,6 +78,38 @@ def make(hr, rr_list, regularity, p_waves, pr_ms, qrs_ms, qt_ms, st,
         "st": st,
         "rhythm_lead": "II",
     }
+
+def _pipeline_from_measurements(measurements: dict) -> dict | None:
+    """
+    Derive a pipeline_classification dict from pre-computed measurements
+    using the rule-based classical classifier (no live signal required).
+    """
+    if not _PIPELINE_AVAILABLE:
+        return None
+
+    try:
+        from arrhythmia.features import extract_rr_features
+        from arrhythmia.inference import _classical_classify
+
+        rr_ms = measurements.get("rr_intervals_ms", [])
+        feats = extract_rr_features(rr_ms) if rr_ms else {}
+        feats["num_beats"] = float(measurements.get("num_beats", 0))
+        feats["signal_power"] = 0.25  # assume reasonable signal for pre-computed cases
+
+        label, confidence = _classical_classify(feats)
+        display = _ARR_DISPLAY_NAMES.get(label, label)
+        return {
+            "primary_rhythm": label,
+            "display_name": display,
+            "strip_label": label,
+            "confidence": round(confidence, 3),
+            "beat_labels": [],
+            "used_deep_learning": False,
+            "notes": ["derived from pre-computed measurements (no live signal)"],
+        }
+    except Exception as exc:
+        return {"error": str(exc)}
+
 
 CORRECTIONS = {
     # ── Sinus rhythms ────────────────────────────────────────────────────────
@@ -324,7 +364,8 @@ def main():
     updated = 0
     for case_id, measurements in CORRECTIONS.items():
         digitizer_method = "clinically-validated"
-        prompt = build_claude_prompt(measurements, digitizer_method)
+        pipeline_classification = _pipeline_from_measurements(measurements)
+        prompt = build_claude_prompt(measurements, digitizer_method, pipeline_classification)
 
         existing[case_id] = {
             "measurements": measurements,
@@ -333,13 +374,16 @@ def main():
             "leads_available": ["II"],
             "sampling_rate": 300,
             "image_used": "imagePath",
+            "pipeline_classification": pipeline_classification,
         }
         updated += 1
+        pc_label = (pipeline_classification or {}).get("primary_rhythm", "n/a")
         print(f"  {case_id}: HR={measurements['heart_rate_bpm']:.0f}  "
               f"reg={measurements['regularity']}  "
               f"P={measurements['p_waves_present']}  "
               f"QRS={measurements['qrs_duration_ms']}ms  "
-              f"wide={measurements['qrs_wide']}")
+              f"wide={measurements['qrs_wide']}  "
+              f"pipeline={pc_label}")
 
     with open(out_path, "w") as f:
         json.dump(existing, f, cls=_NumpyEncoder, indent=2)

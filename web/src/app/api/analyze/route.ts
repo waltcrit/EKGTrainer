@@ -240,6 +240,7 @@ export async function POST(
           `Pre-computed via ${precomputed.digitizer_method} at ${precomputed.sampling_rate} Hz. ` +
           `Leads: ${precomputed.leads_available.join(", ")}.`;
       }
+      result.pipeline_classification = precomputed.pipeline_classification ?? null;
       return NextResponse.json({ success: true, result });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
