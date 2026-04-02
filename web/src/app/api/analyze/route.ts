@@ -6,6 +6,7 @@ import type {
   AnalyzeResponse,
   AnalyzeErrorResponse,
   EKGAnalysisResult,
+  PipelineClassification,
 } from "@/types/analysis";
 import measurementsData from "@/data/measurements.json";
 
@@ -25,6 +26,7 @@ interface PipelineData {
   digitizer_method: string;
   leads_available: string[];
   sampling_rate: number;
+  pipeline_classification?: PipelineClassification | null;
 }
 
 interface PythonServiceResult extends PipelineData {
@@ -269,6 +271,8 @@ export async function POST(
         `Digitized via ${pythonResult.digitizer_method} at ${pythonResult.sampling_rate} Hz. ` +
         `Leads: ${pythonResult.leads_available.join(", ")}.`;
     }
+
+    result.pipeline_classification = pythonResult.pipeline_classification ?? null;
 
     return NextResponse.json({ success: true, result });
   } catch (err) {

@@ -53,6 +53,29 @@ export interface QTcAnalysis {
   confidence: number;
 }
 
+/**
+ * Result of the PhysioNet-compatible signal pipeline pre-classification.
+ * Included in the API response alongside the Claude interpretation.
+ */
+export interface PipelineClassification {
+  /** Canonical arrhythmia label (e.g. "AF", "NSR") */
+  primary_rhythm: string;
+  /** Human-readable display name */
+  display_name: string;
+  /** Strip-level label before physiologic constraint enforcement */
+  strip_label: string;
+  /** Classifier confidence in [0, 1] */
+  confidence: number;
+  /** Per-beat labels from beat model (up to 20) */
+  beat_labels: string[];
+  /** Whether a deep learning model was used (vs. rule-based) */
+  used_deep_learning: boolean;
+  /** Notes / warnings from the pipeline */
+  notes: string[];
+  /** Present when the pipeline threw an error */
+  error?: string;
+}
+
 export interface EKGAnalysisResult {
   rate: RateAnalysis;
   rhythm: RhythmAnalysis;
@@ -68,6 +91,8 @@ export interface EKGAnalysisResult {
   explanation: string;
   image_quality: "good" | "fair" | "poor";
   caveats: string | null;
+  /** Signal pipeline pre-classification (present for user uploads, absent for pre-computed) */
+  pipeline_classification?: PipelineClassification | null;
 }
 
 export interface AnalyzeRequest {
