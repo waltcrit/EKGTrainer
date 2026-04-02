@@ -1,14 +1,6 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import type { AnalyzeRequest } from "@/types/analysis";
-
-interface EKGUploaderProps {
-  onAnalyzing: () => void;
-  onResult:    (result: unknown) => void;
-  onError:     (error: string)   => void;
-  disabled?:   boolean;
-}
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 type AcceptedMediaType = (typeof ACCEPTED_TYPES)[number];
@@ -17,39 +9,31 @@ function isAcceptedType(type: string): type is AcceptedMediaType {
   return ACCEPTED_TYPES.includes(type as AcceptedMediaType);
 }
 
-export default function EKGUploader({ onAnalyzing, onResult, onError, disabled }: EKGUploaderProps) {
-  const inputRef              = useRef<HTMLInputElement>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+interface EKGUploaderProps {
+  /** Called with the base64-encoded image and its media type. */
+  onFile:    (base64: string, mediaType: AcceptedMediaType) => void;
+  onError?:  (message: string) => void;
+  disabled?: boolean;
+}
+
+export default function EKGUploader({ onFile, onError, disabled }: EKGUploaderProps) {
+  const inputRef                = useRef<HTMLInputElement>(null);
+  const [preview, setPreview]   = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
 
-  const processFile = useCallback(async (file: File) => {
+  const processFile = useCallback((file: File) => {
     if (!isAcceptedType(file.type)) {
-      onError("Please upload a JPEG, PNG, or WebP image.");
+      onError?.("Please upload a JPEG, PNG, or WebP image.");
       return;
     }
-
     const reader = new FileReader();
-    reader.onload = async (e) => {
+    reader.onload = (e) => {
       const dataUrl = e.target?.result as string;
       setPreview(dataUrl);
-      const base64 = dataUrl.split(",")[1];
-      const body: AnalyzeRequest = { imageBase64: base64, mediaType: file.type as AcceptedMediaType };
-      onAnalyzing();
-      try {
-        const res  = await fetch("/api/analyze", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
-        const data = await res.json();
-        if (data.success) onResult(data.result);
-        else              onError(data.error ?? "Analysis failed");
-      } catch (err) {
-        onError(err instanceof Error ? err.message : "Network error");
-      }
+      onFile(dataUrl.split(",")[1], file.type as AcceptedMediaType);
     };
     reader.readAsDataURL(file);
-  }, [onAnalyzing, onResult, onError]);
+  }, [onFile, onError]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -93,7 +77,6 @@ export default function EKGUploader({ onAnalyzing, onResult, onError, disabled }
         />
 
         {preview ? (
-          /* Preview */
           <div className="bg-[#fff5e6]">
             <img src={preview} alt="EKG preview" className="w-full max-h-72 object-contain" />
             <div className="px-3 py-1 border-t border-[#ffe4b8]">
@@ -103,7 +86,6 @@ export default function EKGUploader({ onAnalyzing, onResult, onError, disabled }
             </div>
           </div>
         ) : (
-          /* Drop zone */
           <div className="flex flex-col items-center justify-center gap-3 py-14 px-6 text-center">
             <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
               dragging ? "bg-sky-100" : "bg-slate-100"

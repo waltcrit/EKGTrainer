@@ -20,6 +20,9 @@ const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL ?? "http://localhost:8
 // Types
 // ---------------------------------------------------------------------------
 
+type ImageMediaType = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+interface Image { base64: string; mediaType: ImageMediaType }
+
 interface PipelineData {
   measurements: Record<string, unknown>;
   claude_prompt: string;
@@ -29,48 +32,13 @@ interface PipelineData {
   pipeline_classification?: PipelineClassification | null;
 }
 
-interface PythonServiceResult extends PipelineData {
-  success: true;
-}
+interface PythonServiceResult extends PipelineData { success: true }
 
 // ---------------------------------------------------------------------------
-// Call the Python HTTP service to digitize + measure
+// Prompt used when no signal measurements are available (vision-only fallback)
 // ---------------------------------------------------------------------------
 
-async function runPythonPipeline(
-  imageBase64: string,
-  mediaType: string
-): Promise<PythonServiceResult> {
-  let res: Response;
-  try {
-    res = await fetch(`${PYTHON_SERVICE_URL}/analyze`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image_base64: imageBase64, media_type: mediaType }),
-    });
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    throw new Error(`Python service unreachable (${PYTHON_SERVICE_URL}): ${msg}`);
-  }
-
-  if (!res.ok) {
-    let detail = `HTTP ${res.status}`;
-    try {
-      const body = await res.json() as { detail?: { error?: string } | string };
-      if (typeof body.detail === "string") detail = body.detail;
-      else if (typeof body.detail?.error === "string") detail = body.detail.error;
-    } catch { /* ignore parse errors */ }
-    throw new Error(`Python pipeline failed: ${detail}`);
-  }
-
-  return res.json() as Promise<PythonServiceResult>;
-}
-
-// ---------------------------------------------------------------------------
-// Direct Claude vision analysis — used when PYTHON_SERVICE_URL is not set
-// ---------------------------------------------------------------------------
-
-const DIRECT_CLAUDE_PROMPT = `You are an expert cardiologist performing a systematic ECG interpretation. Analyze this ECG image carefully and return ONLY a valid JSON object matching exactly this structure (no markdown, no extra text):
+const VISION_ONLY_PROMPT = `You are an expert cardiologist performing a systematic ECG interpretation. Analyze this ECG image carefully and return ONLY a valid JSON object matching exactly this structure (no markdown, no extra text):
 
 {
   "rate": { "bpm": <number>, "rr_intervals_ms": [<numbers>], "category": "bradycardia"|"normal"|"tachycardia", "method": "visual", "confidence": <0-1> },
@@ -91,67 +59,86 @@ const DIRECT_CLAUDE_PROMPT = `You are an expert cardiologist performing a system
 
 Be systematic: rate → rhythm → axis → P waves → PR → QRS → ST/T → QTc → impression.`;
 
-type ImageMediaType = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+// ---------------------------------------------------------------------------
+// Step 1 — Acquire pipeline data (measurements + Claude prompt)
+//
+// Strategies in priority order:
+//   1. Pre-computed measurements from measurements.json (caseId fast-path)
+//   2. Python digitizer service (live signal analysis)
+//   3. null — no measurements; Claude will interpret from the image directly
+// ---------------------------------------------------------------------------
 
-async function runDirectClaudeAnalysis(
-  imageBase64: string,
-  mediaType: ImageMediaType
-): Promise<EKGAnalysisResult> {
-  const message = await anthropic.messages.create({
-    model: process.env.CLAUDE_MODEL ?? "claude-haiku-4-5-20251001",
-    max_tokens: 4096,
-    messages: [
-      {
-        role: "user",
-        content: [
-          {
-            type: "image",
-            source: { type: "base64", media_type: mediaType, data: imageBase64 },
-          },
-          { type: "text", text: DIRECT_CLAUDE_PROMPT },
-        ],
-      },
-    ],
-  });
-
-  const responseText =
-    message.content[0].type === "text" ? message.content[0].text : "";
-
-  const cleaned = responseText
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/\s*```$/, "")
-    .trim();
-
-  const result = JSON.parse(cleaned) as EKGAnalysisResult;
-  if (!result.caveats) {
-    result.caveats = "Visual analysis only — no signal digitization was performed. Measurements are estimates.";
+async function acquirePipelineData(
+  image: Image | null,
+  caseId: string | undefined,
+): Promise<PipelineData | null> {
+  if (caseId) {
+    const precomputed = (measurementsData as Record<string, PipelineData>)[caseId];
+    if (precomputed) {
+      console.log(`\n=== CLAUDE PROMPT for caseId=${caseId} ===\n${precomputed.claude_prompt}\n=== END PROMPT ===\n`);
+      return precomputed;
+    }
   }
-  return result;
+
+  if (image && process.env.PYTHON_SERVICE_URL) {
+    return await runPythonPipeline(image.base64, image.mediaType);
+  }
+
+  return null;
+}
+
+async function runPythonPipeline(imageBase64: string, mediaType: string): Promise<PythonServiceResult> {
+  let res: Response;
+  try {
+    res = await fetch(`${PYTHON_SERVICE_URL}/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image_base64: imageBase64, media_type: mediaType }),
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`Python service unreachable (${PYTHON_SERVICE_URL}): ${msg}`);
+  }
+
+  if (!res.ok) {
+    let detail = `HTTP ${res.status}`;
+    try {
+      const body = await res.json() as { detail?: { error?: string } | string };
+      if (typeof body.detail === "string") detail = body.detail;
+      else if (typeof body.detail?.error === "string") detail = body.detail.error;
+    } catch { /* ignore */ }
+    throw new Error(`Python pipeline failed: ${detail}`);
+  }
+
+  return res.json() as Promise<PythonServiceResult>;
 }
 
 // ---------------------------------------------------------------------------
-// Call Claude with measurements only for final interpretation (no image)
+// Step 2 — Call Claude
+//
+// Always sends the image when one is available so Claude has full visual
+// context regardless of how measurements were obtained.
+// The prompt is measurements-based when pipeline data exists, or the
+// generic vision prompt when falling back to image-only analysis.
 // ---------------------------------------------------------------------------
 
-async function runClaudeInterpretation(
-  claudePrompt: string
-): Promise<EKGAnalysisResult> {
+async function callClaude(prompt: string, image: Image | null): Promise<EKGAnalysisResult> {
+  const content: Anthropic.Messages.MessageParam["content"] = [];
+  if (image) {
+    content.push({
+      type: "image",
+      source: { type: "base64", media_type: image.mediaType, data: image.base64 },
+    });
+  }
+  content.push({ type: "text", text: prompt });
+
   const message = await anthropic.messages.create({
     model: process.env.CLAUDE_MODEL ?? "claude-haiku-4-5-20251001",
     max_tokens: 4096,
-    messages: [
-      {
-        role: "user",
-        content: [
-          { type: "text", text: claudePrompt },
-        ],
-      },
-    ],
+    messages: [{ role: "user", content }],
   });
 
-  const responseText =
-    message.content[0].type === "text" ? message.content[0].text : "";
-
+  const responseText = message.content[0].type === "text" ? message.content[0].text : "";
   const cleaned = responseText
     .replace(/^```(?:json)?\s*/i, "")
     .replace(/\s*```$/, "")
@@ -163,6 +150,11 @@ async function runClaudeInterpretation(
 // ---------------------------------------------------------------------------
 // Route handler
 // ---------------------------------------------------------------------------
+
+const VALID_MEDIA_TYPES: readonly ImageMediaType[] = [
+  "image/jpeg", "image/png", "image/gif", "image/webp",
+];
+const MAX_BYTES = 4 * 1024 * 1024; // 4 MB
 
 export async function POST(
   req: NextRequest
@@ -187,9 +179,7 @@ export async function POST(
     );
   }
 
-  // Reject oversized requests before parsing JSON (~4 MB base64 ≈ ~3 MB image)
   const contentLength = Number(req.headers.get("content-length") ?? 0);
-  const MAX_BYTES = 4 * 1024 * 1024; // 4 MB
   if (contentLength > MAX_BYTES) {
     return NextResponse.json(
       { success: false, error: "Request too large. Maximum image size is ~3 MB." },
@@ -206,77 +196,57 @@ export async function POST(
 
   const { imageBase64, mediaType, caseId } = body;
 
-  // ---------------------------------------------------------------------------
-  // Use pre-computed measurements for known training cases (fast path)
-  // Image upload is not required when caseId resolves to a known case.
-  // ---------------------------------------------------------------------------
-  const precomputed = caseId
-    ? (measurementsData as Record<string, PipelineData>)[caseId]
-    : undefined;
-
-  if (precomputed) {
-    try {
-      console.log(`\n=== CLAUDE PROMPT for caseId=${caseId} ===\n${precomputed.claude_prompt}\n=== END PROMPT ===\n`);
-      const result = await runClaudeInterpretation(precomputed.claude_prompt);
-      if (!result.caveats) {
-        result.caveats =
-          `Pre-computed via ${precomputed.digitizer_method} at ${precomputed.sampling_rate} Hz. ` +
-          `Leads: ${precomputed.leads_available.join(", ")}.`;
-      }
-      result.pipeline_classification = precomputed.pipeline_classification ?? null;
-      return NextResponse.json({ success: true, result });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      return NextResponse.json({ success: false, error: message }, { status: 500 });
+  // Validate and wrap image (optional — precomputed cases may omit it)
+  let image: Image | null = null;
+  if (imageBase64 || mediaType) {
+    if (
+      typeof imageBase64 !== "string" || !imageBase64 ||
+      !VALID_MEDIA_TYPES.includes(mediaType as ImageMediaType)
+    ) {
+      return NextResponse.json(
+        { success: false, error: "imageBase64 (string) and valid mediaType are required" },
+        { status: 400 }
+      );
     }
+    const decodedBytes = Math.floor(imageBase64.length * 0.75);
+    if (decodedBytes > MAX_BYTES) {
+      return NextResponse.json(
+        { success: false, error: "Image too large. Maximum size is ~3 MB." },
+        { status: 413 }
+      );
+    }
+    image = { base64: imageBase64, mediaType: mediaType as ImageMediaType };
   }
 
-  // ---------------------------------------------------------------------------
-  // Full pipeline — requires an uploaded image.
-  // ---------------------------------------------------------------------------
-  const VALID_MEDIA_TYPES: readonly ImageMediaType[] = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-  if (
-    typeof imageBase64 !== "string" || !imageBase64 ||
-    !VALID_MEDIA_TYPES.includes(mediaType as ImageMediaType)
-  ) {
+  // Must have at least one input
+  if (!image && !caseId) {
     return NextResponse.json(
-      { success: false, error: "imageBase64 (string) and valid mediaType are required" },
+      { success: false, error: "Provide imageBase64 or a known caseId" },
       { status: 400 }
     );
   }
-  const validatedMediaType = mediaType as ImageMediaType;
-
-  // Guard against Content-Length bypass: check actual decoded size
-  const decodedBytes = Math.floor(imageBase64.length * 0.75);
-  if (decodedBytes > MAX_BYTES) {
-    return NextResponse.json(
-      { success: false, error: "Image too large. Maximum size is ~3 MB." },
-      { status: 413 }
-    );
-  }
-
-  if (!process.env.PYTHON_SERVICE_URL) {
-    try {
-      const result = await runDirectClaudeAnalysis(imageBase64, validatedMediaType);
-      return NextResponse.json({ success: true, result });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      return NextResponse.json({ success: false, error: message }, { status: 500 });
-    }
-  }
 
   try {
-    const pythonResult = await runPythonPipeline(imageBase64, validatedMediaType);
+    // ── Step 1: acquire measurements ──────────────────────────────────────
+    const pipelineData = await acquirePipelineData(image, caseId);
 
-    const result = await runClaudeInterpretation(pythonResult.claude_prompt);
+    // ── Step 2: choose prompt ─────────────────────────────────────────────
+    const prompt = pipelineData ? pipelineData.claude_prompt : VISION_ONLY_PROMPT;
 
-    if (!result.caveats) {
-      result.caveats =
-        `Digitized via ${pythonResult.digitizer_method} at ${pythonResult.sampling_rate} Hz. ` +
-        `Leads: ${pythonResult.leads_available.join(", ")}.`;
+    // ── Step 3: call Claude (image always included when available) ────────
+    const result = await callClaude(prompt, image);
+
+    // ── Step 4: attach metadata ───────────────────────────────────────────
+    if (pipelineData) {
+      result.pipeline_classification = pipelineData.pipeline_classification ?? null;
+      if (!result.caveats) {
+        result.caveats =
+          `Digitized via ${pipelineData.digitizer_method} at ${pipelineData.sampling_rate} Hz. ` +
+          `Leads: ${pipelineData.leads_available.join(", ")}.`;
+      }
+    } else if (!result.caveats) {
+      result.caveats = "Visual analysis only — no signal digitization was performed. Measurements are estimates.";
     }
-
-    result.pipeline_classification = pythonResult.pipeline_classification ?? null;
 
     return NextResponse.json({ success: true, result });
   } catch (err) {

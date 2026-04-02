@@ -143,27 +143,35 @@ function LandingPage({ onEnter }: { onEnter: (tab: Tab) => void }) {
 
 export default function Home() {
   const [landed, setLanded]   = useState(false);
-  const [tab, setTab] = useState<Tab>("practice");
+  const [tab, setTab]         = useState<Tab>("practice");
   const [analyzeState, setAnalyzeState] = useState<AnalyzeState>("idle");
-  const [result, setResult] = useState<EKGAnalysisResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [practiceCase, setPracticeCase] = useState<EKGCase | null>(null);
+  const [result, setResult]   = useState<EKGAnalysisResult | null>(null);
+  const [error, setError]     = useState<string | null>(null);
+  const [practiceCase, setPracticeCase]   = useState<EKGCase | null>(null);
+  // The image currently being analyzed — shown as a preview in the Analyze tab
+  const [analyzePreview, setAnalyzePreview] = useState<string | null>(null);
 
-  const handlePracticeFromLibrary = (c: EKGCase) => {
-    setPracticeCase(c);
-    setTab("practice");
-  };
+  // ── Shared analysis runner ────────────────────────────────────────────────
+  // All analysis flows converge here: upload, library fast-path, library with image.
 
-  const handleAnalyzeFromLibrary = async (c: EKGCase) => {
-    setTab("analyze");
+  async function runAnalysis(
+    imageBase64: string | null,
+    mediaType: string | null,
+    caseId?: string,
+  ) {
     setAnalyzeState("analyzing");
     setResult(null);
     setError(null);
+
     try {
+      const body: Record<string, string> = {};
+      if (imageBase64 && mediaType) { body.imageBase64 = imageBase64; body.mediaType = mediaType; }
+      if (caseId) body.caseId = caseId;
+
       const res  = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ caseId: c.id }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (data.success) { setResult(data.result as EKGAnalysisResult); setAnalyzeState("result"); }
@@ -172,12 +180,50 @@ export default function Home() {
       setError(err instanceof Error ? err.message : "Network error");
       setAnalyzeState("error");
     }
+  }
+
+  // ── Handlers ─────────────────────────────────────────────────────────────
+
+  const handlePracticeFromLibrary = (c: EKGCase) => {
+    setPracticeCase(c);
+    setTab("practice");
+  };
+
+  // Called by EKGUploader when the user selects a file
+  const handleFile = (base64: string, mediaType: string) => {
+    setAnalyzePreview(`data:${mediaType};base64,${base64}`);
+    runAnalysis(base64, mediaType);
+  };
+
+  // Called by the "AI Analysis" button in the Case Library
+  const handleAnalyzeFromLibrary = async (c: EKGCase) => {
+    setTab("analyze");
+    setAnalyzePreview(null); // cleared until image is fetched
+
+    try {
+      // Fetch the 12-lead image and convert to base64 so Claude has visual context
+      const res  = await fetch(c.twelveleadPath);
+      const blob = await res.blob();
+      const dataUrl = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target!.result as string);
+        reader.readAsDataURL(blob);
+      });
+      const base64    = dataUrl.split(",")[1];
+      const mediaType = blob.type || "image/png";
+      setAnalyzePreview(dataUrl);
+      runAnalysis(base64, mediaType, c.id);
+    } catch {
+      // Image fetch failed — fall back to measurements-only (still works via caseId)
+      runAnalysis(null, null, c.id);
+    }
   };
 
   const handleReset = () => {
     setAnalyzeState("idle");
     setResult(null);
     setError(null);
+    setAnalyzePreview(null);
   };
 
   const handleEnter = (dest: Tab) => { setTab(dest); setLanded(true); };
@@ -235,7 +281,11 @@ export default function Home() {
         {tab === "practice" && <QuizMode cases={cases} initialCase={practiceCase} />}
 
         {tab === "library" && (
-          <CaseLibrary cases={cases} onPractice={handlePracticeFromLibrary} onAnalyze={handleAnalyzeFromLibrary} />
+          <CaseLibrary
+            cases={cases}
+            onPractice={handlePracticeFromLibrary}
+            onAnalyze={handleAnalyzeFromLibrary}
+          />
         )}
 
         {tab === "about" && <AboutPage />}
@@ -253,12 +303,30 @@ export default function Home() {
               </p>
             </div>
 
-            <EKGUploader
-              onAnalyzing={() => { setAnalyzeState("analyzing"); setResult(null); setError(null); }}
-              onResult={(data) => { setResult(data as EKGAnalysisResult); setAnalyzeState("result"); }}
-              onError={(msg) => { setError(msg); setAnalyzeState("error"); }}
-              disabled={analyzeState === "analyzing"}
-            />
+            {/* Image preview — shown for both library cases and user uploads */}
+            {analyzePreview && analyzeState !== "idle" && (
+              <div className="bg-[#fff5e6] rounded-xl overflow-hidden border border-[#ffe4b8]">
+                <img
+                  src={analyzePreview}
+                  alt="EKG being analyzed"
+                  className="w-full object-contain"
+                />
+                <div className="px-3 py-1 border-t border-[#ffe4b8]">
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-amber-700/50">
+                    EKG Image
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Uploader — only shown when idle (no active analysis) */}
+            {analyzeState === "idle" && (
+              <EKGUploader
+                onFile={handleFile}
+                onError={(msg) => { setError(msg); setAnalyzeState("error"); }}
+                disabled={false}
+              />
+            )}
 
             {analyzeState === "analyzing" && (
               <div className="flex flex-col items-center gap-3 py-12">
