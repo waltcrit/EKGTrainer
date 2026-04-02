@@ -96,9 +96,10 @@ export interface EKGAnalysisResult {
 }
 
 export interface AnalyzeRequest {
-  imageBase64: string;
-  mediaType: "image/jpeg" | "image/png" | "image/gif" | "image/webp";
-  /** When provided, pre-computed signal measurements are used instead of running the digitizer. */
+  /** Required when caseId is not provided (or not found in pre-computed data). */
+  imageBase64?: string;
+  mediaType?: "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+  /** When provided and found in pre-computed measurements, skips image upload entirely. */
   caseId?: string;
 }
 

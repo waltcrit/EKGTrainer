@@ -7,6 +7,7 @@ import { CATEGORY_LABELS, DIFFICULTY_LABELS } from "@/types/cases";
 interface CaseLibraryProps {
   cases: EKGCase[];
   onPractice?: (c: EKGCase) => void;
+  onAnalyze?:  (c: EKGCase) => void;
 }
 
 const DIFF_ACCENT: Record<number, { bar: string; badge: string; dot: string }> = {
@@ -16,7 +17,7 @@ const DIFF_ACCENT: Record<number, { bar: string; badge: string; dot: string }> =
   4: { bar: "bg-red-400",     badge: "bg-red-100 text-red-800",         dot: "bg-red-400"     },
 };
 
-export default function CaseLibrary({ cases, onPractice }: CaseLibraryProps) {
+export default function CaseLibrary({ cases, onPractice, onAnalyze }: CaseLibraryProps) {
   const [activeCategory, setActiveCategory] = useState<RhythmCategory | "all">("all");
   const [expanded, setExpanded]             = useState<string | null>(null);
 
@@ -156,18 +157,34 @@ export default function CaseLibrary({ cases, onPractice }: CaseLibraryProps) {
                           Rhythm <strong className="text-slate-600">{c.regularity.replace(/_/g, " ")}</strong>
                         </span>
                       </div>
-                      {onPractice && (
-                        <button
-                          onClick={() => onPractice(c)}
-                          className="flex items-center gap-1.5 rounded-lg bg-slate-900 text-white
-                                     px-4 py-2 text-xs font-semibold hover:bg-slate-700 transition-colors"
-                        >
-                          Practice
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                          </svg>
-                        </button>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {onAnalyze && (
+                          <button
+                            onClick={() => onAnalyze(c)}
+                            className="flex items-center gap-1.5 rounded-lg border border-violet-200
+                                       bg-violet-50 text-violet-700 px-4 py-2 text-xs font-semibold
+                                       hover:bg-violet-100 transition-colors"
+                          >
+                            AI Analysis
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.347.347a3.75 3.75 0 01-5.303 0l-.347-.347z" />
+                            </svg>
+                          </button>
+                        )}
+                        {onPractice && (
+                          <button
+                            onClick={() => onPractice(c)}
+                            className="flex items-center gap-1.5 rounded-lg bg-slate-900 text-white
+                                       px-4 py-2 text-xs font-semibold hover:bg-slate-700 transition-colors"
+                          >
+                            Practice
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

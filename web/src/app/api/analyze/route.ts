@@ -91,9 +91,11 @@ const DIRECT_CLAUDE_PROMPT = `You are an expert cardiologist performing a system
 
 Be systematic: rate → rhythm → axis → P waves → PR → QRS → ST/T → QTc → impression.`;
 
+type ImageMediaType = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+
 async function runDirectClaudeAnalysis(
   imageBase64: string,
-  mediaType: AnalyzeRequest["mediaType"]
+  mediaType: ImageMediaType
 ): Promise<EKGAnalysisResult> {
   const message = await anthropic.messages.create({
     model: process.env.CLAUDE_MODEL ?? "claude-haiku-4-5-20251001",
@@ -204,28 +206,9 @@ export async function POST(
 
   const { imageBase64, mediaType, caseId } = body;
 
-  const VALID_MEDIA_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"] as const;
-  if (
-    typeof imageBase64 !== "string" || !imageBase64 ||
-    !VALID_MEDIA_TYPES.includes(mediaType as (typeof VALID_MEDIA_TYPES)[number])
-  ) {
-    return NextResponse.json(
-      { success: false, error: "imageBase64 (string) and valid mediaType are required" },
-      { status: 400 }
-    );
-  }
-
-  // Guard against Content-Length bypass: check actual decoded size
-  const decodedBytes = Math.floor(imageBase64.length * 0.75);
-  if (decodedBytes > MAX_BYTES) {
-    return NextResponse.json(
-      { success: false, error: "Image too large. Maximum size is ~3 MB." },
-      { status: 413 }
-    );
-  }
-
   // ---------------------------------------------------------------------------
   // Use pre-computed measurements for known training cases (fast path)
+  // Image upload is not required when caseId resolves to a known case.
   // ---------------------------------------------------------------------------
   const precomputed = caseId
     ? (measurementsData as Record<string, PipelineData>)[caseId]
@@ -249,12 +232,32 @@ export async function POST(
   }
 
   // ---------------------------------------------------------------------------
-  // Full pipeline — call Python HTTP service for user-uploaded images,
-  // or fall back to direct Claude vision analysis if service is not configured.
+  // Full pipeline — requires an uploaded image.
   // ---------------------------------------------------------------------------
+  const VALID_MEDIA_TYPES: readonly ImageMediaType[] = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+  if (
+    typeof imageBase64 !== "string" || !imageBase64 ||
+    !VALID_MEDIA_TYPES.includes(mediaType as ImageMediaType)
+  ) {
+    return NextResponse.json(
+      { success: false, error: "imageBase64 (string) and valid mediaType are required" },
+      { status: 400 }
+    );
+  }
+  const validatedMediaType = mediaType as ImageMediaType;
+
+  // Guard against Content-Length bypass: check actual decoded size
+  const decodedBytes = Math.floor(imageBase64.length * 0.75);
+  if (decodedBytes > MAX_BYTES) {
+    return NextResponse.json(
+      { success: false, error: "Image too large. Maximum size is ~3 MB." },
+      { status: 413 }
+    );
+  }
+
   if (!process.env.PYTHON_SERVICE_URL) {
     try {
-      const result = await runDirectClaudeAnalysis(imageBase64, mediaType);
+      const result = await runDirectClaudeAnalysis(imageBase64, validatedMediaType);
       return NextResponse.json({ success: true, result });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
@@ -263,7 +266,7 @@ export async function POST(
   }
 
   try {
-    const pythonResult = await runPythonPipeline(imageBase64, mediaType);
+    const pythonResult = await runPythonPipeline(imageBase64, validatedMediaType);
 
     const result = await runClaudeInterpretation(pythonResult.claude_prompt);
 

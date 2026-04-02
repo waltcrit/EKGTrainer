@@ -154,6 +154,26 @@ export default function Home() {
     setTab("practice");
   };
 
+  const handleAnalyzeFromLibrary = async (c: EKGCase) => {
+    setTab("analyze");
+    setAnalyzeState("analyzing");
+    setResult(null);
+    setError(null);
+    try {
+      const res  = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ caseId: c.id }),
+      });
+      const data = await res.json();
+      if (data.success) { setResult(data.result as EKGAnalysisResult); setAnalyzeState("result"); }
+      else              { setError(data.error ?? "Analysis failed");    setAnalyzeState("error");  }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Network error");
+      setAnalyzeState("error");
+    }
+  };
+
   const handleReset = () => {
     setAnalyzeState("idle");
     setResult(null);
@@ -215,7 +235,7 @@ export default function Home() {
         {tab === "practice" && <QuizMode cases={cases} initialCase={practiceCase} />}
 
         {tab === "library" && (
-          <CaseLibrary cases={cases} onPractice={handlePracticeFromLibrary} />
+          <CaseLibrary cases={cases} onPractice={handlePracticeFromLibrary} onAnalyze={handleAnalyzeFromLibrary} />
         )}
 
         {tab === "about" && <AboutPage />}
