@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import EKGUploader from "@/components/EKGUploader";
 import RhythmReport from "@/components/RhythmReport";
 import CaseLibrary from "@/components/CaseLibrary";
 import QuizMode from "@/components/QuizMode";
 import AboutPage from "@/components/AboutPage";
+import SystematicChecklist from "@/components/learn/SystematicChecklist";
 import type { EKGAnalysisResult } from "@/types/analysis";
 import type { EKGCase } from "@/types/cases";
 import casesData from "@/data/cases.json";
@@ -150,6 +152,35 @@ export default function Home() {
   const [practiceCase, setPracticeCase]   = useState<EKGCase | null>(null);
   // The image currently being analyzed — shown as a preview in the Analyze tab
   const [analyzePreview, setAnalyzePreview] = useState<string | null>(null);
+  // Systematic checklist panel open/closed
+  const [checklistOpen, setChecklistOpen] = useState(false);
+  // Current strip ID for scoping checklist state
+  const [currentStripId, setCurrentStripId] = useState<string | undefined>(undefined);
+
+  // Handle ?caseId=...&tab=... params from LoadStripButton in the Learn module
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const caseId = params.get("caseId");
+    const tabParam = params.get("tab") as Tab | null;
+    if (caseId) {
+      const found = cases.find((c) => c.id === caseId);
+      if (found) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setPracticeCase(found);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setCurrentStripId(found.id);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setChecklistOpen(true);
+      }
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLanded(true);
+      if (tabParam && ["practice", "library", "analyze", "about"].includes(tabParam)) {
+        setTab(tabParam);
+      }
+      // Clean URL without reloading
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
 
   // ── Shared analysis runner ────────────────────────────────────────────────
   // All analysis flows converge here: upload, library fast-path, library with image.
@@ -271,6 +302,12 @@ export default function Home() {
                 {label}
               </button>
             ))}
+            <Link
+              href="/learn"
+              className="ml-1 px-4 py-1.5 rounded-full text-sm font-medium text-sky-600 hover:bg-sky-50 transition-all duration-150 border border-sky-200 hover:border-sky-300"
+            >
+              Academy
+            </Link>
           </nav>
         </div>
       </header>
@@ -278,7 +315,54 @@ export default function Home() {
       {/* ── Main content ────────────────────────────────────────────────── */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-6">
 
-        {tab === "practice" && <QuizMode cases={cases} initialCase={practiceCase} />}
+        {tab === "practice" && (
+          <div className="space-y-4">
+            {/* Systematic checklist toggle */}
+            <div>
+              <button
+                onClick={() => setChecklistOpen((v) => !v)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
+                aria-expanded={checklistOpen}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                  className="w-3.5 h-3.5 text-sky-500"
+                  aria-hidden
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M2.75 3.5a.75.75 0 0 0 0 1.5h10.5a.75.75 0 0 0 0-1.5H2.75ZM2 8a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 2 8Zm0 4.25a.75.75 0 0 1 .75-.75h4a.75.75 0 0 1 0 1.5h-4a.75.75 0 0 1-.75-.75Z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Systematic EKG Read
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                  className={`w-3 h-3 text-slate-400 transition-transform ${checklistOpen ? "rotate-180" : ""}`}
+                  aria-hidden
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+
+              {checklistOpen && (
+                <div className="mt-3">
+                  <SystematicChecklist stripId={currentStripId} compact />
+                </div>
+              )}
+            </div>
+
+            <QuizMode cases={cases} initialCase={practiceCase} />
+          </div>
+        )}
 
         {tab === "library" && (
           <CaseLibrary

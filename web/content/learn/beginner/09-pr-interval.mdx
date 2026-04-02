@@ -1,0 +1,46 @@
+---
+title: "The PR Interval"
+level: "beginner"
+order: 9
+---
+
+# The PR Interval
+
+The **PR interval** is measured from the beginning of the P wave to the beginning of the QRS complex. It represents the time for the electrical impulse to travel from the sinus node through the atria, the AV node, and the bundle of His — before ventricular depolarization begins.
+
+<DiagramPQRST highlight={["pr"]} />
+
+## Normal PR interval
+
+**Normal: 120–200 ms** (3–5 small boxes)
+
+## Short PR interval (< 120 ms)
+
+A short PR means the impulse reached the ventricles faster than normal. Think:
+
+- **Pre-excitation (WPW)** — accessory pathway bypasses the AV node. Look for a delta wave (slurred QRS upstroke).
+- **Junctional rhythm** — impulse originates near the AV node, so it reaches the ventricles almost immediately. P wave may be inverted or absent.
+- **Posterior atrial focus** — ectopic atrial pacemaker close to the AV node.
+
+## Long PR interval (> 200 ms)
+
+A long PR = **first-degree AV block**. The impulse is delayed at the AV node but always gets through. By itself, 1st-degree block is benign. However, it can indicate:
+- Increased vagal tone (athletes, sleeping)
+- Digoxin effect
+- Myocarditis or inferior MI (especially if new)
+- Lyme disease carditis
+
+## PR interval changes — the AV blocks
+
+| Block | PR behavior | Dropped beats? |
+|---|---|---|
+| 1st degree | Fixed, prolonged (> 200 ms) | No |
+| Mobitz I (Wenckebach) | Progressively lengthens until QRS drops | Yes (grouped beating) |
+| Mobitz II | Fixed PR, then sudden dropped QRS | Yes (abrupt) |
+| 3rd degree (complete) | No relationship between P and QRS | P waves march through, QRS is escape |
+
+## Practice
+
+<MeasureInterval stripId="nsr_01" intervalType="PR" normalRange={[120, 200]} />
+
+Drag from the start of the P wave to the start of the QRS. A normal PR is 3–5 small boxes wide.
