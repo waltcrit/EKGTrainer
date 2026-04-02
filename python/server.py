@@ -26,6 +26,7 @@ from analyze_ecg import (
     analyze_signal,
     build_claude_prompt,
     digitize_image,
+    run_pipeline_classification,
 )
 
 app = FastAPI(title="EKG Trainer — Python Pipeline", version="1.0.0")
@@ -71,8 +72,15 @@ def analyze(req: AnalyzeRequest):
         # Step 2: measure
         measurements = analyze_signal(digitized["signals"], digitized["sampling_rate"])
 
-        # Step 3: build Claude prompt
-        prompt = build_claude_prompt(measurements, digitized["method"])
+        # Step 3a: PhysioNet pipeline pre-classification
+        pipeline_classification = run_pipeline_classification(
+            digitized["signals"], digitized["sampling_rate"]
+        )
+
+        # Step 3b: build Claude prompt (includes classification hint)
+        prompt = build_claude_prompt(
+            measurements, digitized["method"], pipeline_classification
+        )
 
         result = {
             "success": True,
@@ -81,6 +89,7 @@ def analyze(req: AnalyzeRequest):
             "digitizer_method": digitized["method"],
             "leads_available": list(digitized["signals"].keys()),
             "sampling_rate": digitized["sampling_rate"],
+            "pipeline_classification": pipeline_classification,
         }
         # Use NumpyEncoder to serialize any remaining numpy scalars
         return json.loads(json.dumps(result, cls=_NumpyEncoder))

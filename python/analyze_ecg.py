@@ -19,6 +19,16 @@ from pathlib import Path
 import numpy as np
 import json as _json_module
 
+# ---------------------------------------------------------------------------
+# Arrhythmia pipeline — optional; degrades gracefully if not importable
+# ---------------------------------------------------------------------------
+try:
+    from arrhythmia.inference import classify_ecg, InferenceResult
+    from arrhythmia.constants import DISPLAY_NAMES as _ARR_DISPLAY_NAMES
+    _PIPELINE_AVAILABLE = True
+except Exception:
+    _PIPELINE_AVAILABLE = False
+
 
 class _NumpyEncoder(_json_module.JSONEncoder):
     """Serialize numpy scalars and arrays to native Python types."""
@@ -388,10 +398,56 @@ def _st_analysis(signals: dict, r_peaks: np.ndarray, fs: int) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Step 3 — Build Claude prompt from measurements
+# Step 3a — PhysioNet pipeline pre-classification
 # ---------------------------------------------------------------------------
 
-def build_claude_prompt(measurements: dict, digitizer_method: str) -> str:
+def run_pipeline_classification(signals: dict, sampling_rate: int) -> dict | None:
+    """
+    Run the arrhythmia.inference pipeline on the Lead II signal and return
+    a structured result dict, or None if the pipeline is unavailable.
+
+    The result is included in the server response and used as a hint inside
+    the Claude prompt so the LLM can confirm or override the signal-derived
+    classification.
+    """
+    if not _PIPELINE_AVAILABLE:
+        return None
+
+    lead = "II" if "II" in signals else next(iter(signals))
+    signal = np.asarray(signals[lead], dtype=np.float64)
+
+    try:
+        result: InferenceResult = classify_ecg(
+            signal=signal,
+            fs=sampling_rate,
+            target_fs=250,
+            rpeak_method="hamilton",
+        )
+        primary = result.primary_rhythm.value if hasattr(result.primary_rhythm, "value") else str(result.primary_rhythm)
+        strip   = result.strip_label.value   if hasattr(result.strip_label, "value")   else str(result.strip_label)
+        display = _ARR_DISPLAY_NAMES.get(primary, primary)
+        return {
+            "primary_rhythm":  primary,
+            "display_name":    display,
+            "strip_label":     strip,
+            "confidence":      round(result.confidence, 3),
+            "beat_labels":     result.beat_labels[:20],   # cap for JSON size
+            "used_deep_learning": result.used_deep_learning,
+            "notes":           result.notes,
+        }
+    except Exception as exc:
+        return {"error": str(exc)}
+
+
+# ---------------------------------------------------------------------------
+# Step 3b — Build Claude prompt from measurements
+# ---------------------------------------------------------------------------
+
+def build_claude_prompt(
+    measurements: dict,
+    digitizer_method: str,
+    pipeline_classification: dict | None = None,
+) -> str:
     rr = measurements["rr_intervals_ms"]
     rr_str = ", ".join(f"{x:.0f}" for x in rr[:6]) if rr else "unavailable"
 
@@ -403,7 +459,26 @@ def build_claude_prompt(measurements: dict, digitizer_method: str) -> str:
             st_lines.append(f"  {lead}: depressed ({v['mean_mv']:+.2f} mV)")
     st_summary = "\n".join(st_lines) if st_lines else "  No significant ST deviation detected"
 
-    return f"""You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform — treat them as accurate. Do NOT re-estimate these values visually.
+    # Build the optional pipeline pre-classification block
+    if pipeline_classification and "error" not in pipeline_classification:
+        pc = pipeline_classification
+        hint_lines = [
+            "",
+            "SIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):",
+            f"- Primary rhythm: {pc.get('display_name', pc.get('primary_rhythm', 'unknown'))} ({pc.get('primary_rhythm', '?')})",
+            f"- Confidence: {pc.get('confidence', 0.0):.0%}",
+        ]
+        if pc.get("notes"):
+            hint_lines.append(f"- Notes: {'; '.join(pc['notes'])}")
+        hint_lines += [
+            "You may confirm or override this classification based on morphology and context.",
+            "",
+        ]
+        pipeline_hint = "\n".join(hint_lines)
+    else:
+        pipeline_hint = ""
+
+    return f"""You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform — treat them as accurate. Do NOT re-estimate these values visually.{pipeline_hint}
 
 MEASURED SIGNAL DATA (from {digitizer_method}):
 - Heart rate: {measurements['heart_rate_bpm']:.0f} bpm
@@ -501,8 +576,15 @@ def main():
         # Step 2: Analyze signal
         measurements = analyze_signal(digitized["signals"], digitized["sampling_rate"])
 
-        # Step 3: Build Claude prompt
-        prompt = build_claude_prompt(measurements, digitized["method"])
+        # Step 3a: PhysioNet pipeline pre-classification
+        pipeline_classification = run_pipeline_classification(
+            digitized["signals"], digitized["sampling_rate"]
+        )
+
+        # Step 3b: Build Claude prompt (includes classification hint)
+        prompt = build_claude_prompt(
+            measurements, digitized["method"], pipeline_classification
+        )
 
         result = {
             "success": True,
@@ -511,6 +593,7 @@ def main():
             "digitizer_method": digitized["method"],
             "leads_available": list(digitized["signals"].keys()),
             "sampling_rate": digitized["sampling_rate"],
+            "pipeline_classification": pipeline_classification,
         }
         print(_dumps(result))
 

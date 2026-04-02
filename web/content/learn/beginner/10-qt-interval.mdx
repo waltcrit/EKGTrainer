@@ -1,0 +1,57 @@
+---
+title: "The QT Interval"
+level: "beginner"
+order: 10
+---
+
+# The QT Interval
+
+The **QT interval** is measured from the start of the QRS complex to the end of the T wave. It represents the total duration of ventricular depolarization and repolarization.
+
+<DiagramPQRST highlight={["qrs", "st", "t", "qt"]} />
+
+## Why it matters
+
+A prolonged QT interval predisposes to a dangerous ventricular arrhythmia called **torsades de pointes** (TdP) — a polymorphic VT that can degenerate into ventricular fibrillation and sudden death.
+
+This is why QT measurement is a required step in every systematic EKG read.
+
+## Correcting for heart rate: QTc
+
+The QT interval naturally shortens as heart rate increases. To compare QT across different heart rates, we use the **corrected QT (QTc)** using Bazett's formula:
+
+**QTc = QT ÷ √(R–R in seconds)**
+
+**Normal QTc:**
+- Men: ≤ 440 ms
+- Women: ≤ 460 ms
+- Borderline prolonged: 440–500 ms
+- High risk: > 500 ms
+
+## Causes of prolonged QTc
+
+**Drugs (most common):**
+- Antiarrhythmics: amiodarone, sotalol, quinidine, dofetilide
+- Antibiotics: azithromycin, moxifloxacin, erythromycin
+- Antipsychotics: haloperidol, droperidol, quetiapine
+- Antiemetics: ondansetron, metoclopramide
+- Check every new medication
+
+**Electrolytes:**
+- Hypokalemia, hypomagnesemia, hypocalcemia (the "3 H's")
+
+**Cardiac:**
+- Myocarditis, cardiomyopathy, post-cardiac arrest
+
+**Congenital:**
+- Long QT syndrome (LQTS types 1, 2, 3)
+
+## Short QTc (< 340 ms)
+
+Hypercalcemia, digitalis toxicity, short QT syndrome (rare, high risk of VF).
+
+## Practice
+
+<MeasureInterval stripId="nsr_01" intervalType="QT" normalRange={[360, 440]} />
+
+Drag from the start of the QRS to the end of the T wave. Remember this represents the total electrical systole of the ventricles.
