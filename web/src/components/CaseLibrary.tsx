@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import type { EKGCase, RhythmCategory } from "@/types/cases";
 import { CATEGORY_LABELS, DIFFICULTY_LABELS } from "@/types/cases";
@@ -12,7 +13,7 @@ interface CaseLibraryProps {
 
 const DIFF_ACCENT: Record<number, { bar: string; badge: string; dot: string }> = {
   1: { bar: "bg-emerald-400", badge: "bg-emerald-100 text-emerald-800", dot: "bg-emerald-400" },
-  2: { bar: "bg-sky-400",     badge: "bg-sky-100 text-sky-800",         dot: "bg-sky-400"     },
+  2: { bar: "bg-teal-400",    badge: "bg-teal-100 text-teal-800",        dot: "bg-teal-400"    },
   3: { bar: "bg-orange-400",  badge: "bg-orange-100 text-orange-800",   dot: "bg-orange-400"  },
   4: { bar: "bg-red-400",     badge: "bg-red-100 text-red-800",         dot: "bg-red-400"     },
 };
@@ -33,8 +34,8 @@ export default function CaseLibrary({ cases, onPractice, onAnalyze }: CaseLibrar
           onClick={() => setActiveCategory("all")}
           className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
             activeCategory === "all"
-              ? "bg-slate-900 text-white shadow-sm"
-              : "bg-white border border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-800"
+              ? "academy-pill-active"
+              : "academy-pill"
           }`}
         >
           All · {cases.length}
@@ -45,8 +46,8 @@ export default function CaseLibrary({ cases, onPractice, onAnalyze }: CaseLibrar
             onClick={() => setActiveCategory(cat)}
             className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
               activeCategory === cat
-                ? "bg-slate-900 text-white shadow-sm"
-                : "bg-white border border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-800"
+                ? "academy-pill-active"
+                : "academy-pill"
             }`}
           >
             {CATEGORY_LABELS[cat]} · {cases.filter((c) => c.category === cat).length}
@@ -62,7 +63,7 @@ export default function CaseLibrary({ cases, onPractice, onAnalyze }: CaseLibrar
 
           return (
             <div key={c.id}
-              className="rounded-xl bg-white border border-slate-200 shadow-sm overflow-hidden
+              className="academy-panel rounded-xl overflow-hidden
                          transition-shadow hover:shadow-md"
             >
               {/* ── Card header ── */}
@@ -74,7 +75,7 @@ export default function CaseLibrary({ cases, onPractice, onAnalyze }: CaseLibrar
                 <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${acc.dot}`} />
 
                 {/* Title */}
-                <span className="flex-1 font-medium text-sm text-slate-900 leading-snug">
+                <span className="flex-1 font-medium text-sm text-[var(--academy-ink)] leading-snug">
                   {c.rhythm}
                 </span>
 
@@ -85,14 +86,14 @@ export default function CaseLibrary({ cases, onPractice, onAnalyze }: CaseLibrar
 
                 {/* Rate */}
                 {c.rate !== null && c.rate > 0 && (
-                  <span className="text-xs text-slate-400 shrink-0 hidden md:block">
+                  <span className="text-xs text-[var(--academy-muted)] shrink-0 hidden md:block">
                     {c.rate} bpm
                   </span>
                 )}
 
                 {/* Chevron */}
                 <svg
-                  className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                  className={`w-4 h-4 text-[var(--academy-muted)] shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
                   fill="none" stroke="currentColor" viewBox="0 0 24 24"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -101,17 +102,20 @@ export default function CaseLibrary({ cases, onPractice, onAnalyze }: CaseLibrar
 
               {/* ── Expanded content ── */}
               {isOpen && (
-                <div className="border-t border-slate-100">
+                <div className="border-t border-[var(--academy-line)]">
 
                   {/* Difficulty bar accent */}
                   <div className={`h-0.5 w-full ${acc.bar}`} />
 
                   {/* 12-lead EKG */}
                   <div className="bg-[#fff5e6]">
-                    <img
+                    <Image
                       src={c.twelveleadPath}
                       alt={`${c.rhythm} — 12-lead EKG`}
-                      className="w-full object-contain"
+                      width={1600}
+                      height={900}
+                      sizes="100vw"
+                      className="w-full h-auto object-contain"
                     />
                     <div className="px-3 py-1 border-t border-[#ffe4b8]">
                       <span className="text-[10px] font-semibold uppercase tracking-widest text-amber-700/50">
@@ -124,12 +128,12 @@ export default function CaseLibrary({ cases, onPractice, onAnalyze }: CaseLibrar
 
                     {/* Key features */}
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+                      <p className="academy-heading text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--academy-muted)] mb-2">
                         Key Features
                       </p>
                       <ul className="grid sm:grid-cols-2 gap-x-4 gap-y-1.5">
                         {c.keyFeatures.map((f, i) => (
-                          <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
+                          <li key={i} className="flex items-start gap-2 text-sm text-[var(--academy-ink)]">
                             <svg className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                             </svg>
@@ -140,30 +144,30 @@ export default function CaseLibrary({ cases, onPractice, onAnalyze }: CaseLibrar
                     </div>
 
                     {/* Teaching point */}
-                    <div className="rounded-lg bg-sky-50 border border-sky-100 px-3.5 py-3">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-sky-500 mb-1.5">
+                    <div className="rounded-lg bg-teal-50/80 border border-teal-100 px-3.5 py-3">
+                      <p className="academy-heading text-[10px] font-semibold uppercase tracking-[0.2em] text-teal-700 mb-1.5">
                         Teaching Point
                       </p>
-                      <p className="text-sm text-slate-700 leading-relaxed">{c.teaching}</p>
+                      <p className="text-sm text-[var(--academy-ink)] leading-relaxed">{c.teaching}</p>
                     </div>
 
                     {/* Meta + practice */}
                     <div className="flex items-center justify-between flex-wrap gap-3">
-                      <div className="flex items-center gap-4 text-xs text-slate-400">
+                      <div className="flex items-center gap-4 text-xs text-[var(--academy-muted)]">
                         {c.rate !== null && c.rate > 0 && (
-                          <span>Rate <strong className="text-slate-600">{c.rate} bpm</strong></span>
+                          <span>Rate <strong className="text-[var(--academy-ink)]">{c.rate} bpm</strong></span>
                         )}
                         <span>
-                          Rhythm <strong className="text-slate-600">{c.regularity.replace(/_/g, " ")}</strong>
+                          Rhythm <strong className="text-[var(--academy-ink)]">{c.regularity.replace(/_/g, " ")}</strong>
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
                         {onAnalyze && (
                           <button
                             onClick={() => onAnalyze(c)}
-                            className="flex items-center gap-1.5 rounded-lg border border-violet-200
-                                       bg-violet-50 text-violet-700 px-4 py-2 text-xs font-semibold
-                                       hover:bg-violet-100 transition-colors"
+                            className="flex items-center gap-1.5 rounded-lg border border-teal-200
+                                       bg-teal-50 text-teal-700 px-4 py-2 text-xs font-semibold
+                                       hover:bg-teal-100 transition-colors"
                           >
                             AI Analysis
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -175,8 +179,8 @@ export default function CaseLibrary({ cases, onPractice, onAnalyze }: CaseLibrar
                         {onPractice && (
                           <button
                             onClick={() => onPractice(c)}
-                            className="flex items-center gap-1.5 rounded-lg bg-slate-900 text-white
-                                       px-4 py-2 text-xs font-semibold hover:bg-slate-700 transition-colors"
+                            className="flex items-center gap-1.5 rounded-lg bg-[var(--academy-ink)] text-white
+                                       px-4 py-2 text-xs font-semibold hover:bg-teal-900 transition-colors"
                           >
                             Practice
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

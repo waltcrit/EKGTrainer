@@ -8,7 +8,7 @@ const LEVEL_CONFIG: Record<
 > = {
   beginner: {
     label: "Beginner",
-    color: "text-emerald-700",
+    color: "text-emerald-800",
     borderColor: "border-emerald-200 hover:border-emerald-400",
     icon: "○",
     description:
@@ -16,7 +16,7 @@ const LEVEL_CONFIG: Record<
   },
   intermediate: {
     label: "Intermediate",
-    color: "text-sky-700",
+    color: "text-teal-800",
     borderColor: "border-sky-200 hover:border-sky-400",
     icon: "◆",
     description:
@@ -24,8 +24,8 @@ const LEVEL_CONFIG: Record<
   },
   advanced: {
     label: "Advanced",
-    color: "text-purple-700",
-    borderColor: "border-purple-200 hover:border-purple-400",
+    color: "text-amber-800",
+    borderColor: "border-amber-200 hover:border-amber-400",
     icon: "★",
     description:
       "Life-threatening rhythms, STEMI localization, electrolyte patterns, and challenging edge cases.",
@@ -38,18 +38,18 @@ export default function LearnIndexPage() {
   return (
     <main className="mx-auto max-w-4xl px-4 py-10 sm:py-16">
       {/* Hero */}
-      <div className="mb-10 text-center">
-        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight mb-3">
+      <div className="academy-fade-soft mb-10 text-center">
+        <h1 className="academy-heading text-4xl sm:text-5xl font-semibold text-[var(--academy-ink)] mb-3">
           EKG Academy
         </h1>
-        <p className="text-base text-slate-500 max-w-xl mx-auto">
+        <p className="text-base text-[var(--academy-muted)] max-w-xl mx-auto">
           A structured, self-paced curriculum for learning to read EKGs — from first principles to
           advanced patterns.
         </p>
       </div>
 
       {/* Core principle callout */}
-      <div className="mb-10 rounded-xl border border-sky-200 bg-sky-50 px-5 py-4 flex gap-3">
+      <div className="academy-fade-up academy-delay-5 academy-panel mb-10 rounded-xl px-5 py-4 flex gap-3 border-teal-200 bg-teal-50/70">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
@@ -58,12 +58,12 @@ export default function LearnIndexPage() {
           strokeWidth={2}
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="w-5 h-5 text-sky-500 flex-shrink-0 mt-0.5"
+          className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5"
           aria-hidden
         >
           <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
         </svg>
-        <p className="text-sm text-sky-800">
+        <p className="text-sm text-teal-900">
           <strong>Core principle:</strong> Read every EKG the same way, every time. This curriculum
           teaches a 10-step systematic method and builds your arrhythmia recognition around it.
         </p>
@@ -71,13 +71,15 @@ export default function LearnIndexPage() {
 
       {/* Level cards */}
       <div className="grid gap-5 sm:grid-cols-3">
-        {toc.levels.map(({ level, lessons }) => {
+        {toc.levels.map(({ level, lessons }, index) => {
           const config = LEVEL_CONFIG[level];
           return (
             <Link
               key={level}
               href={`/learn/${level}`}
-              className={`group rounded-xl border-2 bg-white p-5 shadow-sm transition-all ${config.borderColor}`}
+              className={`academy-fade-up academy-panel group rounded-xl border-2 p-5 shadow-sm transition-all ${
+                index === 0 ? "academy-delay-6" : index === 1 ? "academy-delay-7" : "academy-delay-8"
+              } ${config.borderColor}`}
             >
               <div className="mb-3 flex items-center gap-2">
                 <span className={`text-lg ${config.color}`} aria-hidden>
@@ -85,8 +87,8 @@ export default function LearnIndexPage() {
                 </span>
                 <h2 className={`text-lg font-bold ${config.color}`}>{config.label}</h2>
               </div>
-              <p className="text-sm text-slate-500 mb-4 leading-relaxed">{config.description}</p>
-              <div className="text-xs text-slate-400 font-medium">
+              <p className="text-sm text-[var(--academy-muted)] mb-4 leading-relaxed">{config.description}</p>
+              <div className="text-xs text-[var(--academy-muted)] font-medium">
                 {lessons.length} lessons →
               </div>
             </Link>
@@ -96,10 +98,10 @@ export default function LearnIndexPage() {
 
       {/* Quick-start: first lesson */}
       <div className="mt-10 text-center">
-        <p className="text-sm text-slate-400 mb-3">New here? Start from the beginning:</p>
+        <p className="text-sm text-[var(--academy-muted)] mb-3">New here? Start from the beginning:</p>
         <Link
           href="/learn/beginner/01-intro"
-          className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-700 transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg bg-[var(--academy-ink)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-900 transition-colors"
         >
           Start Lesson 1
           <svg

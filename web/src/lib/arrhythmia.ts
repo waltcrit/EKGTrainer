@@ -1,5 +1,5 @@
 /**
- * Canonical arrhythmia classes for the EKG Trainer.
+ * Canonical arrhythmia classes for the EKG Academy.
  *
  * Mirrors python/arrhythmia/constants.py — keep in sync when adding classes.
  */

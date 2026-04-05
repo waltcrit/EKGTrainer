@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import EKGUploader from "@/components/EKGUploader";
 import RhythmReport from "@/components/RhythmReport";
@@ -36,15 +37,15 @@ const TABS: { id: Tab; label: string }[] = [
 
 function LandingPage({ onEnter }: { onEnter: (tab: Tab) => void }) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 px-6">
+    <div className="min-h-screen flex flex-col items-center justify-center px-6">
       <div className="flex flex-col items-center gap-8 max-w-lg w-full">
 
         {/* Logo mark */}
-        <div className="flex flex-col items-center gap-3">
+        <div className="academy-fade-soft flex flex-col items-center gap-3">
           <EcgMark className="w-20 h-10 text-sky-600" />
           <div className="text-center">
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">EKG Trainer</h1>
-            <p className="text-slate-500 text-sm mt-1">Systematic ECG interpretation · 38 teaching cases</p>
+            <h1 className="academy-heading text-4xl font-semibold text-[var(--academy-ink)]">EKG Academy</h1>
+            <p className="text-[var(--academy-muted)] text-sm mt-1">Systematic ECG interpretation · 38 teaching cases</p>
           </div>
         </div>
 
@@ -52,8 +53,8 @@ function LandingPage({ onEnter }: { onEnter: (tab: Tab) => void }) {
         <div className="grid grid-cols-1 gap-3 w-full">
           <button
             onClick={() => onEnter("practice")}
-            className="group flex items-center gap-4 rounded-xl border border-slate-200 bg-white
-                       px-5 py-4 text-left shadow-sm hover:border-sky-300 hover:shadow-md
+            className="academy-fade-up academy-delay-1 academy-panel group flex items-center gap-4 rounded-xl
+                       px-5 py-4 text-left hover:border-sky-300 hover:shadow-md
                        transition-all duration-150"
           >
             <div className="w-10 h-10 rounded-lg bg-sky-50 flex items-center justify-center shrink-0
@@ -64,12 +65,12 @@ function LandingPage({ onEnter }: { onEnter: (tab: Tab) => void }) {
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-slate-900 text-sm">Practice Mode</p>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="font-semibold text-[var(--academy-ink)] text-sm">Practice Mode</p>
+              <p className="text-xs text-[var(--academy-muted)] mt-0.5">
                 Identify rhythms from strips and 12-leads · A/B/C/D multiple choice
               </p>
             </div>
-            <svg className="w-4 h-4 text-slate-300 group-hover:text-sky-400 transition-colors shrink-0"
+            <svg className="w-4 h-4 text-[var(--academy-muted)] group-hover:text-sky-400 transition-colors shrink-0"
               fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
@@ -77,7 +78,7 @@ function LandingPage({ onEnter }: { onEnter: (tab: Tab) => void }) {
 
           <button
             onClick={() => onEnter("library")}
-            className="group flex items-center gap-4 rounded-xl border border-slate-200 bg-white
+            className="academy-fade-up academy-delay-2 academy-panel group flex items-center gap-4 rounded-xl
                        px-5 py-4 text-left shadow-sm hover:border-emerald-300 hover:shadow-md
                        transition-all duration-150"
           >
@@ -89,12 +90,12 @@ function LandingPage({ onEnter }: { onEnter: (tab: Tab) => void }) {
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-slate-900 text-sm">Case Library</p>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="font-semibold text-[var(--academy-ink)] text-sm">Case Library</p>
+              <p className="text-xs text-[var(--academy-muted)] mt-0.5">
                 Browse all 38 rhythms · Key features and teaching points
               </p>
             </div>
-            <svg className="w-4 h-4 text-slate-300 group-hover:text-emerald-400 transition-colors shrink-0"
+            <svg className="w-4 h-4 text-[var(--academy-muted)] group-hover:text-emerald-400 transition-colors shrink-0"
               fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
@@ -102,24 +103,24 @@ function LandingPage({ onEnter }: { onEnter: (tab: Tab) => void }) {
 
           <button
             onClick={() => onEnter("analyze")}
-            className="group flex items-center gap-4 rounded-xl border border-slate-200 bg-white
-                       px-5 py-4 text-left shadow-sm hover:border-violet-300 hover:shadow-md
+            className="academy-fade-up academy-delay-3 academy-panel group flex items-center gap-4 rounded-xl
+                       px-5 py-4 text-left shadow-sm hover:border-teal-300 hover:shadow-md
                        transition-all duration-150"
           >
-            <div className="w-10 h-10 rounded-lg bg-violet-50 flex items-center justify-center shrink-0
-                            group-hover:bg-violet-100 transition-colors">
-              <svg className="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center shrink-0
+                            group-hover:bg-teal-100 transition-colors">
+              <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
                   d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.347.347a3.75 3.75 0 01-5.303 0l-.347-.347z" />
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-slate-900 text-sm">AI Analysis</p>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="font-semibold text-[var(--academy-ink)] text-sm">AI Analysis</p>
+              <p className="text-xs text-[var(--academy-muted)] mt-0.5">
                 Upload any EKG · Claude applies the 9-step framework
               </p>
             </div>
-            <svg className="w-4 h-4 text-slate-300 group-hover:text-violet-400 transition-colors shrink-0"
+            <svg className="w-4 h-4 text-[var(--academy-muted)] group-hover:text-teal-400 transition-colors shrink-0"
               fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
@@ -127,7 +128,7 @@ function LandingPage({ onEnter }: { onEnter: (tab: Tab) => void }) {
 
           <Link
             href="/learn"
-            className="group flex items-center gap-4 rounded-xl border border-slate-200 bg-white
+            className="academy-fade-up academy-delay-4 academy-panel group flex items-center gap-4 rounded-xl
                        px-5 py-4 text-left shadow-sm hover:border-orange-300 hover:shadow-md
                        transition-all duration-150"
           >
@@ -139,12 +140,12 @@ function LandingPage({ onEnter }: { onEnter: (tab: Tab) => void }) {
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-slate-900 text-sm">EKG Academy</p>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="font-semibold text-[var(--academy-ink)] text-sm">EKG Academy</p>
+              <p className="text-xs text-[var(--academy-muted)] mt-0.5">
                 Structured lessons · Build your EKG interpretation skills
               </p>
             </div>
-            <svg className="w-4 h-4 text-slate-300 group-hover:text-orange-400 transition-colors shrink-0"
+            <svg className="w-4 h-4 text-[var(--academy-muted)] group-hover:text-orange-400 transition-colors shrink-0"
               fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
@@ -155,11 +156,11 @@ function LandingPage({ onEnter }: { onEnter: (tab: Tab) => void }) {
         <div className="flex flex-col items-center gap-2">
           <button
             onClick={() => onEnter("about")}
-            className="text-xs text-slate-400 hover:text-slate-600 transition-colors underline underline-offset-2"
+            className="text-xs text-[var(--academy-muted)] hover:text-[var(--academy-ink)] transition-colors underline underline-offset-2"
           >
             About &amp; Credits
           </button>
-          <p className="text-xs text-slate-400 text-center leading-relaxed">
+          <p className="text-xs text-[var(--academy-muted)] text-center leading-relaxed">
             For educational use only · Not a substitute for clinical judgment
           </p>
         </div>
@@ -192,12 +193,9 @@ export default function Home() {
       if (found) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setPracticeCase(found);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCurrentStripId(found.id);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setChecklistOpen(true);
       }
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLanded(true);
       if (tabParam && ["practice", "library", "analyze", "about"].includes(tabParam)) {
         setTab(tabParam);
@@ -289,20 +287,19 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* ── Sticky top nav ──────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-sm">
+      <header className="academy-nav sticky top-0 z-50 border-b backdrop-blur-sm">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           {/* Logo + Home button */}
           <div className="flex items-center gap-3 shrink-0">
             <div className="flex items-center gap-2.5">
               <EcgMark className="w-8 h-4 text-sky-600" />
-              <span className="font-semibold text-slate-900 text-[15px] tracking-tight select-none">
-                EKG Trainer
+              <span className="academy-heading text-[var(--academy-ink)] text-[17px] leading-none select-none">
+                EKG Academy
               </span>
             </div>
             <button
               onClick={() => setLanded(false)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium
-                         text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-all duration-150"
+              className="academy-pill flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-150"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
@@ -320,8 +317,8 @@ export default function Home() {
                 onClick={() => setTab(id)}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-150
                   ${tab === id
-                    ? "bg-slate-900 text-white shadow-sm"
-                    : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"
+                    ? "academy-pill-active"
+                    : "academy-pill"
                   }`}
               >
                 {label}
@@ -329,7 +326,7 @@ export default function Home() {
             ))}
             <Link
               href="/learn"
-              className="ml-1 px-4 py-1.5 rounded-full text-sm font-medium text-sky-600 hover:bg-sky-50 transition-all duration-150 border border-sky-200 hover:border-sky-300"
+              className="ml-1 academy-pill px-4 py-1.5 rounded-full text-sm font-medium text-teal-700 hover:bg-teal-50 transition-all duration-150"
             >
               Academy
             </Link>
@@ -346,8 +343,7 @@ export default function Home() {
             <div>
               <button
                 onClick={() => setChecklistOpen((v) => !v)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
-                aria-expanded={checklistOpen}
+                className="academy-panel flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--academy-muted)] hover:text-[var(--academy-ink)] transition-all"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -402,7 +398,7 @@ export default function Home() {
         {tab === "analyze" && (
           <div className="flex flex-col gap-5 max-w-2xl mx-auto">
             {/* Disclaimer */}
-            <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+            <div className="academy-panel flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50/85 px-4 py-3">
               <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
               </svg>
@@ -414,11 +410,15 @@ export default function Home() {
 
             {/* Image preview — shown for both library cases and user uploads */}
             {analyzePreview && analyzeState !== "idle" && (
-              <div className="bg-[#fff5e6] rounded-xl overflow-hidden border border-[#ffe4b8]">
-                <img
+              <div className="academy-panel bg-[#fff5e6] rounded-xl overflow-hidden border border-[#ffe4b8]">
+                <Image
                   src={analyzePreview}
                   alt="EKG being analyzed"
-                  className="w-full object-contain"
+                  width={1600}
+                  height={900}
+                  sizes="100vw"
+                  unoptimized
+                  className="w-full h-auto object-contain"
                 />
                 <div className="px-3 py-1 border-t border-[#ffe4b8]">
                   <span className="text-[10px] font-semibold uppercase tracking-widest text-amber-700/50">
@@ -438,7 +438,7 @@ export default function Home() {
             )}
 
             {analyzeState === "analyzing" && (
-              <div className="flex flex-col items-center gap-3 py-12">
+              <div className="academy-panel flex flex-col items-center gap-3 py-12 rounded-xl">
                 <div className="relative w-10 h-10">
                   <svg className="w-10 h-10 animate-spin text-sky-200" fill="none" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
@@ -448,7 +448,7 @@ export default function Home() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
                 </div>
-                <p className="text-sm text-slate-500 font-medium">Applying 9-step framework…</p>
+                <p className="text-sm text-[var(--academy-muted)] font-medium">Applying 9-step framework…</p>
               </div>
             )}
 
@@ -501,8 +501,8 @@ export default function Home() {
       </main>
 
       {/* ── Footer ──────────────────────────────────────────────────────── */}
-      <footer className="border-t border-slate-200 py-4 mt-8">
-        <p className="text-center text-xs text-slate-400">
+      <footer className="border-t border-[var(--academy-line)] py-4 mt-8">
+        <p className="text-center text-xs text-[var(--academy-muted)]">
           For educational use only · Not a substitute for clinical judgment
         </p>
       </footer>

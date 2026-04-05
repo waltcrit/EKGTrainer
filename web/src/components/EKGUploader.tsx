@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useRef, useState } from "react";
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
@@ -62,8 +63,8 @@ export default function EKGUploader({ onFile, onError, disabled }: EKGUploaderPr
         className={[
           "relative w-full rounded-xl border-2 border-dashed transition-all duration-150 cursor-pointer overflow-hidden",
           dragging
-            ? "border-sky-400 bg-sky-50"
-            : "border-slate-200 bg-white hover:border-sky-300 hover:bg-slate-50",
+            ? "border-teal-500 bg-teal-50"
+            : "border-[var(--academy-line)] bg-[var(--academy-paper)] hover:border-teal-400 hover:bg-teal-50/50",
           disabled ? "opacity-50 cursor-not-allowed" : "",
         ].join(" ")}
       >
@@ -71,6 +72,7 @@ export default function EKGUploader({ onFile, onError, disabled }: EKGUploaderPr
           ref={inputRef}
           type="file"
           accept="image/jpeg,image/png,image/webp"
+          aria-label="Upload EKG image"
           className="hidden"
           onChange={handleFileChange}
           disabled={disabled}
@@ -78,7 +80,15 @@ export default function EKGUploader({ onFile, onError, disabled }: EKGUploaderPr
 
         {preview ? (
           <div className="bg-[#fff5e6]">
-            <img src={preview} alt="EKG preview" className="w-full max-h-72 object-contain" />
+            <Image
+              src={preview}
+              alt="EKG preview"
+              width={1600}
+              height={900}
+              sizes="100vw"
+              unoptimized
+              className="w-full max-h-72 h-auto object-contain"
+            />
             <div className="px-3 py-1 border-t border-[#ffe4b8]">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-amber-700/50">
                 EKG Image Preview
@@ -88,19 +98,19 @@ export default function EKGUploader({ onFile, onError, disabled }: EKGUploaderPr
         ) : (
           <div className="flex flex-col items-center justify-center gap-3 py-14 px-6 text-center">
             <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-              dragging ? "bg-sky-100" : "bg-slate-100"
+              dragging ? "bg-teal-100" : "bg-teal-100/70"
             }`}>
-              <svg className={`w-6 h-6 transition-colors ${dragging ? "text-sky-500" : "text-slate-400"}`}
+              <svg className={`w-6 h-6 transition-colors ${dragging ? "text-teal-600" : "text-[var(--academy-muted)]"}`}
                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                   d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-700">
+              <p className="text-sm font-semibold text-[var(--academy-ink)]">
                 {dragging ? "Drop to analyze" : "Drop an EKG image here"}
               </p>
-              <p className="text-xs text-slate-400 mt-1">or click to browse — JPEG, PNG, WebP</p>
+              <p className="text-xs text-[var(--academy-muted)] mt-1">or click to browse — JPEG, PNG, WebP</p>
             </div>
           </div>
         )}
@@ -109,7 +119,7 @@ export default function EKGUploader({ onFile, onError, disabled }: EKGUploaderPr
       {preview && !disabled && (
         <button
           onClick={handleClear}
-          className="self-center text-xs text-slate-400 hover:text-slate-600 transition-colors
+          className="self-center text-xs text-[var(--academy-muted)] hover:text-[var(--academy-ink)] transition-colors
                      underline underline-offset-2"
         >
           Clear image

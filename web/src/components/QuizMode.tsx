@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { EKGCase, RhythmCategory } from "@/types/cases";
 import { CATEGORY_LABELS } from "@/types/cases";
@@ -32,6 +33,36 @@ const ALL_CATEGORIES = new Set<RhythmCategory>([
   "sinus", "atrial", "supraventricular", "av_block", "bundle_branch",
   "junctional", "ventricular", "stemi", "nstemi", "pe_strain", "channelopathy", "pacemaker",
 ]);
+
+const PROGRESS_WIDTH_CLASSES = [
+  "w-0",
+  "w-[5%]",
+  "w-[10%]",
+  "w-[15%]",
+  "w-[20%]",
+  "w-[25%]",
+  "w-[30%]",
+  "w-[35%]",
+  "w-[40%]",
+  "w-[45%]",
+  "w-[50%]",
+  "w-[55%]",
+  "w-[60%]",
+  "w-[65%]",
+  "w-[70%]",
+  "w-[75%]",
+  "w-[80%]",
+  "w-[85%]",
+  "w-[90%]",
+  "w-[95%]",
+  "w-full",
+] as const;
+
+function progressWidthClass(accuracy: number | null): (typeof PROGRESS_WIDTH_CLASSES)[number] {
+  const clamped = Math.max(0, Math.min(100, accuracy ?? 0));
+  const step = Math.round(clamped / 5);
+  return PROGRESS_WIDTH_CLASSES[step] ?? "w-0";
+}
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -211,11 +242,10 @@ export default function QuizMode({ cases, initialCase }: QuizModeProps) {
             </div>
             <div className="w-20 h-1.5 bg-slate-200 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-500 ${
+                className={`${progressWidthClass(accuracyPct)} h-full rounded-full transition-all duration-500 ${
                   (accuracyPct ?? 0) >= 80 ? "bg-emerald-500" :
                   (accuracyPct ?? 0) >= 60 ? "bg-amber-400"  : "bg-red-400"
                 }`}
-                style={{ width: `${accuracyPct ?? 0}%` }}
               />
             </div>
             <span className="font-medium">{accuracyPct}%</span>
@@ -271,11 +301,14 @@ export default function QuizMode({ cases, initialCase }: QuizModeProps) {
 
       {/* ── EKG image ──────────────────────────────────────────────────── */}
       <div className="rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-[#fff5e6]">
-        <img
+        <Image
           key={showingTwelveLead ? current.twelveleadPath : current.imagePath}
           src={showingTwelveLead ? current.twelveleadPath : current.imagePath}
           alt={showingTwelveLead ? "12-lead EKG" : "EKG rhythm strip"}
-          className="w-full object-contain"
+          width={1600}
+          height={900}
+          sizes="100vw"
+          className="w-full h-auto object-contain"
         />
         {/* Image type label */}
         <div className="px-3 py-1.5 flex items-center justify-between bg-[#fff5e6] border-t border-[#ffe4b8]">

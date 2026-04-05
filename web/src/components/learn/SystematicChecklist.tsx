@@ -32,7 +32,6 @@ export default function SystematicChecklist({ stripId, compact = false }: Props)
     } catch {
       // ignore
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, [storageKey]);
 
@@ -65,6 +64,18 @@ export default function SystematicChecklist({ stripId, compact = false }: Props)
   const completedCount = checked.size;
   const totalCount = SYSTEMATIC_STEPS.length;
   const allDone = completedCount === totalCount;
+  const progressClass =
+    !mounted || totalCount === 0
+      ? "w-0"
+      : completedCount >= totalCount
+        ? "w-full"
+        : completedCount >= totalCount * 0.75
+          ? "w-3/4"
+          : completedCount >= totalCount * 0.5
+            ? "w-1/2"
+            : completedCount >= totalCount * 0.25
+              ? "w-1/4"
+              : "w-0";
 
   return (
     <div
@@ -112,10 +123,7 @@ export default function SystematicChecklist({ stripId, compact = false }: Props)
       {/* Progress bar */}
       <div className="w-full h-1 bg-slate-100 rounded-full mb-3 overflow-hidden">
         <div
-          className="h-full bg-sky-500 rounded-full transition-all duration-300"
-          style={{
-            width: mounted ? `${(completedCount / totalCount) * 100}%` : "0%",
-          }}
+          className={`${progressClass} h-full bg-sky-500 rounded-full transition-all duration-300`}
         />
       </div>
 
@@ -134,7 +142,6 @@ export default function SystematicChecklist({ stripId, compact = false }: Props)
                     ? "bg-emerald-50 hover:bg-emerald-100"
                     : "hover:bg-slate-50"
                 }`}
-                aria-pressed={isChecked}
               >
                 {/* Checkbox */}
                 <span
@@ -192,7 +199,7 @@ export default function SystematicChecklist({ stripId, compact = false }: Props)
       {mounted && allDone && (
         <div className="mt-3 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-center">
           <p className="text-sm font-semibold text-emerald-700">
-            All steps complete — great systematic read!
+            All steps complete - great systematic read!
           </p>
         </div>
       )}

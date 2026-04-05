@@ -8,14 +8,14 @@ export const metadata: Metadata = {
 
 export default function LearnLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
       {/* Top nav */}
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-sm">
+      <header className="academy-nav sticky top-0 z-30 border-b backdrop-blur-sm">
         <div className="mx-auto max-w-7xl flex items-center justify-between px-4 h-14">
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1"
+              className="text-xs font-medium text-[var(--academy-muted)] hover:text-[var(--academy-ink)] transition-colors flex items-center gap-1"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -32,17 +32,17 @@ export default function LearnLayout({ children }: { children: React.ReactNode })
               </svg>
               Trainer
             </Link>
-            <span className="text-slate-300">/</span>
+            <span className="text-[color-mix(in_oklab,var(--academy-muted)_38%,white)]">/</span>
             <Link
               href="/learn"
-              className="text-sm font-semibold text-slate-800 hover:text-sky-600 transition-colors"
+              className="academy-heading text-sm text-[var(--academy-ink)] hover:text-teal-700 transition-colors"
             >
               EKG Academy
             </Link>
           </div>
 
           {/* Pulse icon */}
-          <div className="flex items-center gap-1.5 text-sky-600">
+          <div className="flex items-center gap-1.5 text-teal-700">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -56,7 +56,7 @@ export default function LearnLayout({ children }: { children: React.ReactNode })
             >
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
             </svg>
-            <span className="text-xs font-semibold tracking-wide uppercase text-slate-500 hidden sm:block">
+            <span className="text-xs font-semibold tracking-wide uppercase text-[var(--academy-muted)] hidden sm:block">
               EKG Academy
             </span>
           </div>
