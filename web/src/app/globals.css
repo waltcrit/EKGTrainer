@@ -6,4 +6,27 @@
       "Segoe UI", sans-serif;
     scroll-behavior: smooth;
   }
+
+  /* Keep MDX lesson tables aligned and readable across viewports. */
+  .prose table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .prose th,
+  .prose td {
+    vertical-align: top;
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid rgb(226 232 240);
+  }
+
+  .prose th {
+    font-weight: 600;
+    background: rgb(248 250 252);
+  }
 }

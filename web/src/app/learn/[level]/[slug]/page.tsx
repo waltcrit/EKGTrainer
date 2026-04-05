@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote/rsc";
+import remarkGfm from "remark-gfm";
 import { getTOC, getLessonsForLevel } from "@/lib/learn/toc";
 import { loadLesson } from "@/lib/learn/lesson-loader";
 import type { Level } from "@/lib/learn/toc";
@@ -129,7 +130,15 @@ export default async function LessonPage({ params }: PageProps) {
 
           {/* MDX content */}
           <div className="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-slate-900 prose-a:text-sky-600 prose-code:text-sky-700 prose-code:bg-sky-50 prose-code:px-1 prose-code:rounded prose-table:text-sm">
-            <MDXRemote source={source} components={MDX_COMPONENTS} />
+            <MDXRemote
+              source={source}
+              components={MDX_COMPONENTS}
+              options={{
+                mdxOptions: {
+                  remarkPlugins: [remarkGfm],
+                },
+              }}
+            />
           </div>
 
           {/* Mark complete + navigation */}
