@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# pyright: basic
+
 """
 PTB-XL EKG Extractor for EKGTrainer
 =====================================
@@ -35,6 +37,7 @@ import ast
 import sys
 import warnings
 from pathlib import Path
+from typing import Any, cast
 
 import numpy as np
 import matplotlib
@@ -96,7 +99,10 @@ def bandpass(sig: np.ndarray, low=0.5, high=40.0) -> np.ndarray:
     if not _SCIPY:
         return sig
     nyq = FS / 2
-    b, a = butter(3, [low / nyq, high / nyq], btype='band')
+    ba = butter(3, [low / nyq, high / nyq], btype='band', output='ba')
+    if ba is None:
+        return sig
+    b, a = cast(tuple[np.ndarray, np.ndarray], ba)
     return filtfilt(b, a, sig, axis=0)
 
 
@@ -278,12 +284,12 @@ def find_record(
         try:
             fname = str(row["filename_hr"]).lstrip("./")
             record = wfdb.rdrecord(str(data_dir / fname))
-            sig = record.p_signal  # (5000, 12) mV
+            sig = getattr(record, "p_signal", None)  # (5000, 12) mV
             if sig is None or sig.shape != (N, 12):
                 continue
             if np.any(np.isnan(sig)) or np.any(np.isinf(sig)):
                 continue
-            return int(ecg_id), sig
+            return int(cast(Any, ecg_id)), sig
         except Exception:
             continue
 
@@ -436,9 +442,11 @@ def main():
         render_strip( sig, OUT_DIR / f"{case_id}.png")
         render_12lead(sig, OUT_DIR / f"{case_id}_12lead.png")
 
+        scp_codes = df.loc[ecg_id, "scp_codes"]
+        scp_items = scp_codes.items() if isinstance(scp_codes, dict) else []
         codes_str = ", ".join(
             f"{k}({v:.0f})"
-            for k, v in sorted(df.loc[ecg_id, "scp_codes"].items(), key=lambda x: -x[1])
+            for k, v in sorted(scp_items, key=lambda x: -x[1])
             if v >= 50
         )
         print(f"  ✓  {case_id:<24}  ECG {ecg_id:6d}  [{codes_str}]")

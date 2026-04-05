@@ -15,13 +15,14 @@ import json
 import sys
 import traceback
 from pathlib import Path
+from typing import cast
 
 # Allow importing from the same package
 sys.path.insert(0, str(Path(__file__).parent))
-from analyze_ecg import digitize_image, analyze_signal, build_claude_prompt, _NumpyEncoder
+from analyze_ecg import NumpyEncoder, analyze_signal, build_claude_prompt, digitize_image
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--leads", choices=["rhythm", "12"], default="rhythm",
@@ -35,10 +36,10 @@ def main():
     public_dir = root / "web" / "public"
 
     with open(cases_path) as f:
-        cases = json.load(f)
+        cases = cast(list[dict[str, str]], json.load(f))
 
-    results: dict = {}
-    errors: list  = []
+    results: dict[str, dict[str, object]] = {}
+    errors: list[dict[str, str]] = []
 
     for i, case in enumerate(cases):
         case_id = case["id"]
@@ -68,7 +69,7 @@ def main():
             errors.append({"case_id": case_id, "error": str(e), "traceback": traceback.format_exc()})
 
     with open(out_path, "w") as f:
-        json.dump(results, f, cls=_NumpyEncoder, indent=2)
+        json.dump(results, f, cls=NumpyEncoder, indent=2)
 
     print(f"\nWrote {len(results)} entries to {out_path}")
     if errors:

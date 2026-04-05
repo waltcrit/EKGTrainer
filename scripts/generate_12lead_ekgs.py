@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# pyright: basic
+
 """
 Full 12-lead EKG Synthesizer for EKGTrainer
 Generates standard 4×3+strip PNGs for all 37 teaching cases,
@@ -11,6 +13,8 @@ Usage (from repo root):
 
 import math
 import warnings
+from typing import Any
+
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
@@ -246,7 +250,7 @@ def with_pacs(hr=70):
     leads = {}
     for lead in FRONTAL:
         c = _proj(60, lead)
-        normal_kw = dict(pr_ms=160, qrs_ms=80, qt_ms=380,
+        normal_kw: dict[str, Any] = dict(pr_ms=160, qrs_ms=80, qt_ms=380,
                          p_amp=0.15, r_amp=max(c, 0.25) if c > 0 else 0.20,
                          s_frac=0.15, t_amp=0.22)
         if lead == "aVR":
@@ -254,7 +258,7 @@ def with_pacs(hr=70):
         sig = np.zeros(N)
         for r in all_r:
             if 0.08 < r < DUR - 0.12:
-                kw = dict(normal_kw)
+                kw: dict[str, Any] = dict(normal_kw)
                 if r in pac_r:
                     kw.update(pr_ms=110, p_amp=0.24)  # PAC: shorter PR, different P
                 place_beat(sig, r, **kw)
@@ -266,8 +270,8 @@ def with_pacs(hr=70):
         sig = np.zeros(N)
         for r in all_r:
             if 0.08 < r < DUR - 0.12:
-                kw = dict(pr_ms=160, qrs_ms=80, qt_ms=380,
-                          p_amp=0.12, r_amp=r_a, s_frac=s_a/max(r_a,0.01), t_amp=max(0.12, 0.28*r_a))
+                kw: dict[str, Any] = dict(pr_ms=160, qrs_ms=80, qt_ms=380,
+                                          p_amp=0.12, r_amp=r_a, s_frac=s_a/max(r_a,0.01), t_amp=max(0.12, 0.28*r_a))
                 if r in pac_r:
                     kw.update(pr_ms=110, p_amp=0.22)
                 place_beat(sig, r, **kw)

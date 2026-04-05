@@ -22,16 +22,27 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
+from typing import Any, Mapping, TypeAlias, TypedDict, cast
 
 import numpy as np
+from numpy.typing import NDArray
 
 from arrhythmia.preprocess import preprocess
-from arrhythmia.rpeaks import detect_and_compute
-from arrhythmia.segments import extract_beat_windows, extract_rhythm_windows, pad_or_truncate
+from arrhythmia.rpeaks import DetectionMethod, detect_and_compute
+from arrhythmia.segments import extract_beat_windows, extract_rhythm_windows
 from arrhythmia.features import extract_strip_features
 from arrhythmia.postprocess import smooth_predictions, apply_physiologic_constraints
 from arrhythmia.constants import ArrhythmiaClass
+
+
+FeatureMap: TypeAlias = Mapping[str, object]
+SignalArray: TypeAlias = NDArray[np.float64]
+IntArray: TypeAlias = NDArray[np.int64]
+
+
+class ModelPrediction(TypedDict):
+    label: str
+    confidence: float
 
 
 # ---------------------------------------------------------------------------
@@ -44,13 +55,13 @@ class InferenceResult:
 
     primary_rhythm: str = ArrhythmiaClass.NSR
     strip_label: str = ArrhythmiaClass.NSR
-    beat_labels: list[str] = field(default_factory=list)
+    beat_labels: list[str] = field(default_factory=lambda: cast(list[str], []))
     confidence: float = 0.0
-    features: dict = field(default_factory=dict)
-    r_peaks: np.ndarray = field(default_factory=lambda: np.array([], dtype=np.int64))
-    rr_ms: np.ndarray = field(default_factory=lambda: np.array([], dtype=np.float64))
+    features: FeatureMap = field(default_factory=lambda: cast(dict[str, object], {}))
+    r_peaks: IntArray = field(default_factory=lambda: np.array([], dtype=np.int64))
+    rr_ms: SignalArray = field(default_factory=lambda: np.array([], dtype=np.float64))
     used_deep_learning: bool = False
-    notes: list[str] = field(default_factory=list)
+    notes: list[str] = field(default_factory=lambda: cast(list[str], []))
 
 
 # ---------------------------------------------------------------------------
@@ -58,7 +69,7 @@ class InferenceResult:
 # Uses pre-computed features when no model is available.
 # ---------------------------------------------------------------------------
 
-def _classical_classify(features: dict) -> tuple[str, float]:
+def _classical_classify(features: FeatureMap) -> tuple[str, float]:
     """
     Rule-based rhythm classification from extracted features.
 
@@ -66,19 +77,31 @@ def _classical_classify(features: dict) -> tuple[str, float]:
     Low-confidence rules return 0.4–0.6; high-confidence rules return 0.7–0.9.
     This is intentionally conservative — use deep models for production.
     """
-    hr = features.get("heart_rate_bpm", float("nan"))
-    rr_cv = features.get("rr_cv", float("nan"))
-    rr_rmssd = features.get("rr_rmssd", float("nan"))
-    num_beats = features.get("num_beats", 0.0)
-    signal_power = features.get("signal_power", float("nan"))
+    def _get_float(name: str, default: float = float("nan")) -> float:
+        value = features.get(name, default)
+        if isinstance(value, (int, float)):
+            return float(value)
+        if isinstance(value, (np.integer, np.floating)):
+            return float(value.item())
+        return default
+
+    def _get_bool(name: str) -> bool | None:
+        value = features.get(name)
+        return value if isinstance(value, bool) else None
+
+    hr = _get_float("heart_rate_bpm")
+    rr_cv = _get_float("rr_cv")
+    rr_rmssd = _get_float("rr_rmssd")
+    num_beats = _get_float("num_beats", 0.0)
+    signal_power = _get_float("signal_power")
     # qrs_wide may be injected by _pipeline_from_measurements; None = unknown
-    qrs_wide: bool | None = features.get("qrs_wide")
+    qrs_wide = _get_bool("qrs_wide")
     # vf_morphology: explicitly set when image shows chaotic undulating baseline (no QRS)
-    vf_morphology: bool | None = features.get("vf_morphology")
+    vf_morphology = _get_bool("vf_morphology")
 
     import math
 
-    def _nan(*vals) -> bool:
+    def _nan(*vals: float) -> bool:
         return any(math.isnan(v) for v in vals)
 
     # VF morphology flag — check before ASYS because VF also has no regular beats
@@ -129,17 +152,20 @@ def _classical_classify(features: dict) -> tuple[str, float]:
     return ArrhythmiaClass.NSR, 0.80
 
 
+classical_classify = _classical_classify
+
+
 # ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
 
 def classify_ecg(
-    signal: np.ndarray,
+    signal: SignalArray,
     fs: int,
     target_fs: int = 250,
-    rpeak_method: str = "hamilton",
-    beat_model_path: Optional[str | Path] = None,
-    rhythm_model_path: Optional[str | Path] = None,
+    rpeak_method: DetectionMethod = "hamilton",
+    beat_model_path: str | Path | None = None,
+    rhythm_model_path: str | Path | None = None,
     rhythm_model_type: str = "cnn",
     beat_window_pre_ms: float = 200.0,
     beat_window_post_ms: float = 400.0,
@@ -253,7 +279,7 @@ def classify_ecg(
 # ---------------------------------------------------------------------------
 
 def _dl_strip_classify(
-    signal: np.ndarray,
+    signal: SignalArray,
     fs: int,
     model_path: str | Path,
     model_type: str,
@@ -264,11 +290,11 @@ def _dl_strip_classify(
     from arrhythmia.models.rhythm_model import RhythmCNN, RhythmRNN, RhythmTransformer
 
     input_len = int(window_s * fs)
-    model_cls = {"cnn": RhythmCNN, "rnn": RhythmRNN, "transformer": RhythmTransformer}[model_type]
+    model_cls = cast(Any, {"cnn": RhythmCNN, "rnn": RhythmRNN, "transformer": RhythmTransformer}[model_type])
     model = model_cls.from_checkpoint(model_path, input_len=input_len)
 
     strips = extract_rhythm_windows(signal, fs, window_s=window_s)
-    predictions = model.predict_numpy(strips)
+    predictions = cast(list[ModelPrediction], model.predict_numpy(strips))
 
     labels = [p["label"] for p in predictions]
     confs  = [p["confidence"] for p in predictions]
@@ -280,7 +306,7 @@ def _dl_strip_classify(
 
 
 def _dl_beat_classify(
-    beat_windows: list[np.ndarray],
+    beat_windows: list[SignalArray],
     model_path: str | Path,
     fs: int,
 ) -> list[str]:
@@ -288,9 +314,10 @@ def _dl_beat_classify(
     from arrhythmia.models.beat_model import BeatCNN
 
     # Default input length: 150 samples at 250 Hz ≈ 600 ms
+    _ = fs
     input_len = 150
-    model = BeatCNN.from_checkpoint(model_path, num_classes=3, input_len=input_len)
-    predictions = model.predict_numpy(beat_windows)
+    model = cast(Any, BeatCNN.from_checkpoint(model_path, num_classes=3, input_len=input_len))
+    predictions = cast(list[ModelPrediction], model.predict_numpy(beat_windows))
     return [p["label"] for p in predictions]
 
 

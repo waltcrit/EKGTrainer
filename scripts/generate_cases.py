@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# pyright: basic
+
 """
 EKG Teaching Case Generator
 Generates synthetic rhythm strip PNG images + cases.json metadata

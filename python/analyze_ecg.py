@@ -11,40 +11,105 @@ Exit code 0 = success, 1 = failure.
 """
 
 import argparse
+import importlib
 import json
 import sys
 import traceback
 from pathlib import Path
+from typing import Any, NotRequired, Protocol, TypeAlias, TypedDict, cast
 
 import numpy as np
 import json as _json_module
+from numpy.typing import NDArray
+
+
+SignalArray: TypeAlias = NDArray[np.float64]
+SignalMap: TypeAlias = dict[str, SignalArray]
+
+
+class DigitizedResult(TypedDict):
+    signals: SignalMap
+    sampling_rate: int
+    method: str
+
+
+class STLeadResult(TypedDict):
+    elevation: bool
+    depression: bool
+    mean_mv: float
+
+
+STResults: TypeAlias = dict[str, STLeadResult]
+
+
+class PipelineClassification(TypedDict, total=False):
+    primary_rhythm: str
+    display_name: str
+    strip_label: str
+    confidence: float
+    beat_labels: list[str]
+    used_deep_learning: bool
+    notes: list[str]
+    error: str
+
+
+class SignalMeasurements(TypedDict):
+    r_peaks: list[int]
+    rr_intervals_ms: list[float]
+    heart_rate_bpm: float
+    regularity: str
+    p_waves_present: bool
+    pr_interval_ms: float | None
+    qrs_duration_ms: float | None
+    qrs_wide: bool
+    qt_ms: float | None
+    qtc_ms: float | None
+    qtc_prolonged: bool | None
+    st: STResults
+    num_beats: int
+    rhythm_lead: str
+    vf_morphology: NotRequired[bool]
+
+
+class InferenceResultLike(Protocol):
+    primary_rhythm: object
+    strip_label: object
+    confidence: float
+    beat_labels: list[str]
+    used_deep_learning: bool
+    notes: list[str]
 
 # ---------------------------------------------------------------------------
 # Arrhythmia pipeline — optional; degrades gracefully if not importable
 # ---------------------------------------------------------------------------
 try:
-    from arrhythmia.inference import classify_ecg, InferenceResult
-    from arrhythmia.constants import DISPLAY_NAMES as _ARR_DISPLAY_NAMES
-    _PIPELINE_AVAILABLE = True
+    from arrhythmia.inference import classify_ecg
+    from arrhythmia.constants import DISPLAY_NAMES as _arr_display_names
+    _pipeline_available = True
 except Exception:
-    _PIPELINE_AVAILABLE = False
+    classify_ecg = None
+    _arr_display_names: dict[str, str] = {}
+    _pipeline_available = False
 
 
 class _NumpyEncoder(_json_module.JSONEncoder):
     """Serialize numpy scalars and arrays to native Python types."""
-    def default(self, obj):
-        if isinstance(obj, np.integer):
-            return int(obj)
-        if isinstance(obj, np.floating):
-            return float(obj)
-        if isinstance(obj, np.bool_):
-            return bool(obj)
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        return super().default(obj)
+    def default(self, o: object) -> object:
+        if isinstance(o, np.integer):
+            return int(cast(int, o))
+        if isinstance(o, np.floating):
+            return float(cast(float, o))
+        if isinstance(o, np.bool_):
+            return bool(cast(bool, o))
+        if isinstance(o, np.ndarray):
+            return o.tolist()
+        return super().default(o)
 
 
-def _dumps(obj) -> str:
+NumpyEncoder = _NumpyEncoder
+
+
+def _dumps(obj: object) -> str:
     return _json_module.dumps(obj, cls=_NumpyEncoder)
 
 
@@ -52,7 +117,7 @@ def _dumps(obj) -> str:
 # Step 1 — Image digitization
 # ---------------------------------------------------------------------------
 
-def digitize_image(image_path: str) -> dict:
+def digitize_image(image_path: str) -> DigitizedResult:
     """
     Convert an ECG image to a digital signal using ECG-Digitiser.
     Returns a dict with keys: signals (dict of lead->np.ndarray), sampling_rate (int).
@@ -60,13 +125,18 @@ def digitize_image(image_path: str) -> dict:
     Falls back to a simpler OpenCV-based approach if ECG-Digitiser is not installed.
     """
     try:
-        from ecg_digitiser.digitiser import ECGDigitiser
+        digitiser_module = importlib.import_module("ecg_digitiser.digitiser")
+        ECGDigitiser = digitiser_module.ECGDigitiser
         digitiser = ECGDigitiser()
         result = digitiser.digitise(image_path)
         # ECG-Digitiser returns a dict of lead name -> signal array and a sampling rate
+        signals = {
+            str(lead): np.asarray(values, dtype=np.float64)
+            for lead, values in cast(dict[object, object], result.signals).items()
+        }
         return {
-            "signals": result.signals,        # dict: {"II": np.array([...]), ...}
-            "sampling_rate": result.sampling_rate,
+            "signals": signals,
+            "sampling_rate": int(result.sampling_rate),
             "method": "ecg-digitiser",
         }
     except ImportError:
@@ -76,7 +146,7 @@ def digitize_image(image_path: str) -> dict:
     return _fallback_digitize(image_path)
 
 
-def _detect_grid_calibration(gray: np.ndarray) -> dict:
+def _detect_grid_calibration(gray: NDArray[np.uint8]) -> dict[str, float] | None:
     """
     Detect ECG paper grid spacing using FFT on row/column projections.
 
@@ -86,7 +156,7 @@ def _detect_grid_calibration(gray: np.ndarray) -> dict:
     Returns dict with keys: sampling_rate_hz, pixels_per_mv, grid_px_horiz.
     Returns None if grid cannot be confidently detected.
     """
-    h, w = gray.shape
+    _, w = gray.shape
 
     # ── Horizontal axis (time) ────────────────────────────────────────────
     col_sum = gray.astype(float).sum(axis=0)
@@ -124,7 +194,7 @@ def _detect_grid_calibration(gray: np.ndarray) -> dict:
     }
 
 
-def _fallback_digitize(image_path: str) -> dict:
+def _fallback_digitize(image_path: str) -> DigitizedResult:
     """
     Grid-calibrated OpenCV digitizer.
 
@@ -138,11 +208,11 @@ def _fallback_digitize(image_path: str) -> dict:
             "opencv-python is not installed. Cannot digitize ECG image."
         )
 
-    img_bgr = cv2.imread(image_path)
+    img_bgr = cast(NDArray[np.uint8] | None, cv2.imread(image_path))
     if img_bgr is None:
         raise RuntimeError(f"Could not read image: {image_path}")
 
-    gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
+    gray = cast(NDArray[np.uint8], cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY))
     h, w = gray.shape
 
     # ── Step 1: calibrate sampling rate from grid ─────────────────────────
@@ -178,9 +248,10 @@ def _fallback_digitize(image_path: str) -> dict:
     # ── Step 3: baseline-correct and normalize ────────────────────────────
     # Remove slow baseline wander with a wide median filter, then scale to
     # a physiologically plausible mV range so BioSPPy's thresholds work.
-    from scipy.ndimage import median_filter
+    scipy_ndimage = importlib.import_module("scipy.ndimage")
+    median_filter_fn = scipy_ndimage.median_filter
     bl_window = max(3, int(sampling_rate * 0.6) | 1)  # must be odd
-    baseline = median_filter(signal, size=bl_window, mode="nearest")
+    baseline = cast(SignalArray, median_filter_fn(signal, size=bl_window, mode="nearest"))
     signal = signal - baseline
 
     if signal.std() > 0:
@@ -197,13 +268,13 @@ def _fallback_digitize(image_path: str) -> dict:
 # Step 2 — Signal processing with BioSPPy
 # ---------------------------------------------------------------------------
 
-def analyze_signal(signals: dict, sampling_rate: int) -> dict:
+def analyze_signal(signals: SignalMap, sampling_rate: int) -> SignalMeasurements:
     """
     Run BioSPPy ECG analysis on the digitized signals.
     Processes Lead II (or the first available lead) for rhythm metrics,
     and runs per-lead ST/T analysis when multiple leads are present.
     """
-    import biosppy.signals.ecg as bsp_ecg
+    bsp_ecg_module = cast(Any, importlib.import_module("biosppy.signals.ecg"))
 
     # Prefer Lead II for rhythm analysis; fall back to first available
     rhythm_lead_name = "II" if "II" in signals else next(iter(signals))
@@ -216,19 +287,23 @@ def analyze_signal(signals: dict, sampling_rate: int) -> dict:
             "Need at least 2 seconds."
         )
 
-    out = bsp_ecg.ecg(
+    out = cast(dict[str, object], bsp_ecg_module.ecg(
         signal=rhythm_signal,
         sampling_rate=sampling_rate,
         show=False,
-    )
+    ))
 
-    r_peaks = out["rpeaks"]                  # sample indices
+    r_peaks = np.asarray(out["rpeaks"], dtype=np.int64)
     rr_intervals_ms = _rr_intervals(r_peaks, sampling_rate)
     heart_rate_bpm = _mean_hr(rr_intervals_ms)
     regularity = _regularity(rr_intervals_ms)
 
     # QRS width: measure each template (BioSPPy supplies beat templates)
-    templates = out["templates"] if "templates" in out.keys() else None
+    templates = (
+        np.asarray(out["templates"], dtype=np.float64)
+        if "templates" in out
+        else None
+    )
     qrs_ms, qrs_wide = _qrs_width(templates, sampling_rate)
 
     # P-wave / PR interval: simple heuristic from template shape
@@ -267,7 +342,7 @@ def _rr_intervals(r_peaks: np.ndarray, fs: int) -> list[float]:
 def _mean_hr(rr_ms: list[float]) -> float:
     if not rr_ms:
         return 0.0
-    return 60000.0 / np.mean(rr_ms)
+    return float(60000.0 / np.mean(rr_ms))
 
 
 def _regularity(rr_ms: list[float]) -> str:
@@ -283,7 +358,7 @@ def _regularity(rr_ms: list[float]) -> str:
     return "irregularly_irregular"
 
 
-def _qrs_width(templates, fs: int) -> tuple[float | None, bool]:
+def _qrs_width(templates: NDArray[np.float64] | None, fs: int) -> tuple[float | None, bool]:
     """Estimate QRS duration from beat templates."""
     if templates is None or len(templates) == 0:
         return None, False
@@ -300,7 +375,7 @@ def _qrs_width(templates, fs: int) -> tuple[float | None, bool]:
     return width_ms, width_ms >= 120
 
 
-def _pr_interval(templates, fs: int) -> tuple[float | None, bool]:
+def _pr_interval(templates: NDArray[np.float64] | None, fs: int) -> tuple[float | None, bool]:
     """
     Estimate PR interval and P-wave presence from the BioSPPy template.
     BioSPPy centres templates on the R peak; P wave typically appears
@@ -335,7 +410,11 @@ def _pr_interval(templates, fs: int) -> tuple[float | None, bool]:
     return pr_ms, True
 
 
-def _qtc(templates, rr_ms: list[float], fs: int) -> tuple:
+def _qtc(
+    templates: NDArray[np.float64] | None,
+    rr_ms: list[float],
+    fs: int,
+) -> tuple[float | None, float | None, bool | None]:
     """Estimate QT interval and Bazett-corrected QTc."""
     if templates is None or len(templates) == 0 or not rr_ms:
         return None, None, None
@@ -368,23 +447,23 @@ def _qtc(templates, rr_ms: list[float], fs: int) -> tuple:
     return qt_ms, qtc_ms, prolonged
 
 
-def _st_analysis(signals: dict, r_peaks: np.ndarray, fs: int) -> dict:
+def _st_analysis(signals: SignalMap, r_peaks: np.ndarray, fs: int) -> STResults:
     """
     Simple ST segment analysis: measure amplitude ~80 ms after R peak
     across all available leads.
     """
     offset_samples = int(0.08 * fs)  # J+80 ms
-    results = {}
+    results: STResults = {}
 
     for lead, sig in signals.items():
         if len(r_peaks) == 0:
             results[lead] = {"elevation": False, "depression": False, "mean_mv": 0.0}
             continue
-        measurements = []
+        measurements: list[float] = []
         for rp in r_peaks:
             idx = rp + offset_samples
             if idx < len(sig):
-                measurements.append(sig[idx])
+                measurements.append(float(sig[idx]))
         if not measurements:
             continue
         mean_st = float(np.mean(measurements))
@@ -401,7 +480,10 @@ def _st_analysis(signals: dict, r_peaks: np.ndarray, fs: int) -> dict:
 # Step 3a — PhysioNet pipeline pre-classification
 # ---------------------------------------------------------------------------
 
-def run_pipeline_classification(signals: dict, sampling_rate: int) -> dict | None:
+def run_pipeline_classification(
+    signals: SignalMap,
+    sampling_rate: int,
+) -> PipelineClassification | None:
     """
     Run the arrhythmia.inference pipeline on the Lead II signal and return
     a structured result dict, or None if the pipeline is unavailable.
@@ -410,22 +492,27 @@ def run_pipeline_classification(signals: dict, sampling_rate: int) -> dict | Non
     the Claude prompt so the LLM can confirm or override the signal-derived
     classification.
     """
-    if not _PIPELINE_AVAILABLE:
+    if not _pipeline_available:
         return None
+    assert classify_ecg is not None
 
     lead = "II" if "II" in signals else next(iter(signals))
     signal = np.asarray(signals[lead], dtype=np.float64)
 
+    def _label_to_str(value: object) -> str:
+        raw_value = getattr(value, "value", value)
+        return raw_value if isinstance(raw_value, str) else str(raw_value)
+
     try:
-        result: InferenceResult = classify_ecg(
+        result = cast(InferenceResultLike, classify_ecg(
             signal=signal,
             fs=sampling_rate,
             target_fs=250,
             rpeak_method="hamilton",
-        )
-        primary = result.primary_rhythm.value if hasattr(result.primary_rhythm, "value") else str(result.primary_rhythm)
-        strip   = result.strip_label.value   if hasattr(result.strip_label, "value")   else str(result.strip_label)
-        display = _ARR_DISPLAY_NAMES.get(primary, primary)
+        ))
+        primary = _label_to_str(result.primary_rhythm)
+        strip = _label_to_str(result.strip_label)
+        display = _arr_display_names.get(primary, primary)
         return {
             "primary_rhythm":  primary,
             "display_name":    display,
@@ -444,14 +531,14 @@ def run_pipeline_classification(signals: dict, sampling_rate: int) -> dict | Non
 # ---------------------------------------------------------------------------
 
 def build_claude_prompt(
-    measurements: dict,
+    measurements: SignalMeasurements,
     digitizer_method: str,
-    pipeline_classification: dict | None = None,
+    pipeline_classification: PipelineClassification | None = None,
 ) -> str:
     rr = measurements["rr_intervals_ms"]
     rr_str = ", ".join(f"{x:.0f}" for x in rr[:6]) if rr else "unavailable"
 
-    st_lines = []
+    st_lines: list[str] = []
     for lead, v in measurements["st"].items():
         if v["elevation"]:
             st_lines.append(f"  {lead}: elevated ({v['mean_mv']:+.2f} mV)")
@@ -462,14 +549,15 @@ def build_claude_prompt(
     # Build the optional pipeline pre-classification block
     if pipeline_classification and "error" not in pipeline_classification:
         pc = pipeline_classification
-        hint_lines = [
+        hint_lines: list[str] = [
             "",
             "SIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):",
             f"- Primary rhythm: {pc.get('display_name', pc.get('primary_rhythm', 'unknown'))} ({pc.get('primary_rhythm', '?')})",
             f"- Confidence: {pc.get('confidence', 0.0):.0%}",
         ]
-        if pc.get("notes"):
-            hint_lines.append(f"- Notes: {'; '.join(pc['notes'])}")
+        notes = pc.get("notes")
+        if notes:
+            hint_lines.append(f"- Notes: {'; '.join(notes)}")
         hint_lines += [
             "You may confirm or override this classification based on morphology and context.",
             "",
@@ -559,7 +647,7 @@ Using these measurements and the ECG image for morphology context (P-wave axis, 
 # Main
 # ---------------------------------------------------------------------------
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="ECG image analysis pipeline")
     parser.add_argument("--image", required=True, help="Path to ECG image file")
     args = parser.parse_args()
@@ -586,7 +674,7 @@ def main():
             measurements, digitized["method"], pipeline_classification
         )
 
-        result = {
+        result: dict[str, object] = {
             "success": True,
             "measurements": measurements,
             "claude_prompt": prompt,
@@ -598,7 +686,7 @@ def main():
         print(_dumps(result))
 
     except Exception as e:
-        err = {
+        err: dict[str, object] = {
             "success": False,
             "error": str(e),
             "traceback": traceback.format_exc(),
