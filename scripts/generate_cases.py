@@ -50,6 +50,16 @@ def gauss(t, center, fwhm_ms, amp):
     return amp * np.exp(-0.5 * ((t - center) / sigma) ** 2)
 
 
+def st_plateau(t, j_point, t_onset, amp):
+    """Smooth ST-segment plateau between J-point and T-wave onset."""
+    if t_onset <= j_point:
+        return np.zeros_like(t)
+    edge = 0.012
+    up = 0.5 * (1.0 + np.tanh((t - j_point) / edge))
+    down = 0.5 * (1.0 + np.tanh((t_onset - t) / edge))
+    return amp * up * down
+
+
 def place_normal_beat(sig, t, r_at,
                       pr_ms=160, qrs_ms=80, qt_ms=380,
                       p_amp=0.15, r_amp=1.0, t_amp=0.30,
@@ -74,6 +84,13 @@ def place_wide_beat(sig, t, r_at, style="ventricular", qt_ms=440, r_amp=1.0):
         sig += gauss(t, r_at + 0.040, 100,  r_amp)
         sig += gauss(t, r_at + 0.100,  40, -0.28 * r_amp)
         sig += gauss(t, r_at + (qt_ms / 1000) * 0.60, 120, -0.25 * r_amp)
+
+    elif style == "vt":
+        # Monomorphic VT: broad, regular, dominant wide complex with discordant T.
+        sig += gauss(t, r_at - 0.022, 48, -0.18 * r_amp)
+        sig += gauss(t, r_at + 0.010, 120, 1.10 * r_amp)
+        sig += gauss(t, r_at + 0.082, 68, -0.22 * r_amp)
+        sig += gauss(t, r_at + (qt_ms / 1000) * 0.56, 95, -0.18 * r_amp)
 
     elif style == "lbbb":
         sig += gauss(t, r_at,          130,  r_amp)
@@ -126,29 +143,26 @@ def with_pacs(heart_rate=70):
     sig = np.zeros(N)
     r_times = list(regular_r_times(heart_rate))
     rr = 60.0 / heart_rate
-    pac_indices = {3, 7} if len(r_times) > 8 else {3}
-    skip_next = set()
-    for i, r in enumerate(r_times):
-        if i in pac_indices:
-            pac_r = r + rr * 0.65
-            place_normal_beat(sig, T, pac_r, pr_ms=120, p_amp=0.22)
-            skip_next.add(i + 1)
-        elif i not in skip_next:
-            place_normal_beat(sig, T, r)
+    pac_indices = {2, 5, 8} if len(r_times) > 9 else {2, 5}
+    for r in r_times:
+        place_normal_beat(sig, T, r)
+    for i in sorted(idx for idx in pac_indices if idx < len(r_times) - 1):
+        pac_r = r_times[i] + rr * 0.40
+        place_normal_beat(sig, T, pac_r, pr_ms=95, p_amp=0.26, inverted_p=True,
+                          r_amp=0.82, t_amp=0.18)
     return sig
 
 
 def with_pvcs(heart_rate=70):
     sig = np.zeros(N)
     r_times = list(regular_r_times(heart_rate))
-    pvc_indices = {3, 7} if len(r_times) > 8 else {3}
-    skip_next = set()
-    for i, r in enumerate(r_times):
-        if i in pvc_indices:
-            place_wide_beat(sig, T, r, style="pvc")
-            skip_next.add(i + 1)
-        elif i not in skip_next:
-            place_normal_beat(sig, T, r)
+    rr = 60.0 / heart_rate
+    pvc_indices = {2, 5, 8} if len(r_times) > 9 else {2, 5}
+    for r in r_times:
+        place_normal_beat(sig, T, r)
+    for i in sorted(idx for idx in pvc_indices if idx < len(r_times) - 1):
+        pvc_r = r_times[i] + rr * 0.52
+        place_wide_beat(sig, T, pvc_r, style="vt", r_amp=1.18)
     return sig
 
 
@@ -267,8 +281,8 @@ def idioventricular(heart_rate=33):
 
 def ventricular_tachycardia(heart_rate=175):
     sig = np.zeros(N)
-    for r in regular_r_times(heart_rate):
-        place_wide_beat(sig, T, r, style="pvc", r_amp=1.0)
+    for r in regular_r_times(heart_rate, start=0.16):
+        place_wide_beat(sig, T, r, style="vt", r_amp=1.20)
     return sig
 
 
@@ -326,9 +340,11 @@ def lead_signal(r_times,
             sig += gauss(T, r, qrs_ms * 0.45, r_amp)
             sig += gauss(T, r + hw * 0.7, qrs_ms * 0.30, -s_frac * r_amp)
 
-        # ST offset — broad Gaussian centred in ST segment
+        # ST displacement as a plateau from J-point to early T onset.
         if abs(st_offset) > 0.005:
-            sig += gauss(T, r + 0.210, 175, st_offset * 0.72)
+            j_point = r + max(0.045, (qrs_ms / 1000.0) * 0.55)
+            t_onset = r + (qt_ms / 1000.0) * 0.50
+            sig += st_plateau(T, j_point, t_onset, st_offset)
 
         t_c = r + (qt_ms / 1000.0) * 0.63
         sig += gauss(T, t_c, 100, (-1 if t_inverted else 1) * abs(t_amp))
@@ -392,9 +408,10 @@ def _rr(hr, start=0.35):
 def anterior_stemi(hr=80):
     rs = _rr(hr)
     return [
-        (lead_signal(rs, st_offset=+0.38, t_amp=0.55, big_q=False),  "V2 — ST elevation"),
-        (lead_signal(rs, st_offset=+0.28, t_amp=0.45),               "V3 — ST elevation"),
-        (lead_signal(rs, st_offset=-0.15, t_inverted=True),           "aVL — reciprocal"),
+        (lead_signal(rs, st_offset=+0.74, t_amp=0.58, big_q=True, qrs_ms=96, r_amp=0.82), "V2 — tombstone ST elevation"),
+        (lead_signal(rs, st_offset=+0.66, t_amp=0.54, big_q=True, qrs_ms=94, r_amp=0.88), "V3 — tombstone ST elevation"),
+        (lead_signal(rs, st_offset=+0.46, t_amp=0.44, qrs_ms=90),                           "V4 — ST elevation"),
+        (lead_signal(rs, st_offset=-0.24, t_inverted=True, t_amp=0.20), "aVL — reciprocal depression"),
     ]
 
 
@@ -566,7 +583,7 @@ def brugada_type1_strip(hr=72):
 # Rendering
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def render(signal, rhythm_label, out_path, rate_label=None):
+def render(signal, rhythm_label, out_path):
     fig, ax = plt.subplots(figsize=(12, 2.4), dpi=150)
     fig.patch.set_facecolor(BG)
     ax.set_facecolor(BG)
@@ -590,10 +607,6 @@ def render(signal, rhythm_label, out_path, rate_label=None):
     ax.text(0.99, 0.97, '25 mm/s  |  10 mm/mV  |  Lead II',
             transform=ax.transAxes, fontsize=6.5, ha='right',
             va='top', color='#888888')
-    if rate_label:
-        ax.text(0.01, 0.04, rate_label, transform=ax.transAxes,
-                fontsize=6.5, va='bottom', color='#555555', style='italic')
-
     plt.tight_layout(pad=0.2)
     plt.savefig(out_path, bbox_inches='tight', facecolor=BG)
     plt.close(fig)
@@ -999,8 +1012,7 @@ def main():
         if case.get("multilead"):
             render_multilead(output, case["rhythm"], out_path)
         else:
-            rate_label = f"Rate: {case['rate']} bpm" if case["rate"] else None
-            render(output, case["rhythm"], out_path, rate_label)
+            render(output, case["rhythm"], out_path)
 
         metadata.append({
             "id":              case["id"],

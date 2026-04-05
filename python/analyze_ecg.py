@@ -224,6 +224,11 @@ def _fallback_digitize(image_path: str) -> DigitizedResult:
         sampling_rate = 179   # observed default across our image set
         method = "fallback-opencv-uncalibrated"
 
+    # Cap to a physically plausible digitised-image range.
+    # Very high rates (>600 Hz) cause BioSPPy to build impractically long
+    # FIR filters whose padlen exceeds the signal length.
+    sampling_rate = min(sampling_rate, 500)
+
     # ── Step 2: isolate and trace the ECG waveform ────────────────────────
     # Invert so the dark ECG trace becomes the brightest feature per column.
     inv = (255 - gray).astype(float)
@@ -242,6 +247,11 @@ def _fallback_digitize(image_path: str) -> DigitizedResult:
     # For each column, find the row of the darkest (brightest-after-invert) pixel.
     trace_row = np.argmax(inv, axis=0).astype(float)
 
+    # Smooth out single-pixel jumps caused by ECG grid-line crossings.
+    # A 3-sample median preserves sharp R-peaks while eliminating 1-pixel spikes.
+    scipy_ndimage_pre = importlib.import_module("scipy.ndimage")
+    trace_row = scipy_ndimage_pre.median_filter(trace_row, size=3).astype(float)
+
     # Flip: row 0 is top of image; upward deflections → smaller row index.
     signal = (h - 1) - trace_row
 
@@ -256,6 +266,23 @@ def _fallback_digitize(image_path: str) -> DigitizedResult:
 
     if signal.std() > 0:
         signal = signal / signal.std() * 0.5   # normalize to ≈ ±0.5 mV std
+
+    # Suppress pacing artifacts: very narrow high-amplitude spikes (≤3 samples).
+    # Pacing stimuli appear as 1-2 pixel-wide vertical lines in the image;
+    # after tracing they become isolated extreme values that confuse R-peak detectors.
+    spike_thr = float(np.percentile(np.abs(signal), 99.5)) * 2.0
+    spike_mask = np.abs(signal) > spike_thr
+    labeled_spikes, n_spikes = scipy_ndimage_pre.label(spike_mask)
+    for spike_id in range(1, n_spikes + 1):
+        spike_idx = np.where(labeled_spikes == spike_id)[0]
+        if len(spike_idx) <= 3:   # narrow spike = pacing artifact
+            lo_i = max(0, spike_idx[0] - 1)
+            hi_i = min(len(signal) - 1, spike_idx[-1] + 1)
+            signal[spike_idx] = np.interp(
+                spike_idx.astype(float),
+                [float(lo_i), float(hi_i)],
+                [signal[lo_i], signal[hi_i]],
+            )
 
     return {
         "signals":       {"II": signal},
@@ -287,23 +314,59 @@ def analyze_signal(signals: SignalMap, sampling_rate: int) -> SignalMeasurements
             "Need at least 2 seconds."
         )
 
-    out = cast(dict[str, object], bsp_ecg_module.ecg(
-        signal=rhythm_signal,
-        sampling_rate=sampling_rate,
-        show=False,
-    ))
+    templates_raw: object = None
+    try:
+        out = cast(dict[str, object], bsp_ecg_module.ecg(
+            signal=rhythm_signal,
+            sampling_rate=sampling_rate,
+            show=False,
+        ))
+        r_peaks = np.asarray(out["rpeaks"], dtype=np.int64)
+        try:
+            templates_raw = out["templates"]
+        except KeyError:
+            templates_raw = None
+    except Exception:
+        # BioSPPy can fail on wide QRS, pacing spikes, or very short signals.
+        # Fall back to scipy peak detection with physiologically-guided settings.
+        from scipy.signal import find_peaks as _sp_find_peaks  # type: ignore
+        min_dist = max(1, int(sampling_rate * 0.25))   # >= 250 ms between beats
+        thresh   = float(np.percentile(rhythm_signal, 65))
+        peak_idx, _ = _sp_find_peaks(
+            rhythm_signal, height=thresh, distance=min_dist
+        )
+        r_peaks = np.asarray(peak_idx, dtype=np.int64)
+        templates_raw = None
 
-    r_peaks = np.asarray(out["rpeaks"], dtype=np.int64)
     rr_intervals_ms = _rr_intervals(r_peaks, sampling_rate)
     heart_rate_bpm = _mean_hr(rr_intervals_ms)
     regularity = _regularity(rr_intervals_ms)
 
-    # QRS width: measure each template (BioSPPy supplies beat templates)
-    templates = (
-        np.asarray(out["templates"], dtype=np.float64)
-        if "templates" in out
-        else None
+    # Rate sanity cross-check with scipy.
+    # Trigger when BioSPPy gives a physiologically implausible result (>280 bpm
+    # or < 20 bpm with enough signal present), or found almost no peaks.
+    _implausible = (
+        heart_rate_bpm > 280
+        or heart_rate_bpm < 20
+        or (len(r_peaks) < 3 and len(rhythm_signal) > sampling_rate * 5)
     )
+    if _implausible:
+        from scipy.signal import find_peaks as _sp_cv  # type: ignore
+        cv_dist = max(1, int(sampling_rate * 0.27))   # >= 270 ms -> max ~220 bpm
+        for _pct in (85, 75, 65):
+            _cv_thresh = float(np.percentile(rhythm_signal, _pct))
+            _cv_peaks, _ = _sp_cv(rhythm_signal, height=_cv_thresh, distance=cv_dist)
+            _cv_rr = _rr_intervals(np.asarray(_cv_peaks, dtype=np.int64), sampling_rate)
+            _cv_hr = _mean_hr(_cv_rr)
+            if 20 < _cv_hr < 280 and len(_cv_peaks) >= 2:
+                r_peaks = np.asarray(_cv_peaks, dtype=np.int64)
+                rr_intervals_ms = _cv_rr
+                heart_rate_bpm = _cv_hr
+                regularity = _regularity(_cv_rr)
+                break
+
+    # QRS width: measure each template (BioSPPy supplies beat templates)
+    templates = np.asarray(templates_raw, dtype=np.float64) if templates_raw is not None else None
     qrs_ms, qrs_wide = _qrs_width(templates, sampling_rate)
 
     # P-wave / PR interval: simple heuristic from template shape
@@ -345,15 +408,75 @@ def _mean_hr(rr_ms: list[float]) -> float:
     return float(60000.0 / np.mean(rr_ms))
 
 
+def _clean_r_peaks(
+    r_peaks: np.ndarray,
+    signal: NDArray[np.float64],
+    fs: int,
+) -> np.ndarray:
+    """Remove likely duplicate/spurious R-peaks from digitized traces."""
+    if len(r_peaks) < 3:
+        return np.asarray(r_peaks, dtype=np.int64)
+
+    peaks = np.unique(np.asarray(r_peaks, dtype=np.int64))
+    if len(peaks) < 3:
+        return peaks
+
+    changed = True
+    while changed and len(peaks) >= 3:
+        changed = False
+        rr = np.diff(peaks)
+        med_rr = float(np.median(rr)) if len(rr) else 0.0
+        if med_rr <= 0:
+            break
+
+        close_idx = np.where(rr < med_rr * 0.45)[0]
+        if len(close_idx) == 0:
+            break
+
+        keep = np.ones(len(peaks), dtype=bool)
+        for i in close_idx:
+            p0 = peaks[i]
+            p1 = peaks[i + 1]
+            a0 = abs(float(signal[p0]))
+            a1 = abs(float(signal[p1]))
+            if a0 >= a1:
+                keep[i + 1] = False
+            else:
+                keep[i] = False
+
+        new_peaks = peaks[keep]
+        changed = len(new_peaks) != len(peaks)
+        peaks = new_peaks
+
+    return peaks.astype(np.int64)
+
+
 def _regularity(rr_ms: list[float]) -> str:
     if len(rr_ms) < 3:
         return "indeterminate"
-    cv = np.std(rr_ms) / np.mean(rr_ms)
-    if cv < 0.05:
+    arr = np.array(rr_ms)
+    median_rr = float(np.median(arr))
+    # Discard extreme outliers (e.g. digitizer-artifact intervals) before
+    # measuring spread; a valid beat interval should be within 40%–250% of
+    # the median.
+    valid = arr[(arr > median_rr * 0.40) & (arr < median_rr * 2.50)]
+    if len(valid) < 2:
+        valid = arr
+
+    # If most intervals cluster tightly around a dominant cycle length,
+    # treat as regular despite a few artifact outliers.
+    cluster_ratio = float(np.mean(np.abs(valid - median_rr) <= median_rr * 0.12))
+    if cluster_ratio >= 0.72:
         return "regular"
-    # Check for repeating pattern (regularly irregular) vs random
-    diffs = np.diff(rr_ms)
-    if np.std(diffs) < np.std(rr_ms) * 0.5:
+
+    mean_v = float(np.mean(valid))
+    cv = float(np.std(valid) / mean_v) if mean_v > 0 else 1.0
+    # 8% CV threshold (vs original 5%) tolerates minor digitizer jitter on
+    # otherwise regular rhythms.
+    if cv < 0.08:
+        return "regular"
+    diffs = np.diff(valid)
+    if len(diffs) >= 2 and float(np.std(diffs)) < float(np.std(valid)) * 0.55:
         return "regularly_irregular"
     return "irregularly_irregular"
 

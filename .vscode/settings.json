@@ -1,4 +1,16 @@
 {
-  "python.analysis.diagnosticMode": "workspace",
-  "python.analysis.typeCheckingMode": "strict"
+  "python.analysis.diagnosticMode": "openFilesOnly",
+  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.useLibraryCodeForTypes": false,
+  "python.analysis.exclude": [
+    "**/.venv/**",
+    "**/site-packages/**",
+    "**/dist-packages/**",
+    "**/.vscode/extensions/**",
+    "**/.next/**",
+    "**/node_modules/**"
+  ],
+  "problems.exclude": {
+    "**/.vscode/extensions/**": true
+  }
 }

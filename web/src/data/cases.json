@@ -416,7 +416,7 @@
     "imagePath": "/cases/vfib_01.png",
     "twelveleadPath": "/cases/vfib_01_12lead.png",
     "rate": null,
-    "regularity": "chaotic",
+    "regularity": "irregularly_irregular",
     "keyFeatures": [
       "Chaotic disorganized waveform",
       "No identifiable P, QRS, or T",
@@ -433,7 +433,7 @@
     "imagePath": "/cases/asys_01.png",
     "twelveleadPath": "/cases/asys_01_12lead.png",
     "rate": 0,
-    "regularity": "none",
+    "regularity": "indeterminate",
     "keyFeatures": [
       "Flat or near-flat line",
       "No P waves, QRS, or T waves",
@@ -528,41 +528,6 @@
       "Urgent cardiology consult"
     ],
     "teaching": "NSTEMI presents with ST depression and/or T wave changes without ST elevation. The degree of ST depression correlates with ischemia severity. Horizontal or downsloping depression is more specific than upsloping."
-  },
-  {
-    "id": "wellens_a_01",
-    "rhythm": "Wellens Syndrome \u2014 Type A",
-    "category": "nstemi",
-    "difficulty": 4,
-    "imagePath": "/cases/wellens_a_01.png",
-    "twelveleadPath": "/cases/wellens_a_01_12lead.png",
-    "rate": 72,
-    "regularity": "regular",
-    "keyFeatures": [
-      "Biphasic T waves in V2\u2013V3 (positive then negative)",
-      "Minimal or no ST elevation",
-      "Usually pain-free at time of ECG",
-      "Indicates critical proximal LAD stenosis",
-      "Do NOT stress test \u2014 high risk of anterior STEMI"
-    ],
-    "teaching": "Wellens Syndrome indicates critical proximal LAD stenosis between pain episodes. Type A: biphasic T waves in V2\u2013V3. Type B: deep symmetric inversions. These patients are at imminent risk of massive anterior STEMI \u2014 do not discharge."
-  },
-  {
-    "id": "wellens_b_01",
-    "rhythm": "Wellens Syndrome \u2014 Type B",
-    "category": "nstemi",
-    "difficulty": 4,
-    "imagePath": "/cases/wellens_b_01.png",
-    "twelveleadPath": "/cases/wellens_b_01_12lead.png",
-    "rate": 68,
-    "regularity": "regular",
-    "keyFeatures": [
-      "Deep symmetric T wave inversion in V2\u2013V3",
-      "No significant ST elevation",
-      "Normal or minimally elevated troponin",
-      "Critical proximal LAD stenosis \u2014 do NOT stress test"
-    ],
-    "teaching": "Wellens Type B shows deep symmetric T inversions in V2\u2013V3 during pain-free periods. This is a pre-infarction pattern. The patient needs urgent cath, not observation. A negative troponin does not rule out the danger."
   },
   {
     "id": "pe_s1q3t3_01",

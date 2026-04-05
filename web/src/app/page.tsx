@@ -35,6 +35,29 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "about",    label: "About" },
 ];
 
+// Backward-compatible IDs used by older lesson content.
+const CASE_ID_ALIASES: Record<string, string> = {
+  af_01: "afib_01",
+  afl_01: "aflut_01",
+  avblock_01: "avb1_01",
+  bigeminy_01: "pvc_01",
+  hyperkalemia_01: "brugada_01",
+  ivr_01: "idio_01",
+  junctional_01: "junct_01",
+  paced_01: "pace_ventricular_01",
+  pericarditis_01: "stemi_inf_01",
+  sb_01: "brady_01",
+  st_01: "tachy_01",
+  stemi_anterior_01: "stemi_ant_01",
+  tamponade_01: "pe_rv_strain_01",
+  vf_01: "vfib_01",
+  vt_01: "vtach_01",
+};
+
+function resolveCaseId(caseId: string): string {
+  return CASE_ID_ALIASES[caseId] ?? caseId;
+}
+
 function LandingPage({ onEnter }: { onEnter: (tab: Tab) => void }) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6">
@@ -45,7 +68,7 @@ function LandingPage({ onEnter }: { onEnter: (tab: Tab) => void }) {
           <EcgMark className="w-20 h-10 text-sky-600" />
           <div className="text-center">
             <h1 className="academy-heading text-4xl font-semibold text-[var(--academy-ink)]">EKG Academy</h1>
-            <p className="text-[var(--academy-muted)] text-sm mt-1">Systematic ECG interpretation · 38 teaching cases</p>
+            <p className="text-[var(--academy-muted)] text-sm mt-1">Systematic ECG interpretation · {cases.length} teaching cases</p>
           </div>
         </div>
 
@@ -92,7 +115,7 @@ function LandingPage({ onEnter }: { onEnter: (tab: Tab) => void }) {
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-[var(--academy-ink)] text-sm">Case Library</p>
               <p className="text-xs text-[var(--academy-muted)] mt-0.5">
-                Browse all 38 rhythms · Key features and teaching points
+                Browse all {cases.length} rhythms · Key features and teaching points
               </p>
             </div>
             <svg className="w-4 h-4 text-[var(--academy-muted)] group-hover:text-emerald-400 transition-colors shrink-0"
@@ -189,16 +212,17 @@ export default function Home() {
     const caseId = params.get("caseId");
     const tabParam = params.get("tab") as Tab | null;
     if (caseId) {
-      const found = cases.find((c) => c.id === caseId);
+      const resolvedCaseId = resolveCaseId(caseId);
+      const found = cases.find((c) => c.id === resolvedCaseId);
       if (found) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setPracticeCase(found);
         setCurrentStripId(found.id);
         setChecklistOpen(true);
-      }
-      setLanded(true);
-      if (tabParam && ["practice", "library", "analyze", "about"].includes(tabParam)) {
-        setTab(tabParam);
+        setLanded(true);
+        if (tabParam && ["practice", "library", "analyze", "about"].includes(tabParam)) {
+          setTab(tabParam);
+        }
       }
       // Clean URL without reloading
       window.history.replaceState({}, "", window.location.pathname);
@@ -397,6 +421,14 @@ export default function Home() {
 
         {tab === "analyze" && (
           <div className="flex flex-col gap-5 max-w-2xl mx-auto">
+            {/* Analysis mode indicator */}
+            <div className="academy-panel rounded-xl border border-teal-200 bg-teal-50/80 px-4 py-3 flex items-center gap-2.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-teal-500" aria-hidden />
+              <p className="text-sm text-teal-900">
+                <span className="font-semibold">PhysioNet Mode Active.</span> Signal-first analysis is driving the 10-step interpretation.
+              </p>
+            </div>
+
             {/* Disclaimer */}
             <div className="academy-panel flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50/85 px-4 py-3">
               <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">

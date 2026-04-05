@@ -6,16 +6,38 @@ export const metadata: Metadata = {
   description: "Structured EKG reading curriculum — beginner to advanced",
 };
 
+function EcgMark({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 48 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="0,12 8,12 11,4 14,20 17,12 21,12 24,7 27,12 30,12 33,16 36,12 48,12" />
+    </svg>
+  );
+}
+
 export default function LearnLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen">
       {/* Top nav */}
       <header className="academy-nav sticky top-0 z-30 border-b backdrop-blur-sm">
-        <div className="mx-auto max-w-7xl flex items-center justify-between px-4 h-14">
-          <div className="flex items-center gap-3">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-2.5">
+              <EcgMark className="w-8 h-4 text-sky-600" />
+              <span className="academy-heading text-[var(--academy-ink)] text-[17px] leading-none select-none">
+                EKG Academy
+              </span>
+            </div>
             <Link
               href="/"
-              className="text-xs font-medium text-[var(--academy-muted)] hover:text-[var(--academy-ink)] transition-colors flex items-center gap-1"
+              className="academy-pill flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-150"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -30,35 +52,8 @@ export default function LearnLayout({ children }: { children: React.ReactNode })
                   clipRule="evenodd"
                 />
               </svg>
-              Trainer
+              Home
             </Link>
-            <span className="text-[color-mix(in_oklab,var(--academy-muted)_38%,white)]">/</span>
-            <Link
-              href="/learn"
-              className="academy-heading text-sm text-[var(--academy-ink)] hover:text-teal-700 transition-colors"
-            >
-              EKG Academy
-            </Link>
-          </div>
-
-          {/* Pulse icon */}
-          <div className="flex items-center gap-1.5 text-teal-700">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="w-4 h-4"
-              aria-hidden
-            >
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-            </svg>
-            <span className="text-xs font-semibold tracking-wide uppercase text-[var(--academy-muted)] hidden sm:block">
-              EKG Academy
-            </span>
           </div>
         </div>
       </header>

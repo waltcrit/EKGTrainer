@@ -10,7 +10,7 @@ interface Props {
 }
 
 /**
- * Navigates to the main Trainer with a specific case pre-loaded.
+ * Navigates to Home with a specific case pre-loaded.
  * The home page reads ?caseId= on mount.
  */
 export default function LoadStripButton({
@@ -42,7 +42,7 @@ export default function LoadStripButton({
           clipRule="evenodd"
         />
       </svg>
-      {label ?? `Open strip in Trainer`}
+      {label ?? `Open strip in Home`}
     </button>
   );
 }

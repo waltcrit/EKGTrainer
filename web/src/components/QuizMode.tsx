@@ -116,8 +116,11 @@ export default function QuizMode({ cases, initialCase }: QuizModeProps) {
   // Jump to a specific case when launched from the Library
   useEffect(() => {
     if (!initialCase) return;
-    // Reset filter so the case is always reachable
-    setSelectedCategories(new Set(ALL_CATEGORIES));
+    // Reset filter only if needed so we don't trigger an extra shuffle that can
+    // replace the requested initial case.
+    setSelectedCategories((prev) => (
+      prev.size === ALL_CATEGORIES.size ? prev : new Set(ALL_CATEGORIES)
+    ));
     // Place the target case first in a freshly shuffled queue
     const rest = shuffle(cases.filter((c) => c.id !== initialCase.id));
     setQueue([initialCase, ...rest]);

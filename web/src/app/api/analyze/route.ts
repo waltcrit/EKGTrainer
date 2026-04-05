@@ -1,4 +1,3 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rateLimit";
 import type {
@@ -9,10 +8,7 @@ import type {
   PipelineClassification,
 } from "@/types/analysis";
 import measurementsData from "@/data/measurements.json";
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+import { getDisplayName } from "@/lib/arrhythmia";
 
 const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL ?? "http://localhost:8000";
 
@@ -34,30 +30,198 @@ interface PipelineData {
 
 interface PythonServiceResult extends PipelineData { success: true }
 
-// ---------------------------------------------------------------------------
-// Prompt used when no signal measurements are available (vision-only fallback)
-// ---------------------------------------------------------------------------
+type RhythmRegularity = "regular" | "regularly_irregular" | "irregularly_irregular";
 
-const VISION_ONLY_PROMPT = `You are an expert cardiologist performing a systematic ECG interpretation. Analyze this ECG image carefully and return ONLY a valid JSON object matching exactly this structure (no markdown, no extra text):
-
-{
-  "rate": { "bpm": <number>, "rr_intervals_ms": [<numbers>], "category": "bradycardia"|"normal"|"tachycardia", "method": "visual", "confidence": <0-1> },
-  "rhythm": { "regularity": "regular"|"regularly_irregular"|"irregularly_irregular", "confidence": <0-1> },
-  "p_waves": { "present": <bool>, "morphology": <string|null>, "ratio": <string|null>, "confidence": <0-1> },
-  "pr_interval": { "ms": <number|null>, "measured_beats": [<numbers>], "normal": <bool|null>, "fixed": <bool|null>, "confidence": <0-1> },
-  "qrs": { "duration_ms": <number|null>, "measured_beats_ms": [<numbers>], "wide": <bool>, "morphology": <string|null>, "confidence": <0-1> },
-  "st_segment": { "elevation": <bool>, "depression": <bool>, "details": <string|null>, "confidence": <0-1> },
-  "t_waves": { "morphology": <string|null>, "confidence": <0-1> },
-  "qtc": { "ms": <number|null>, "measured_qt_ms": [<numbers>], "prolonged": <bool|null>, "confidence": <0-1> },
-  "primary_rhythm": "<string>",
-  "overall_confidence": <0-1>,
-  "differentials": ["<string>", ...],
-  "explanation": "<detailed systematic interpretation>",
-  "image_quality": "good"|"fair"|"poor",
-  "caveats": "<string|null>"
+interface SignalMeasurements {
+  r_peaks?: number[];
+  rr_intervals_ms?: number[];
+  heart_rate_bpm?: number;
+  regularity?: RhythmRegularity | string;
+  p_waves_present?: boolean;
+  pr_interval_ms?: number | null;
+  qrs_duration_ms?: number | null;
+  qrs_wide?: boolean;
+  qt_ms?: number | null;
+  qtc_ms?: number | null;
+  qtc_prolonged?: boolean | null;
+  st?: Record<string, { elevation?: boolean; depression?: boolean; mean_mv?: number }>;
+  num_beats?: number;
+  rhythm_lead?: string;
 }
 
-Be systematic: rate → rhythm → axis → P waves → PR → QRS → ST/T → QTc → impression.`;
+function toNumber(v: unknown, fallback = 0): number {
+  return typeof v === "number" && Number.isFinite(v) ? v : fallback;
+}
+
+function toNullableNumber(v: unknown): number | null {
+  return typeof v === "number" && Number.isFinite(v) ? v : null;
+}
+
+function toBool(v: unknown, fallback = false): boolean {
+  return typeof v === "boolean" ? v : fallback;
+}
+
+function toRegularity(v: unknown): RhythmRegularity {
+  if (v === "regular" || v === "regularly_irregular" || v === "irregularly_irregular") {
+    return v;
+  }
+  return "regular";
+}
+
+function confidenceBase(pc: PipelineClassification | null | undefined): number {
+  if (!pc || pc.error) return 0.62;
+  return Math.max(0.45, Math.min(0.96, pc.confidence));
+}
+
+function inferDifferentials(primaryCode: string, hr: number, regularity: RhythmRegularity): string[] {
+  const d: string[] = [];
+  if (primaryCode === "AF") d.push("Atrial flutter with variable block", "Multifocal atrial tachycardia");
+  if (primaryCode === "AFL") d.push("Atrial fibrillation", "SVT");
+  if (primaryCode === "SVT") d.push("Atrial flutter with 2:1 block", "Sinus tachycardia");
+  if (primaryCode === "VT") d.push("SVT with aberrancy", "Accelerated idioventricular rhythm");
+  if (primaryCode === "VF") d.push("Artifact", "Polymorphic VT");
+  if (primaryCode === "ASYS") d.push("Fine VF", "Lead disconnection/artifact");
+  if (primaryCode === "NSR" && hr > 100) d.push("Sinus tachycardia", "Atrial tachycardia");
+  if (primaryCode === "NSR" && hr < 60) d.push("Sinus bradycardia", "Junctional rhythm");
+  if (primaryCode === "NSR" && regularity !== "regular") d.push("Atrial fibrillation", "Frequent ectopy");
+  return d.slice(0, 2);
+}
+
+function buildTenStepExplanation(
+  m: SignalMeasurements,
+  pc: PipelineClassification | null,
+  displayRhythm: string,
+  regularity: RhythmRegularity,
+): string {
+  const hr = Math.round(toNumber(m.heart_rate_bpm));
+  const pr = toNullableNumber(m.pr_interval_ms);
+  const qrs = toNullableNumber(m.qrs_duration_ms);
+  const qtc = toNullableNumber(m.qtc_ms);
+  const pPresent = toBool(m.p_waves_present, true);
+  const qrsWide = toBool(m.qrs_wide, false);
+  const st = m.st ?? {};
+  const elevated = Object.entries(st).filter(([, s]) => s?.elevation).map(([lead]) => lead);
+  const depressed = Object.entries(st).filter(([, s]) => s?.depression).map(([lead]) => lead);
+
+  const step7 =
+    elevated.length > 0
+      ? `ST elevation noted in ${elevated.join(", ")}.`
+      : depressed.length > 0
+        ? `ST depression noted in ${depressed.join(", ")}.`
+        : "No significant ST shift detected.";
+
+  const mode = pc?.used_deep_learning ? "deep-learning-assisted" : "signal-rule-based";
+  return [
+    `1) Rate: approximately ${hr} bpm from detected R-R intervals.`,
+    `2) Rhythm: ${regularity.replace(/_/g, " ")}.`,
+    `3) P waves: ${pPresent ? "present" : "not clearly present"}.`,
+    `4) PR interval: ${pr !== null ? `${Math.round(pr)} ms` : "not reliably measurable"}.`,
+    `5) QRS duration: ${qrs !== null ? `${Math.round(qrs)} ms` : "not reliably measurable"}${qrsWide ? " (wide)" : " (not wide)"}.`,
+    `6) QRS morphology: ${qrsWide ? "wide-complex pattern" : "no clear wide-complex pattern"}.`,
+    `7) ST segment: ${step7}`,
+    "8) T waves: no definitive morphology classification from this signal-only pass.",
+    `9) QTc: ${qtc !== null ? `${Math.round(qtc)} ms` : "not reliably measurable"}.`,
+    `10) Impression: ${displayRhythm} based on ${mode} PhysioNet-compatible pipeline output.`,
+  ].join(" ");
+}
+
+function toTenStepResult(data: PipelineData): EKGAnalysisResult {
+  const m = (data.measurements ?? {}) as SignalMeasurements;
+  const pc = data.pipeline_classification && !data.pipeline_classification.error
+    ? data.pipeline_classification
+    : null;
+
+  const rhythmCode = pc?.primary_rhythm ?? "NSR";
+  const rhythmDisplay = pc?.display_name ?? getDisplayName(rhythmCode);
+
+  const rr = Array.isArray(m.rr_intervals_ms)
+    ? m.rr_intervals_ms.filter((v): v is number => typeof v === "number" && Number.isFinite(v)).slice(0, 8)
+    : [];
+
+  const bpm = Math.round(toNumber(m.heart_rate_bpm, rr.length > 0 ? 60000 / (rr.reduce((a, b) => a + b, 0) / rr.length) : 0));
+  const category = bpm < 60 ? "bradycardia" : bpm > 100 ? "tachycardia" : "normal";
+  const regularity = toRegularity(m.regularity);
+  const prMs = toNullableNumber(m.pr_interval_ms);
+  const qrsMs = toNullableNumber(m.qrs_duration_ms);
+  const qtcMs = toNullableNumber(m.qtc_ms);
+  const qtMs = toNullableNumber(m.qt_ms);
+  const qtcProlonged = typeof m.qtc_prolonged === "boolean" ? m.qtc_prolonged : (qtcMs !== null ? qtcMs >= 460 : null);
+  const baseConf = confidenceBase(pc);
+
+  const st = m.st ?? {};
+  const elevated = Object.entries(st).filter(([, s]) => s?.elevation);
+  const depressed = Object.entries(st).filter(([, s]) => s?.depression);
+  const stDetails =
+    elevated.length > 0
+      ? `Elevation in ${elevated.map(([lead, v]) => `${lead}${typeof v?.mean_mv === "number" ? ` (${v.mean_mv.toFixed(2)} mV)` : ""}`).join(", ")}`
+      : depressed.length > 0
+        ? `Depression in ${depressed.map(([lead, v]) => `${lead}${typeof v?.mean_mv === "number" ? ` (${v.mean_mv.toFixed(2)} mV)` : ""}`).join(", ")}`
+        : null;
+
+  const imageQuality = data.digitizer_method.includes("uncalibrated") ? "fair" : "good";
+  const caveatBits: string[] = [
+    `Digitized via ${data.digitizer_method} at ${data.sampling_rate} Hz`,
+    `Lead used for rhythm: ${m.rhythm_lead ?? "II"}`,
+  ];
+  if (!pc?.used_deep_learning) caveatBits.push("Deep model unavailable - used signal-rule classifier");
+
+  return {
+    rate: {
+      bpm,
+      rr_intervals_ms: rr.map((v) => Math.round(v)),
+      category,
+      method: "PhysioNet signal pipeline",
+      confidence: Math.min(0.95, baseConf),
+    },
+    rhythm: {
+      regularity,
+      confidence: Math.min(0.95, baseConf),
+    },
+    p_waves: {
+      present: toBool(m.p_waves_present, true),
+      morphology: toBool(m.p_waves_present, true) ? "Detected on rhythm lead" : "Not clearly detected",
+      ratio: toBool(m.p_waves_present, true) ? "1:1 (inferred)" : null,
+      confidence: Math.max(0.55, baseConf - 0.08),
+    },
+    pr_interval: {
+      ms: prMs !== null ? Math.round(prMs) : null,
+      measured_beats: prMs !== null ? [Math.round(prMs)] : [],
+      normal: prMs !== null ? prMs >= 120 && prMs <= 200 : null,
+      fixed: regularity === "regular" ? true : null,
+      confidence: Math.max(0.5, baseConf - 0.1),
+    },
+    qrs: {
+      duration_ms: qrsMs !== null ? Math.round(qrsMs) : null,
+      measured_beats_ms: qrsMs !== null ? [Math.round(qrsMs)] : [],
+      wide: toBool(m.qrs_wide, qrsMs !== null ? qrsMs >= 120 : false),
+      morphology: toBool(m.qrs_wide, false) ? "Wide-complex" : "No clear wide-complex morphology",
+      confidence: Math.max(0.55, baseConf - 0.06),
+    },
+    st_segment: {
+      elevation: elevated.length > 0,
+      depression: depressed.length > 0,
+      details: stDetails,
+      confidence: Math.max(0.5, baseConf - 0.12),
+    },
+    t_waves: {
+      morphology: "Not robustly classified by current signal pipeline",
+      confidence: 0.4,
+    },
+    qtc: {
+      ms: qtcMs !== null ? Math.round(qtcMs) : null,
+      measured_qt_ms: qtMs !== null ? [Math.round(qtMs)] : [],
+      prolonged: qtcProlonged,
+      confidence: Math.max(0.5, baseConf - 0.12),
+    },
+    primary_rhythm: rhythmDisplay,
+    overall_confidence: Math.min(0.96, Math.max(0.45, baseConf)),
+    differentials: inferDifferentials(rhythmCode, bpm, regularity),
+    explanation: buildTenStepExplanation(m, pc, rhythmDisplay, regularity),
+    image_quality: imageQuality,
+    caveats: `${caveatBits.join(". ")}.`,
+    pipeline_classification: data.pipeline_classification ?? null,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Step 1 — Acquire pipeline data (measurements + Claude prompt)
@@ -65,7 +229,7 @@ Be systematic: rate → rhythm → axis → P waves → PR → QRS → ST/T → 
 // Strategies in priority order:
 //   1. Pre-computed measurements from measurements.json (caseId fast-path)
 //   2. Python digitizer service (live signal analysis)
-//   3. null — no measurements; Claude will interpret from the image directly
+//   3. null — no measurements available
 // ---------------------------------------------------------------------------
 
 async function acquirePipelineData(
@@ -75,12 +239,11 @@ async function acquirePipelineData(
   if (caseId) {
     const precomputed = (measurementsData as Record<string, PipelineData>)[caseId];
     if (precomputed) {
-      console.log(`\n=== CLAUDE PROMPT for caseId=${caseId} ===\n${precomputed.claude_prompt}\n=== END PROMPT ===\n`);
       return precomputed;
     }
   }
 
-  if (image && process.env.PYTHON_SERVICE_URL) {
+  if (image) {
     return await runPythonPipeline(image.base64, image.mediaType);
   }
 
@@ -114,40 +277,6 @@ async function runPythonPipeline(imageBase64: string, mediaType: string): Promis
 }
 
 // ---------------------------------------------------------------------------
-// Step 2 — Call Claude
-//
-// Always sends the image when one is available so Claude has full visual
-// context regardless of how measurements were obtained.
-// The prompt is measurements-based when pipeline data exists, or the
-// generic vision prompt when falling back to image-only analysis.
-// ---------------------------------------------------------------------------
-
-async function callClaude(prompt: string, image: Image | null): Promise<EKGAnalysisResult> {
-  const content: Anthropic.Messages.MessageParam["content"] = [];
-  if (image) {
-    content.push({
-      type: "image",
-      source: { type: "base64", media_type: image.mediaType, data: image.base64 },
-    });
-  }
-  content.push({ type: "text", text: prompt });
-
-  const message = await anthropic.messages.create({
-    model: process.env.CLAUDE_MODEL ?? "claude-haiku-4-5-20251001",
-    max_tokens: 4096,
-    messages: [{ role: "user", content }],
-  });
-
-  const responseText = message.content[0].type === "text" ? message.content[0].text : "";
-  const cleaned = responseText
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/\s*```$/, "")
-    .trim();
-
-  return JSON.parse(cleaned) as EKGAnalysisResult;
-}
-
-// ---------------------------------------------------------------------------
 // Route handler
 // ---------------------------------------------------------------------------
 
@@ -159,13 +288,6 @@ const MAX_BYTES = 4 * 1024 * 1024; // 4 MB
 export async function POST(
   req: NextRequest
 ): Promise<NextResponse<AnalyzeResponse | AnalyzeErrorResponse>> {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json(
-      { success: false, error: "ANTHROPIC_API_KEY is not configured" },
-      { status: 500 }
-    );
-  }
-
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
     req.headers.get("x-real-ip") ??
@@ -227,26 +349,22 @@ export async function POST(
   }
 
   try {
-    // ── Step 1: acquire measurements ──────────────────────────────────────
+    // ── Step 1: acquire PhysioNet-compatible pipeline data ────────────────
     const pipelineData = await acquirePipelineData(image, caseId);
 
-    // ── Step 2: choose prompt ─────────────────────────────────────────────
-    const prompt = pipelineData ? pipelineData.claude_prompt : VISION_ONLY_PROMPT;
-
-    // ── Step 3: call Claude (image always included when available) ────────
-    const result = await callClaude(prompt, image);
-
-    // ── Step 4: attach metadata ───────────────────────────────────────────
-    if (pipelineData) {
-      result.pipeline_classification = pipelineData.pipeline_classification ?? null;
-      if (!result.caveats) {
-        result.caveats =
-          `Digitized via ${pipelineData.digitizer_method} at ${pipelineData.sampling_rate} Hz. ` +
-          `Leads: ${pipelineData.leads_available.join(", ")}.`;
-      }
-    } else if (!result.caveats) {
-      result.caveats = "Visual analysis only — no signal digitization was performed. Measurements are estimates.";
+    if (!pipelineData) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Signal pipeline data unavailable. Provide a known caseId or enable the Python PhysioNet service.",
+        },
+        { status: 503 }
+      );
     }
+
+    // ── Step 2: format direct 10-step output from signal pipeline ────────
+    const result = toTenStepResult(pipelineData);
 
     return NextResponse.json({ success: true, result });
   } catch (err) {
