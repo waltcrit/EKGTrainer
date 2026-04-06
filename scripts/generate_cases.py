@@ -7,9 +7,10 @@ Generates synthetic rhythm strip PNG images + cases.json metadata
 for the EKGTrainer teaching library.
 
 Run from the repository root:
-    python3 scripts/generate_cases.py
+    python3 scripts/generate_cases.py [--render-style {house,physionet}]
 """
 
+import argparse
 import json
 import warnings
 import numpy as np
@@ -38,6 +39,22 @@ BG    = "#FFF5E6"   # traditional tan paper
 MINOR = "#FFBBBB"   # fine red grid
 MAJOR = "#EE6666"   # bold red grid
 TRACE = "#111111"
+
+# Render styles: house (traditional tan) and physionet (neutral white/gray)
+RENDER_STYLES = {
+    "house": {
+        "bg": "#FFF5E6",
+        "minor": "#FFBBBB",
+        "major": "#EE6666",
+        "trace": "#111111",
+    },
+    "physionet": {
+        "bg": "#ffffff",
+        "minor": "#e3e3e3",
+        "major": "#bdbdbd",
+        "trace": "#111111",
+    },
+}
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -356,14 +373,19 @@ def lead_signal(r_times,
 # Multi-lead renderer  (stacks 2–4 leads vertically)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def _style_ax(ax, label):
-    ax.set_facecolor(BG)
+def _style_ax(ax, label, render_style="house"):
+    style = RENDER_STYLES.get(render_style, RENDER_STYLES["house"])
+    bg = style["bg"]
+    minor = style["minor"]
+    major = style["major"]
+    
+    ax.set_facecolor(bg)
     ax.set_xticks(np.arange(0, DUR + 0.04, 0.04), minor=True)
     ax.set_yticks(np.arange(-0.6, 1.7, 0.10), minor=True)
     ax.set_xticks(np.arange(0, DUR + 0.20, 0.20))
     ax.set_yticks(np.arange(-0.5, 1.6, 0.50))
-    ax.grid(True, which='minor', color=MINOR, linewidth=0.30, zorder=1)
-    ax.grid(True, which='major', color=MAJOR, linewidth=0.70, zorder=2)
+    ax.grid(True, which='minor', color=minor, linewidth=0.30, zorder=1)
+    ax.grid(True, which='major', color=major, linewidth=0.70, zorder=2)
     ax.set_xlim(0, DUR)
     ax.set_ylim(-0.5, 1.5)
     ax.tick_params(which='both', bottom=False, left=False,
@@ -374,25 +396,29 @@ def _style_ax(ax, label):
             fontsize=8, fontweight='bold', va='top', color='#222222', zorder=5)
 
 
-def render_multilead(leads, rhythm_label, out_path):
+def render_multilead(leads, rhythm_label, out_path, render_style="house"):
     """
     leads: list of (signal_array, lead_name_str)
     """
+    style = RENDER_STYLES.get(render_style, RENDER_STYLES["house"])
+    bg = style["bg"]
+    trace = style["trace"]
+    
     n = len(leads)
     fig, axes = plt.subplots(n, 1, figsize=(12, n * 1.85), dpi=150,
                               gridspec_kw={"hspace": 0.06})
-    fig.patch.set_facecolor(BG)
+    fig.patch.set_facecolor(bg)
     if n == 1:
         axes = [axes]
 
     for ax, (sig, name) in zip(axes, leads):
-        _style_ax(ax, name)
-        ax.plot(T, sig, color=TRACE, linewidth=1.2, zorder=3, antialiased=True)
+        _style_ax(ax, name, render_style=render_style)
+        ax.plot(T, sig, color=trace, linewidth=1.2, zorder=3, antialiased=True)
 
     axes[0].text(0.99, 0.96, '25 mm/s  |  10 mm/mV',
                  transform=axes[0].transAxes, fontsize=6.5,
                  ha='right', va='top', color='#888888', zorder=5)
-    plt.savefig(out_path, bbox_inches='tight', facecolor=BG)
+    plt.savefig(out_path, bbox_inches='tight', facecolor=bg)
     plt.close(fig)
     print(f"  ✓  {out_path.name}")
 
@@ -583,17 +609,23 @@ def brugada_type1_strip(hr=72):
 # Rendering
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def render(signal, rhythm_label, out_path):
+def render(signal, rhythm_label, out_path, render_style="house"):
+    style = RENDER_STYLES.get(render_style, RENDER_STYLES["house"])
+    bg = style["bg"]
+    minor = style["minor"]
+    major = style["major"]
+    trace = style["trace"]
+    
     fig, ax = plt.subplots(figsize=(12, 2.4), dpi=150)
-    fig.patch.set_facecolor(BG)
-    ax.set_facecolor(BG)
+    fig.patch.set_facecolor(bg)
+    ax.set_facecolor(bg)
 
     ax.set_xticks(np.arange(0, DUR + 0.04, 0.04), minor=True)
     ax.set_yticks(np.arange(-0.6, 1.7, 0.1), minor=True)
     ax.set_xticks(np.arange(0, DUR + 0.2, 0.2))
     ax.set_yticks(np.arange(-0.5, 1.6, 0.5))
-    ax.grid(True, which='minor', color=MINOR, linewidth=0.3, zorder=1)
-    ax.grid(True, which='major', color=MAJOR, linewidth=0.7, zorder=2)
+    ax.grid(True, which='minor', color=minor, linewidth=0.3, zorder=1)
+    ax.grid(True, which='major', color=major, linewidth=0.7, zorder=2)
 
     ax.set_xlim(0, DUR)
     ax.set_ylim(-0.5, 1.5)
@@ -602,13 +634,13 @@ def render(signal, rhythm_label, out_path):
     for s in ax.spines.values():
         s.set_visible(False)
 
-    ax.plot(T, signal, color=TRACE, linewidth=1.2, zorder=3, antialiased=True)
+    ax.plot(T, signal, color=trace, linewidth=1.2, zorder=3, antialiased=True)
 
     ax.text(0.99, 0.97, '25 mm/s  |  10 mm/mV  |  Lead II',
             transform=ax.transAxes, fontsize=6.5, ha='right',
             va='top', color='#888888')
     plt.tight_layout(pad=0.2)
-    plt.savefig(out_path, bbox_inches='tight', facecolor=BG)
+    plt.savefig(out_path, bbox_inches='tight', facecolor=bg)
     plt.close(fig)
     print(f"  ✓  {out_path.name}")
 
@@ -1001,6 +1033,19 @@ CASES = [
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def main():
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        '--render-style',
+        type=str,
+        default='house',
+        choices=sorted(RENDER_STYLES.keys()),
+        help='Rendering palette/style for PNG outputs (default: house)'
+    )
+    args = parser.parse_args()
+    
     np.random.seed(0)
     metadata = []
 
@@ -1010,9 +1055,9 @@ def main():
         out_path = CASES_DIR / f"{case['id']}.png"
         output = case["generator"]()
         if case.get("multilead"):
-            render_multilead(output, case["rhythm"], out_path)
+            render_multilead(output, case["rhythm"], out_path, render_style=args.render_style)
         else:
-            render(output, case["rhythm"], out_path)
+            render(output, case["rhythm"], out_path, render_style=args.render_style)
 
         metadata.append({
             "id":              case["id"],

@@ -8,9 +8,10 @@ replacing the existing single/multi-lead strips.
 
 Usage (from repo root):
     pip install -r scripts/requirements.txt
-    python3 scripts/generate_12lead_ekgs.py
+    python3 scripts/generate_12lead_ekgs.py [--render-style {house,physionet}]
 """
 
+import argparse
 import math
 import warnings
 from typing import Any
@@ -37,6 +38,22 @@ T   = np.linspace(0, DUR, N)
 
 # ── Paper style ───────────────────────────────────────────────────────────────
 BG, MINOR, MAJOR, TRACE = "#FFF5E6", "#FFBBBB", "#EE6666", "#111111"
+
+# Render styles: house (traditional tan) and physionet (neutral white/gray)
+RENDER_STYLES = {
+    "house": {
+        "bg": "#FFF5E6",
+        "minor": "#FFBBBB",
+        "major": "#EE6666",
+        "trace": "#111111",
+    },
+    "physionet": {
+        "bg": "#ffffff",
+        "minor": "#e3e3e3",
+        "major": "#bdbdbd",
+        "trace": "#111111",
+    },
+}
 
 # ── Lead definitions ──────────────────────────────────────────────────────────
 ALL_LEADS = ["I", "II", "III", "aVR", "aVL", "aVF",
@@ -713,7 +730,6 @@ def vtach(hr=175):
     # Start slightly earlier so 2.5 s column boundaries fall nearer the
     # isoelectric segment instead of mid-complex.
     r_t = rr(hr, start=0.16)
-    r_t_late = rr(hr, start=0.06)
     leads = {}
     for lead in FRONTAL:
         if lead == "aVR":
@@ -726,13 +742,20 @@ def vtach(hr=175):
             leads[lead] = build_lead(r_t, no_p=True, qrs_ms=180, qt_ms=320,
                                      r_amp=0.92, broad_r=True, t_inv=True, t_amp=0.14)
     for v_num, lead in enumerate(PRECORDIAL, start=1):
-        lead_r_t = r_t_late if v_num >= 4 else r_t
         if v_num <= 2:
-            leads[lead] = build_lead(lead_r_t, no_p=True, qrs_ms=180, qt_ms=320,
+            leads[lead] = build_lead(r_t, no_p=True, qrs_ms=180, qt_ms=320,
                                      r_amp=1.05, wide_neg=True, t_amp=0.14)
         else:
-            leads[lead] = build_lead(lead_r_t, no_p=True, qrs_ms=180, qt_ms=320,
+            leads[lead] = build_lead(r_t, no_p=True, qrs_ms=180, qt_ms=320,
                                      r_amp=1.15, broad_r=True, t_inv=True, t_amp=0.16)
+
+    # Keep problematic VT leads on the same isoelectric level as their row anchors.
+    row1_anchor = float(np.median(leads["I"]))
+    row2_anchor = float(np.median(leads["II"]))
+    for lead in ("aVR", "V1"):
+        leads[lead] = leads[lead] + (row1_anchor - float(np.median(leads[lead])))
+    leads["V2"] = leads["V2"] + (row2_anchor - float(np.median(leads["V2"])))
+
     return leads
 
 
@@ -1011,12 +1034,51 @@ def brugada_type1(hr=72):
     })
 
 
+def wpw(hr=72):
+    """Wolff-Parkinson-White: shortened PR interval (~90 ms), delta wave slur
+    on QRS upstroke, wide QRS (110-140 ms), secondary ST-T changes."""
+    return _normal_base(rr(hr), pr_ms=90, extra={
+        "I":   {"r_amp": 1.15, "st": -0.10, "t_inv": True, "t_amp": 0.18},
+        "aVL": {"r_amp": 0.92, "st": -0.08, "t_inv": True, "t_amp": 0.16},
+        "V1": {"rsrp": True, "r_amp": 0.68, "s_frac": 0.18,
+               "st": -0.12, "t_inv": True, "t_amp": 0.20},
+        "V2": {"r_amp": 0.85, "st": -0.10, "t_inv": True, "t_amp": 0.18},
+        "V5": {"r_amp": 1.32, "st": -0.14, "t_inv": True, "t_amp": 0.22},
+        "V6": {"r_amp": 1.08, "st": -0.12, "t_inv": True, "t_amp": 0.20},
+    })
+
+
+def long_qt(hr=68):
+    """Long QT Syndrome: markedly prolonged QT interval (> 500 ms),
+    normal PR, normal QRS, sinus rhythm with subtle U wave."""
+    r_t = rr(hr)
+    return _normal_base(r_t, pr_ms=160, extra={
+        # Extend QT to ~520 ms (normal male ~400 ms)
+        "I":   {"qt_ms": 520, "t_amp": 0.20},
+        "II":  {"qt_ms": 520, "t_amp": 0.22},
+        "III": {"qt_ms": 520, "t_amp": 0.18},
+        "aVL": {"qt_ms": 520, "t_amp": 0.20},
+        "aVF": {"qt_ms": 520, "t_amp": 0.20},
+        "V2":  {"qt_ms": 520, "t_amp": 0.22},
+        "V3":  {"qt_ms": 520, "t_amp": 0.24},
+        "V4":  {"qt_ms": 520, "t_amp": 0.24},
+        "V5":  {"qt_ms": 520, "t_amp": 0.22},
+        "V6":  {"qt_ms": 520, "t_amp": 0.20},
+    })
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Renderer
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def _style_ax(ax, label, xlim, ylim=(-0.6, 1.4)):
-    ax.set_facecolor(BG)
+def _style_ax(ax, label, xlim, ylim=(-0.6, 1.4), render_style="house"):
+    style = RENDER_STYLES.get(render_style, RENDER_STYLES["house"])
+    bg = style["bg"]
+    minor = style["minor"]
+    major = style["major"]
+    trace = style["trace"]
+    
+    ax.set_facecolor(bg)
     # Minor grid: 0.04s (1mm at 25mm/s) × 0.1mV
     major_x = np.arange(0, xlim[1] + 1e-9, 0.20)
     minor_x = np.arange(0, xlim[1] + 1e-9, 0.04)
@@ -1029,8 +1091,8 @@ def _style_ax(ax, label, xlim, ylim=(-0.6, 1.4)):
     # Major grid: 0.20s × 0.50mV
     ax.set_xticks(major_x)
     ax.set_yticks(major_y)
-    ax.grid(True, which='minor', color=MINOR, linewidth=0.28, zorder=1)
-    ax.grid(True, which='major', color=MAJOR, linewidth=0.65, zorder=2)
+    ax.grid(True, which='minor', color=minor, linewidth=0.28, zorder=1)
+    ax.grid(True, which='major', color=major, linewidth=0.65, zorder=2)
     ax.set_xlim(*xlim)
     ax.set_ylim(*ylim)
     ax.tick_params(which='both', bottom=False, left=False,
@@ -1049,15 +1111,19 @@ def _shared_ylim(leads):
     return -amp, amp
 
 
-def render_12lead(leads, out_path):
+def render_12lead(leads, out_path, render_style="house"):
     """
     Standard 12-lead layout on continuous row grids:
       Row 0-2: continuous 10s rows with 4 sequential 2.5s lead segments
       Row 3:   Lead II rhythm strip (full 10s)
     No diagnosis title in the image — kept anonymized for quiz use.
     """
+    style = RENDER_STYLES.get(render_style, RENDER_STYLES["house"])
+    bg = style["bg"]
+    trace = style["trace"]
+    
     fig = plt.figure(figsize=(11, 8.5), dpi=150)
-    fig.patch.set_facecolor(BG)
+    fig.patch.set_facecolor(bg)
 
     gs = fig.add_gridspec(
         4, 1,
@@ -1070,7 +1136,7 @@ def render_12lead(leads, out_path):
 
     for row_i, row in enumerate(LAYOUT):
         ax = fig.add_subplot(gs[row_i, 0])
-        _style_ax(ax, "", xlim=(0, DUR), ylim=ylim)
+        _style_ax(ax, "", xlim=(0, DUR), ylim=ylim, render_style=render_style)
 
         for col_i, (lead, _) in enumerate(row):
             t0 = col_i * COL_W
@@ -1078,21 +1144,21 @@ def render_12lead(leads, out_path):
             mask = (T >= t0 + SEGMENT_PAD) & (T < t1 - SEGMENT_PAD)
             ax_t = T[mask]
             ax_sig = leads[lead][mask]
-            ax.plot(ax_t, ax_sig, color=TRACE, lw=1.05, zorder=3, antialiased=True)
+            ax.plot(ax_t, ax_sig, color=trace, lw=1.05, zorder=3, antialiased=True)
             ax.text(t0 + 0.04, ylim[1] - 0.08, lead,
                     fontsize=7.5, fontweight='bold', va='top',
                     color='#1a1a1a', zorder=5)
 
     # Rhythm strip — Lead II full width
     ax_strip = fig.add_subplot(gs[3, 0])
-    _style_ax(ax_strip, "II (rhythm strip)", xlim=(0, DUR), ylim=ylim)
-    ax_strip.plot(T, leads["II"], color=TRACE, lw=1.05, zorder=3, antialiased=True)
+    _style_ax(ax_strip, "II (rhythm strip)", xlim=(0, DUR), ylim=ylim, render_style=render_style)
+    ax_strip.plot(T, leads["II"], color=trace, lw=1.05, zorder=3, antialiased=True)
 
     # Calibration label only (no diagnosis title — anonymized)
     fig.text(0.985, 0.985, '25 mm/s  ·  10 mm/mV', fontsize=6.5,
              ha='right', va='top', color='#888888')
 
-    plt.savefig(out_path, dpi=150, bbox_inches='tight', facecolor=BG)
+    plt.savefig(out_path, dpi=150, bbox_inches='tight', facecolor=bg)
     plt.close(fig)
 
 
@@ -1140,6 +1206,8 @@ CASES = [
     ("lv_strain_01",     "LVH with LV Strain Pattern",                      lambda: lv_strain(72)),
     ("rv_strain_01",     "RV Strain Pattern",                               lambda: rv_strain(90)),
     ("brugada_01",       "Brugada Syndrome — Type 1 (coved)",               lambda: brugada_type1(72)),
+    ("wpw_01",           "Wolff-Parkinson-White (WPW)",                     lambda: wpw(72)),
+    ("lngqt_01",         "Long QT Syndrome (LNGQT)",                        lambda: long_qt(68)),
     ("pace_atrial_01",   "Atrial Pacing (AAI, 70 bpm)",                     lambda: atrial_paced(70)),
     ("pace_ventricular_01", "Ventricular Pacing (VVI, 70 bpm)",             lambda: ventricular_paced(70)),
     ("pace_av_01",       "AV Sequential Pacing (DDD, 70 bpm)",              lambda: av_paced(70)),
@@ -1151,12 +1219,25 @@ CASES = [
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def main():
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        '--render-style',
+        type=str,
+        default='house',
+        choices=sorted(RENDER_STYLES.keys()),
+        help='Rendering palette/style for PNG outputs (default: house)'
+    )
+    args = parser.parse_args()
+    
     np.random.seed(42)
     print(f"\nGenerating {len(CASES)} full 12-lead EKG PNGs → {OUT_DIR}\n")
     for case_id, _title, gen_fn in CASES:
         out_path = OUT_DIR / f"{case_id}_12lead.png"
         leads = gen_fn()
-        render_12lead(leads, out_path)
+        render_12lead(leads, out_path, render_style=args.render_style)
         print(f"  ✓  {out_path.name}")
     print(f"\nDone — {len(CASES)} files written.\n")
 

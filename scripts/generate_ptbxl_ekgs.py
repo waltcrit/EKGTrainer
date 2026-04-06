@@ -91,6 +91,28 @@ LAYOUT = [
 COL_W = 2.5  # seconds per column in 12-lead grid
 SEGMENT_PAD = 0.012  # keep trace slightly off the boundary to avoid false continuity
 
+RENDER_STYLES: dict[str, dict[str, float | str]] = {
+    "house": {
+        "bg": BG,
+        "minor": MINOR,
+        "major": MAJOR,
+        "trace": TRACE,
+        "label": "#1a1a1a",
+        "calib": "#888888",
+        "segment_pad": SEGMENT_PAD,
+    },
+    # PhysioNet-like neutral paper/grid tones for easier visual comparison.
+    "physionet": {
+        "bg": "#ffffff",
+        "minor": "#e3e3e3",
+        "major": "#bdbdbd",
+        "trace": "#111111",
+        "label": "#111111",
+        "calib": "#666666",
+        "segment_pad": 0.0,
+    },
+}
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Signal conditioning
@@ -233,6 +255,8 @@ QUERIES: dict = {
     "lv_strain_01":    (["LVH"],                    []),
     "rv_strain_01":    (["RVH"],                    []),
     "brugada_01":         (["BRGADA"],                 []),
+    "wpw_01":             (["WPW"],                    []),
+    "lngqt_01":           (["LNGQT"],                  []),
     "pace_atrial_01":     (["PACE"],                   []),
     "pace_ventricular_01":(["PACE"],                   []),
     "pace_av_01":         (["PACE"],                   []),
@@ -393,8 +417,12 @@ def load_candidate_signal(row: "pd.Series", data_dir: Path, remote: bool) -> np.
 # Renderers — identical style to the synthetic generators
 # ══════════════════════════════════════════════════════════════════════════════
 
-def _style_ax(ax, label: str, xlim: tuple, ylim: tuple):
-    ax.set_facecolor(BG)
+def _style_ax(ax, label: str, xlim: tuple, ylim: tuple, *,
+              bg: str = BG,
+              minor: str = MINOR,
+              major: str = MAJOR,
+              label_color: str = '#1a1a1a'):
+    ax.set_facecolor(bg)
     major_x = np.arange(0, xlim[1] + 1e-9, 0.20)
     minor_x = np.arange(0, xlim[1] + 1e-9, 0.04)
     minor_x = minor_x[np.abs((minor_x / 0.20) - np.round(minor_x / 0.20)) > 1e-9]
@@ -405,8 +433,8 @@ def _style_ax(ax, label: str, xlim: tuple, ylim: tuple):
     ax.set_yticks(minor_y, minor=True)
     ax.set_xticks(major_x)
     ax.set_yticks(major_y)
-    ax.grid(True, which='minor', color=MINOR, linewidth=0.28, zorder=1)
-    ax.grid(True, which='major', color=MAJOR, linewidth=0.65, zorder=2)
+    ax.grid(True, which='minor', color=minor, linewidth=0.28, zorder=1)
+    ax.grid(True, which='major', color=major, linewidth=0.65, zorder=2)
     ax.set_xlim(*xlim)
     ax.set_ylim(*ylim)
     ax.tick_params(which='both', bottom=False, left=False,
@@ -414,30 +442,48 @@ def _style_ax(ax, label: str, xlim: tuple, ylim: tuple):
     for sp in ax.spines.values():
         sp.set_visible(False)
     ax.text(0.02, 0.96, label, transform=ax.transAxes,
-            fontsize=7.5, fontweight='bold', va='top', color='#1a1a1a', zorder=5)
+            fontsize=7.5, fontweight='bold', va='top', color=label_color, zorder=5)
 
 
-def render_strip(sig: np.ndarray, out_path: Path):
+def _get_style(style_name: str) -> dict[str, float | str]:
+    style = RENDER_STYLES.get(style_name)
+    if style is None:
+        raise ValueError(
+            f"Unknown render style '{style_name}'. "
+            f"Choose one of: {', '.join(sorted(RENDER_STYLES))}."
+        )
+    return style
+
+
+def render_strip(sig: np.ndarray, out_path: Path, render_style: str = "house"):
     """Lead II rhythm strip — matches generate_cases.py render() style."""
+    style = _get_style(render_style)
     lead_ii = get_lead(sig, "II")
     lo, hi = lead_ylim(lead_ii)
 
     fig, ax = plt.subplots(figsize=(12, 2.4), dpi=150)
-    fig.patch.set_facecolor(BG)
-    _style_ax(ax, "II", xlim=(0, DUR), ylim=(lo, hi))
-    ax.plot(T, lead_ii, color=TRACE, linewidth=1.2, zorder=3, antialiased=True)
+    fig.patch.set_facecolor(str(style["bg"]))
+    _style_ax(ax, "II", xlim=(0, DUR), ylim=(lo, hi),
+              bg=str(style["bg"]),
+              minor=str(style["minor"]),
+              major=str(style["major"]),
+              label_color=str(style["label"]))
+    ax.plot(T, lead_ii, color=str(style["trace"]), linewidth=1.2, zorder=3, antialiased=True)
     ax.text(0.99, 0.97, '25 mm/s  |  10 mm/mV  |  Lead II',
-            transform=ax.transAxes, fontsize=6.5, ha='right', va='top', color='#888888')
+            transform=ax.transAxes, fontsize=6.5, ha='right', va='top', color=str(style["calib"]))
 
     plt.tight_layout(pad=0.2)
-    plt.savefig(out_path, bbox_inches='tight', facecolor=BG)
+    plt.savefig(out_path, bbox_inches='tight', facecolor=str(style["bg"]))
     plt.close(fig)
 
 
-def render_12lead(sig: np.ndarray, out_path: Path):
+def render_12lead(sig: np.ndarray, out_path: Path, render_style: str = "house"):
     """Standard 4×3+strip 12-lead on continuous row grids."""
+    style = _get_style(render_style)
+    segment_pad = float(style["segment_pad"])
+
     fig = plt.figure(figsize=(11, 8.5), dpi=150)
-    fig.patch.set_facecolor(BG)
+    fig.patch.set_facecolor(str(style["bg"]))
 
     gs = fig.add_gridspec(
         4, 1,
@@ -450,32 +496,40 @@ def render_12lead(sig: np.ndarray, out_path: Path):
 
     for row_i, row in enumerate(LAYOUT):
         ax = fig.add_subplot(gs[row_i, 0])
-        _style_ax(ax, "", xlim=(0, DUR), ylim=ylim)
+        _style_ax(ax, "", xlim=(0, DUR), ylim=ylim,
+                  bg=str(style["bg"]),
+                  minor=str(style["minor"]),
+                  major=str(style["major"]),
+                  label_color=str(style["label"]))
 
         for col_i, (lead, _) in enumerate(row):
             n0  = int(col_i * COL_W * FS)
             n1  = int((col_i + 1) * COL_W * FS)
-            pad_n = int(SEGMENT_PAD * FS)
+            pad_n = int(segment_pad * FS)
             seg_n0 = min(n1, n0 + pad_n)
             seg_n1 = max(seg_n0, n1 - pad_n)
             arr = get_lead(sig, lead)[seg_n0:seg_n1]
             t_w = T[seg_n0:seg_n1]
-            ax.plot(t_w, arr, color=TRACE, lw=1.05, zorder=3, antialiased=True)
+            ax.plot(t_w, arr, color=str(style["trace"]), lw=1.05, zorder=3, antialiased=True)
             ax.text(col_i * COL_W + 0.04, ylim[1] - 0.08, lead,
                     fontsize=7.5, fontweight='bold', va='top',
-                    color='#1a1a1a', zorder=5)
+                    color=str(style["label"]), zorder=5)
 
     # Rhythm strip — Lead II full width
     ax_strip = fig.add_subplot(gs[3, 0])
     lead_ii  = get_lead(sig, "II")
-    _style_ax(ax_strip, "II (rhythm strip)", xlim=(0, DUR), ylim=ylim)
-    ax_strip.plot(T, lead_ii, color=TRACE, lw=1.05, zorder=3, antialiased=True)
+    _style_ax(ax_strip, "II (rhythm strip)", xlim=(0, DUR), ylim=ylim,
+              bg=str(style["bg"]),
+              minor=str(style["minor"]),
+              major=str(style["major"]),
+              label_color=str(style["label"]))
+    ax_strip.plot(T, lead_ii, color=str(style["trace"]), lw=1.05, zorder=3, antialiased=True)
 
     # Calibration only (anonymised — no diagnosis title)
     fig.text(0.985, 0.985, '25 mm/s  ·  10 mm/mV', fontsize=6.5,
-             ha='right', va='top', color='#888888')
+             ha='right', va='top', color=str(style["calib"]))
 
-    plt.savefig(out_path, dpi=150, bbox_inches='tight', facecolor=BG)
+    plt.savefig(out_path, dpi=150, bbox_inches='tight', facecolor=str(style["bg"]))
     plt.close(fig)
 
 
@@ -510,6 +564,9 @@ def main():
                         help='Read PTB-XL directly from PhysioNet (no local download)')
     parser.add_argument('--max-candidates', type=int, default=1,
                         help='Generate up to N ranked candidates per case (default: 1)')
+    parser.add_argument('--render-style', type=str, default='house',
+                        choices=sorted(RENDER_STYLES.keys()),
+                        help='Rendering palette/style for PNG outputs (default: house)')
     args = parser.parse_args()
     data_dir = args.data_dir
 
@@ -591,8 +648,8 @@ def main():
                 lead_name = f"{case_id}__c{idx}_ecg{int(cast(Any, ecg_id))}_12lead.png"
                 strip_path = case_dir / strip_name
                 lead_path = case_dir / lead_name
-                render_strip(sig, strip_path)
-                render_12lead(sig, lead_path)
+                render_strip(sig, strip_path, args.render_style)
+                render_12lead(sig, lead_path, args.render_style)
                 case_manifest.append({
                     "rank": idx,
                     "ecg_id": int(cast(Any, ecg_id)),
@@ -610,8 +667,8 @@ def main():
             continue
 
         used_ids.add(chosen_ecg_id)
-        render_strip(chosen_sig, OUT_DIR / f"{case_id}.png")
-        render_12lead(chosen_sig, OUT_DIR / f"{case_id}_12lead.png")
+        render_strip(chosen_sig, OUT_DIR / f"{case_id}.png", args.render_style)
+        render_12lead(chosen_sig, OUT_DIR / f"{case_id}_12lead.png", args.render_style)
         manifest[case_id] = case_manifest
 
         top_codes = case_manifest[0]["codes"] if case_manifest else ""
