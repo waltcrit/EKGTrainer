@@ -226,6 +226,7 @@ QUERIES: dict = {
     "sarr_01":         (["SARRH"],                  []),
     "pac_01":          (["SVPB"],                   ["AFIB"]),
     "pvc_01":          (["VPB"],                    ["AFIB","BIGU"]),
+    "pvc_01":          (["VPB", "PVC"],              ["AFIB","BIGU"]),
     "svt_01":          (["SVTACH","PSVT"],          ["AFIB","AFLT"]),
     "afib_01":         (["AFIB"],                   ["PACE","3AVB"]),
     "afib_02":         (["AFIB"],                   ["PACE","3AVB"]),
@@ -261,6 +262,18 @@ QUERIES: dict = {
     "pace_ventricular_01":(["PACE"],                   []),
     "pace_av_01":         (["PACE"],                   []),
 }
+
+# Review queries — matched to REVIEW_CASES above; real PTB-XL candidates written
+# to web/public/cases/candidates/{case_id}/.  Not yet live in the app.
+REVIEW_QUERIES: dict = {
+    "hyperkal_01": (["EL"],             []),           # 96 records
+    "lae_01":      (["LAO/LAE"],        []),           # 426 records
+    "rae_01":      (["RAO/RAE"],        []),           # 99 records
+    "lafb_01":     (["LAFB"],           ["LBBB"]),     # 1,623 records (exclude LBBB)
+    "bigu_01":     (["BIGU"],           ["AFIB"]),     # 82 records
+    "trigu_01":    (["TRIGU"],          ["AFIB"]),     # 20 records
+}
+QUERIES.update(REVIEW_QUERIES)
 
 # Keywords used to differentiate Mobitz I from II via report text
 _WENCKEBACH = ["wenckebach","mobitz i","mobitz 1","type i","type 1","periodically"]

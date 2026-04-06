@@ -1092,9 +1092,7 @@ def _style_ax(ax, label, xlim, ylim=(-0.6, 1.4), render_style="house"):
     ax.set_xticks(major_x)
     ax.set_yticks(major_y)
     ax.grid(True, which='minor', color=minor, linewidth=0.28, zorder=1)
-    ax.grid(True, which='major', color=major, linewidth=0.65, zorder=2)
-    ax.set_xlim(*xlim)
-    ax.set_ylim(*ylim)
+
     ax.tick_params(which='both', bottom=False, left=False,
                    labelbottom=False, labelleft=False)
     for sp in ax.spines.values():
@@ -1213,6 +1211,19 @@ CASES = [
     ("pace_av_01",       "AV Sequential Pacing (DDD, 70 bpm)",              lambda: av_paced(70)),
 ]
 
+# Review cases: generated to web/public/cases/review/ and excluded from live app
+# until approved.  Tuple: (case_id, title, gen_fn, review=True)
+REVIEW_CASES = [
+    ("hyperkal_01",  "Hyperkalemia",                                   lambda: hyperkalemia(65),  True),
+    ("lae_01",       "Left Atrial Enlargement (LAE)",                  lambda: lae(70),           True),
+    ("rae_01",       "Right Atrial Enlargement (RAE)",                 lambda: rae(72),           True),
+    ("lafb_01",      "Left Anterior Fascicular Block (LAFB)",          lambda: lafb(70),          True),
+    ("bigu_01",      "Ventricular Bigeminy",                           lambda: bigeminy(72),      True),
+    ("trigu_01",     "Ventricular Trigeminy",                          lambda: trigeminy(70),     True),
+]
+
+CASES = CASES + REVIEW_CASES
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Main
@@ -1233,13 +1244,29 @@ def main():
     args = parser.parse_args()
     
     np.random.seed(42)
+    REVIEW_DIR = OUT_DIR / "review"
+    REVIEW_DIR.mkdir(parents=True, exist_ok=True)
+    live_count = 0
+    review_count = 0
+
     print(f"\nGenerating {len(CASES)} full 12-lead EKG PNGs → {OUT_DIR}\n")
-    for case_id, _title, gen_fn in CASES:
-        out_path = OUT_DIR / f"{case_id}_12lead.png"
+    for item in CASES:
+        if len(item) == 4:
+            case_id, _title, gen_fn, is_review = item
+        else:
+            case_id, _title, gen_fn = item
+            is_review = False
+        out_dir = REVIEW_DIR if is_review else OUT_DIR
+        out_path = out_dir / f"{case_id}_12lead.png"
         leads = gen_fn()
         render_12lead(leads, out_path, render_style=args.render_style)
-        print(f"  ✓  {out_path.name}")
-    print(f"\nDone — {len(CASES)} files written.\n")
+        if is_review:
+            review_count += 1
+            print(f"  ⏳  {out_path.name}  (review)")
+        else:
+            live_count += 1
+            print(f"  ✓  {out_path.name}")
+    print(f"\nDone — {live_count} live, {review_count} review files written.\n")
 
 
 if __name__ == "__main__":

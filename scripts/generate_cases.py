@@ -605,6 +605,101 @@ def brugada_type1_strip(hr=72):
     ]
 
 
+def wpw_strip(hr=72):
+    """WPW: shortened PR (~90 ms), delta slur, wide QRS — Lead II rhythm strip."""
+    rs = _rr(hr)
+    return lead_signal(rs, pr_ms=90, qrs_ms=120, qt_ms=360,
+                       p_amp=0.14, r_amp=1.0, s_frac=0.18,
+                       st_offset=-0.08, t_inverted=True, t_amp=0.20)
+
+
+def long_qt_strip(hr=68):
+    """Long QT: markedly prolonged QT (>500 ms), normal P/QRS, sinus rhythm."""
+    rs = _rr(hr)
+    return lead_signal(rs, pr_ms=160, qrs_ms=80, qt_ms=520,
+                       p_amp=0.15, r_amp=1.0, s_frac=0.15,
+                       t_amp=0.22)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Rendering
+def hyperkalemia_strip(hr=65):
+    """Hyperkalemia: absent P waves, widened QRS (~140 ms), very tall tented T waves.
+    Models moderate-to-severe hyperkalaemia (K+ ≥ 6.5 mEq/L) in Lead II."""
+    sig = np.zeros(N)
+    for r in regular_r_times(hr):
+        # Wide QRS — no P wave; narrow tented T added separately
+        place_normal_beat(sig, T, r, no_p=True, qrs_ms=140, qt_ms=350, t_amp=0.0)
+        # Tall, narrow, symmetric ("tented") T wave
+        sig += gauss(T, r + 0.225, 62, 0.64)
+    return sig
+
+
+def lae_strip(hr=70):
+    """Left Atrial Enlargement: broad notched M-shaped P waves (P mitrale), Lead II."""
+    sig = np.zeros(N)
+    for r in regular_r_times(hr):
+        p_center = r - 0.160 + 0.040   # P midpoint for PR = 160 ms
+        # M-shaped / notched P: RA component (earlier) + LA component (later)
+        sig += gauss(T, p_center - 0.027, 34, 0.12)    # right-atrial hump
+        sig += gauss(T, p_center + 0.030, 34, 0.11)    # left-atrial hump
+        place_normal_beat(sig, T, r, no_p=True, pr_ms=180)
+    return sig
+
+
+def rae_strip(hr=72):
+    """Right Atrial Enlargement: tall, peaked P waves (P pulmonale ≥ 0.25 mV), Lead II."""
+    sig = np.zeros(N)
+    for r in regular_r_times(hr):
+        p_center = r - 0.160 + 0.040
+        sig += gauss(T, p_center, 27, 0.30)     # tall narrow peaked P (RA dominant)
+        place_normal_beat(sig, T, r, no_p=True)
+    return sig
+
+
+def lafb_strip(hr=70):
+    """LAFB: rS pattern in Lead II reflecting left-axis deviation (~−60°). QRS < 120 ms."""
+    sig = np.zeros(N)
+    for r in regular_r_times(hr):
+        p_center = r - 0.160 + 0.040
+        sig += gauss(T, p_center, 40, 0.10)     # small P in Lead II with LAD
+        sig += gauss(T, r, 22, 0.24)            # small r wave
+        sig += gauss(T, r + 0.026, 26, -0.80)  # deep S wave (axis deviation)
+        sig += gauss(T, r + 0.228, 90, 0.20)   # upright T wave
+    return sig
+
+
+def bigeminy_strip(hr=72):
+    """Ventricular Bigeminy: every other beat is a PVC — sinus → PVC → pause repeats."""
+    sig = np.zeros(N)
+    rr_int = 60.0 / hr
+    r = 0.35
+    while r < DUR - 0.20:
+        place_normal_beat(sig, T, r)                    # sinus beat
+        pvc_r = r + rr_int * 0.55                       # PVC at coupling interval
+        if pvc_r < DUR - 0.20:
+            place_wide_beat(sig, T, pvc_r, style="pvc", r_amp=1.15)
+        r += rr_int * 2.0                               # compensatory pause
+    return sig
+
+
+def trigeminy_strip(hr=70):
+    """Ventricular Trigeminy: every third beat is a PVC — sinus → sinus → PVC pattern."""
+    sig = np.zeros(N)
+    rr_int = 60.0 / hr
+    r = 0.35
+    while r < DUR - 0.20:
+        place_normal_beat(sig, T, r)                    # first sinus beat
+        r2 = r + rr_int
+        if r2 < DUR - 0.20:
+            place_normal_beat(sig, T, r2)               # second sinus beat
+        pvc_r = r2 + rr_int * 0.58                      # PVC after second beat
+        if pvc_r < DUR - 0.20:
+            place_wide_beat(sig, T, pvc_r, style="pvc", r_amp=1.12)
+        r += rr_int * 3.0                               # next group at 3× RR
+    return sig
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Rendering
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -642,8 +737,6 @@ def render(signal, rhythm_label, out_path, render_style="house"):
     plt.tight_layout(pad=0.2)
     plt.savefig(out_path, bbox_inches='tight', facecolor=bg)
     plt.close(fig)
-    print(f"  ✓  {out_path.name}")
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Case Definitions
@@ -1025,7 +1118,120 @@ CASES = [
                   "precordial lead (V1–V2 in standard position or V1–V2 one intercostal space higher). "
                   "Can be spontaneous or unmasked by fever, Na-channel blockers, or cocaine. "
                   "Treat symptomatic patients with an ICD. Screen all first-degree relatives."),
+
+    dict(id="wpw_01", rhythm="Wolff-Parkinson-White (WPW)", category="channelopathy", difficulty=3,
+         generator=lambda: wpw_strip(72),
+         rate=72, regularity="regular",
+         key_features=["Short PR interval (<120 ms)",
+                       "Delta wave (slurred upstroke on QRS)",
+                       "Wide QRS (≥120 ms) due to ventricular pre-excitation",
+                       "Secondary ST-T changes discordant to delta wave",
+                       "Risk of SVT, atrial fibrillation, and sudden death"],
+         teaching="WPW results from an accessory pathway (Bundle of Kent) bypassing the AV node. "
+                  "Pre-excitation produces the triad: short PR, delta wave, and wide QRS. "
+                  "The danger is AFib conducting rapidly down the pathway — can degenerate to VF. "
+                  "Avoid AV nodal blockers (adenosine, beta-blockers, digoxin) in AFib with WPW. "
+                  "Definitive treatment is catheter ablation of the accessory pathway."),
+
+    dict(id="lngqt_01", rhythm="Long QT Syndrome", category="channelopathy", difficulty=3,
+         generator=lambda: long_qt_strip(68),
+         rate=68, regularity="regular",
+         key_features=["QTc >500 ms (markedly prolonged)",
+                       "Normal P wave and QRS",
+                       "T wave may be broad, notched, or biphasic",
+                       "Risk of Torsades de Pointes (TdP)",
+                       "Triggered by bradycardia, hypokalemia, or QT-prolonging drugs"],
+         teaching="Long QT syndrome predisposes to Torsades de Pointes — a polymorphic VT that can "
+                  "cause syncope or degenerate to VF. The corrected QT (QTc = QT / √RR) >500 ms is "
+                  "high risk. Causes: congenital (LQTS1-3), electrolyte abnormalities (↓K, ↓Mg), "
+                  "and drugs (antiarrhythmics, antipsychotics, antibiotics). "
+                  "Treat: correct electrolytes, remove offending drugs, magnesium IV for TdP, ICD for congenital LQTS."),
 ]
+
+
+# ── Review cases (not yet in cases.json — awaiting approval) ─────────────────
+REVIEW_CASES = [
+
+    dict(id="hyperkal_01", rhythm="Hyperkalemia", category="electrolyte", difficulty=3,
+        review=True, generator=lambda: hyperkalemia_strip(65),
+        rate=65, regularity="regular",
+        key_features=["Absent P waves (flat or invisible)",
+                   "Widened QRS complex (≥120 ms)",
+                   "Very tall, narrow, symmetric ('tented') T waves",
+                   "Shortened QT interval",
+                   "Progressive sine-wave QRS pattern at severe K+ levels"],
+        teaching="Hyperkalemia produces a sequential ECG progression. Early changes: peaked tented T waves. "
+               "Moderate: P wave flattening/disappearance, widening QRS. Severe: sine-wave pattern, VF risk. "
+               "The tented T is characteristically narrow and symmetric — unlike the broad T of ischemia. "
+               "Treat urgently: IV calcium (stabilises membrane), insulin + glucose, sodium bicarb, dialysis."),
+
+    dict(id="lae_01", rhythm="Left Atrial Enlargement (LAE)", category="structural", difficulty=2,
+        review=True, generator=lambda: lae_strip(70),
+        rate=70, regularity="regular",
+        key_features=["Broad, notched (M-shaped) P wave in Lead II (P mitrale)",
+                   "P wave duration ≥ 120 ms (≥ 3 small squares)",
+                   "Biphasic P in V1 with deep wide negative terminal deflection",
+                   "Associated with mitral valve disease, hypertension",
+                   "Often co-exists with atrial fibrillation or flutter"],
+        teaching="LAE prolongs left-atrial depolarisation, producing a bifid (M-shaped) P wave in Lead II "
+               "called P mitrale (duration ≥120 ms). In V1, the terminal component is negative (wide and deep), "
+               "reflecting delayed LA depolarisation. Common causes: mitral stenosis, hypertension, "
+               "dilated cardiomyopathy. Patients with LAE are at high risk for atrial fibrillation."),
+
+    dict(id="rae_01", rhythm="Right Atrial Enlargement (RAE)", category="structural", difficulty=2,
+        review=True, generator=lambda: rae_strip(72),
+        rate=72, regularity="regular",
+        key_features=["Tall, peaked P wave ≥ 0.25 mV (2.5 mm) in II, III, aVF — P pulmonale",
+                   "P wave duration normal (< 120 ms) — amplitude is the hallmark",
+                   "Also peaked P in V1–V2",
+                   "Associated with pulmonary hypertension, COPD, pulmonary stenosis",
+                   "Often seen with right ventricular hypertrophy"],
+        teaching="RAE enlarges the right atrium, making right-atrial depolarisation dominate the P vector. "
+               "The result is a tall, narrow, peaked P wave (P pulmonale) ≥2.5 mm in II, III, aVF. "
+               "Duration is normal (<120 ms) because only amplitude is affected — unlike LAE where duration "
+               "is prolonged. Causes: cor pulmonale, COPD, pulmonary hypertension, tricuspid stenosis."),
+
+    dict(id="lafb_01", rhythm="Left Anterior Fascicular Block (LAFB)", category="conduction", difficulty=3,
+        review=True, generator=lambda: lafb_strip(70),
+        rate=70, regularity="regular",
+        key_features=["Left axis deviation (−45° to −90°) — the key criterion",
+                   "rS pattern in II, III, aVF (small r, deep S)",
+                   "qR pattern in I and aVL (small q, tall R)",
+                   "Narrow QRS (< 120 ms) — not a bundled branch block",
+                   "No other cause of LAD (inferior MI, hyperkalemia) present"],
+        teaching="LAFB blocks the anterior fascicle of the left bundle, redirecting ventricular activation "
+               "superiorly and leftward. The axis shifts to −45° to −90° (left axis deviation). "
+               "In Lead II: small initial r then deep S (rS). In Leads I and aVL: small q then tall R (qR). "
+               "QRS is narrow (<120 ms) — distinguish from LBBB. Causes: CAD, cardiomyopathy, hypertension."),
+
+    dict(id="bigu_01", rhythm="Ventricular Bigeminy", category="ventricular", difficulty=2,
+        review=True, generator=lambda: bigeminy_strip(72),
+        rate=72, regularity="regular",
+        key_features=["Every other beat is a PVC (alternating sinus-PVC pattern)",
+                   "PVC: wide, bizarre QRS > 120 ms; no preceding P wave",
+                   "Compensatory pause after each PVC",
+                   "Short coupling interval (< 70 % of RR) from sinus to PVC",
+                   "Underlying rate often appears slow due to bigeminal pauses"],
+        teaching="Bigeminy describes a pattern where every other beat is ectopic. In ventricular bigeminy, "
+               "a narrow-complex sinus beat alternates with a wide-complex PVC. The PVC couples at ~55–65 % "
+               "of the sinus RR, followed by a compensatory pause. Causes: structural heart disease, CAD, "
+               "hypokalemia, digoxin toxicity, stimulants. Treat the underlying cause; beta-blockers if symptomatic."),
+
+    dict(id="trigu_01", rhythm="Ventricular Trigeminy", category="ventricular", difficulty=2,
+        review=True, generator=lambda: trigeminy_strip(70),
+        rate=70, regularity="regular",
+        key_features=["Every third beat is a PVC (sinus-sinus-PVC pattern repeats)",
+                   "PVC: wide, bizarre QRS > 120 ms; no preceding P wave",
+                   "Compensatory pause after each PVC maintains underlying sinus rate",
+                   "Two normal narrow complexes precede each wide complex",
+                   "Effective ventricular rate lower than the underlying sinus rate"],
+        teaching="Trigeminy describes a grouping of three beats: two sinus beats followed by one PVC, "
+               "repeating throughout the tracing. The PVC fires prematurely after the second sinus beat, "
+               "followed by a compensatory pause. Same causes as bigeminy: structual disease, electrolyte "
+               "imbalance (hypokalemia, hypomagnesemia), digoxin toxicity. Treatment: address the underlying trigger."),
+]
+
+CASES = CASES + REVIEW_CASES
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1072,9 +1278,44 @@ def main():
             "teaching":        case["teaching"],
         })
 
+    live_count = 0
+    review_count = 0
+    REVIEW_DIR = CASES_DIR / "review"
+    REVIEW_DIR.mkdir(parents=True, exist_ok=True)
+
+    for case in CASES:
+        is_review = case.get("review", False)
+        out_dir = REVIEW_DIR if is_review else CASES_DIR
+        out_path = out_dir / f"{case['id']}.png"
+        output = case["generator"]()
+        if case.get("multilead"):
+            render_multilead(output, case["rhythm"], out_path, render_style=args.render_style)
+        else:
+            render(output, case["rhythm"], out_path, render_style=args.render_style)
+
+        if is_review:
+            review_count += 1
+            print(f"  ⏳  {case['id']:<28} → review/  (awaiting approval)")
+        else:
+            live_count += 1
+            metadata.append({
+                "id":              case["id"],
+                "rhythm":          case["rhythm"],
+                "category":        case["category"],
+                "difficulty":      case["difficulty"],
+                "imagePath":       f"/cases/{case['id']}.png",
+                "twelveleadPath":  f"/cases/{case['id']}_12lead.png",
+                "rate":            case["rate"],
+                "regularity":      case["regularity"],
+                "keyFeatures":     case["key_features"],
+                "teaching":        case["teaching"],
+            })
+
     out = DATA_DIR / "cases.json"
     out.write_text(json.dumps(metadata, indent=2))
-    print(f"\n✓  Wrote {len(metadata)} entries to {out}")
+    print(f"\n✓  Wrote {live_count} live entries to {out}")
+    if review_count:
+        print(f"⏳  {review_count} review strip(s) → {REVIEW_DIR}")
     print("Done.\n")
 
 
