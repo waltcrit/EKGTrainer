@@ -1,263 +1,56 @@
 {
-  "nsr_01": [
+  "bigu_01": [
     {
       "rank": 1,
-      "ecg_id": 1,
-      "codes": "NORM(100)",
-      "stripPath": "/cases/candidates/nsr_01/nsr_01__c1_ecg1.png",
-      "twelveleadPath": "/cases/candidates/nsr_01/nsr_01__c1_ecg1_12lead.png"
+      "ecg_id": 4637,
+      "codes": "PVC(100), BIGU(100)",
+      "stripPath": "/cases/candidates/bigu_01/bigu_01__c1_ecg4637.png",
+      "twelveleadPath": "/cases/candidates/bigu_01/bigu_01__c1_ecg4637_12lead.png"
     }
   ],
-  "nsr_02": [
+  "trigu_01": [
     {
       "rank": 1,
-      "ecg_id": 10042,
-      "codes": "NORM(100)",
-      "stripPath": "/cases/candidates/nsr_02/nsr_02__c1_ecg10042.png",
-      "twelveleadPath": "/cases/candidates/nsr_02/nsr_02__c1_ecg10042_12lead.png"
+      "ecg_id": 816,
+      "codes": "LAFB(100)",
+      "stripPath": "/cases/candidates/trigu_01/trigu_01__c1_ecg816.png",
+      "twelveleadPath": "/cases/candidates/trigu_01/trigu_01__c1_ecg816_12lead.png"
     }
   ],
-  "tachy_01": [
+  "hyperkal_01": [
     {
       "rank": 1,
-      "ecg_id": 12767,
-      "codes": "STACH(100), IRBBB(100)",
-      "stripPath": "/cases/candidates/tachy_01/tachy_01__c1_ecg12767.png",
-      "twelveleadPath": "/cases/candidates/tachy_01/tachy_01__c1_ecg12767_12lead.png"
+      "ecg_id": 8959,
+      "codes": "LVH(100), NDT(100), EL(100)",
+      "stripPath": "/cases/candidates/hyperkal_01/hyperkal_01__c1_ecg8959.png",
+      "twelveleadPath": "/cases/candidates/hyperkal_01/hyperkal_01__c1_ecg8959_12lead.png"
     }
   ],
-  "tachy_02": [
+  "lae_01": [
     {
       "rank": 1,
-      "ecg_id": 4408,
-      "codes": "STACH(80)",
-      "stripPath": "/cases/candidates/tachy_02/tachy_02__c1_ecg4408.png",
-      "twelveleadPath": "/cases/candidates/tachy_02/tachy_02__c1_ecg4408_12lead.png"
+      "ecg_id": 6926,
+      "codes": "LAO/LAE(100)",
+      "stripPath": "/cases/candidates/lae_01/lae_01__c1_ecg6926.png",
+      "twelveleadPath": "/cases/candidates/lae_01/lae_01__c1_ecg6926_12lead.png"
     }
   ],
-  "svt_01": [
+  "rae_01": [
     {
       "rank": 1,
-      "ecg_id": 1299,
-      "codes": "PSVT(100)",
-      "stripPath": "/cases/candidates/svt_01/svt_01__c1_ecg1299.png",
-      "twelveleadPath": "/cases/candidates/svt_01/svt_01__c1_ecg1299_12lead.png"
+      "ecg_id": 10765,
+      "codes": "RAO/RAE(100), LPFB(100)",
+      "stripPath": "/cases/candidates/rae_01/rae_01__c1_ecg10765.png",
+      "twelveleadPath": "/cases/candidates/rae_01/rae_01__c1_ecg10765_12lead.png"
     }
   ],
-  "afib_01": [
+  "lafb_01": [
     {
       "rank": 1,
-      "ecg_id": 351,
-      "codes": "AFIB(100)",
-      "stripPath": "/cases/candidates/afib_01/afib_01__c1_ecg351.png",
-      "twelveleadPath": "/cases/candidates/afib_01/afib_01__c1_ecg351_12lead.png"
-    }
-  ],
-  "afib_02": [
-    {
-      "rank": 1,
-      "ecg_id": 4117,
-      "codes": "AFIB(100)",
-      "stripPath": "/cases/candidates/afib_02/afib_02__c1_ecg4117.png",
-      "twelveleadPath": "/cases/candidates/afib_02/afib_02__c1_ecg4117_12lead.png"
-    }
-  ],
-  "aflut_01": [
-    {
-      "rank": 1,
-      "ecg_id": 17,
-      "codes": "AFLT(100)",
-      "stripPath": "/cases/candidates/aflut_01/aflut_01__c1_ecg17.png",
-      "twelveleadPath": "/cases/candidates/aflut_01/aflut_01__c1_ecg17_12lead.png"
-    }
-  ],
-  "avb1_01": [
-    {
-      "rank": 1,
-      "ecg_id": 102,
-      "codes": "1AVB(100), ISCAL(50)",
-      "stripPath": "/cases/candidates/avb1_01/avb1_01__c1_ecg102.png",
-      "twelveleadPath": "/cases/candidates/avb1_01/avb1_01__c1_ecg102_12lead.png"
-    }
-  ],
-  "avb2m1_01": [
-    {
-      "rank": 1,
-      "ecg_id": 1222,
-      "codes": "NDT(100), 2AVB(100)",
-      "stripPath": "/cases/candidates/avb2m1_01/avb2m1_01__c1_ecg1222.png",
-      "twelveleadPath": "/cases/candidates/avb2m1_01/avb2m1_01__c1_ecg1222_12lead.png"
-    }
-  ],
-  "avb2m2_01": [
-    {
-      "rank": 1,
-      "ecg_id": 3505,
-      "codes": "ISC_(100), 2AVB(100)",
-      "stripPath": "/cases/candidates/avb2m2_01/avb2m2_01__c1_ecg3505.png",
-      "twelveleadPath": "/cases/candidates/avb2m2_01/avb2m2_01__c1_ecg3505_12lead.png"
-    }
-  ],
-  "avb3_01": [
-    {
-      "rank": 1,
-      "ecg_id": 959,
-      "codes": "IRBBB(100), 3AVB(100)",
-      "stripPath": "/cases/candidates/avb3_01/avb3_01__c1_ecg959.png",
-      "twelveleadPath": "/cases/candidates/avb3_01/avb3_01__c1_ecg959_12lead.png"
-    }
-  ],
-  "idio_01": [
-    {
-      "rank": 1,
-      "ecg_id": 2047,
-      "codes": "IMI(100), 3AVB(100), LVH(50)",
-      "stripPath": "/cases/candidates/idio_01/idio_01__c1_ecg2047.png",
-      "twelveleadPath": "/cases/candidates/idio_01/idio_01__c1_ecg2047_12lead.png"
-    }
-  ],
-  "stemi_ant_01": [
-    {
-      "rank": 1,
-      "ecg_id": 11998,
-      "codes": "AMI(100)",
-      "stripPath": "/cases/candidates/stemi_ant_01/stemi_ant_01__c1_ecg11998.png",
-      "twelveleadPath": "/cases/candidates/stemi_ant_01/stemi_ant_01__c1_ecg11998_12lead.png"
-    }
-  ],
-  "stemi_inf_01": [
-    {
-      "rank": 1,
-      "ecg_id": 184,
-      "codes": "ILMI(100), ASMI(100)",
-      "stripPath": "/cases/candidates/stemi_inf_01/stemi_inf_01__c1_ecg184.png",
-      "twelveleadPath": "/cases/candidates/stemi_inf_01/stemi_inf_01__c1_ecg184_12lead.png"
-    }
-  ],
-  "stemi_lat_01": [
-    {
-      "rank": 1,
-      "ecg_id": 135,
-      "codes": "ISCAL(100)",
-      "stripPath": "/cases/candidates/stemi_lat_01/stemi_lat_01__c1_ecg135.png",
-      "twelveleadPath": "/cases/candidates/stemi_lat_01/stemi_lat_01__c1_ecg135_12lead.png"
-    }
-  ],
-  "stemi_post_01": [
-    {
-      "rank": 1,
-      "ecg_id": 425,
-      "codes": "IPMI(100), LVH(100), ISC_(100), PVC(100)",
-      "stripPath": "/cases/candidates/stemi_post_01/stemi_post_01__c1_ecg425.png",
-      "twelveleadPath": "/cases/candidates/stemi_post_01/stemi_post_01__c1_ecg425_12lead.png"
-    }
-  ],
-  "nstemi_01": [
-    {
-      "rank": 1,
-      "ecg_id": 26,
-      "codes": "NST_(100), DIG(100)",
-      "stripPath": "/cases/candidates/nstemi_01/nstemi_01__c1_ecg26.png",
-      "twelveleadPath": "/cases/candidates/nstemi_01/nstemi_01__c1_ecg26_12lead.png"
-    }
-  ],
-  "wellens_a_01": [
-    {
-      "rank": 1,
-      "ecg_id": 22,
-      "codes": "NDT(100)",
-      "stripPath": "/cases/candidates/wellens_a_01/wellens_a_01__c1_ecg22.png",
-      "twelveleadPath": "/cases/candidates/wellens_a_01/wellens_a_01__c1_ecg22_12lead.png"
-    }
-  ],
-  "wellens_b_01": [
-    {
-      "rank": 1,
-      "ecg_id": 48,
-      "codes": "NDT(100)",
-      "stripPath": "/cases/candidates/wellens_b_01/wellens_b_01__c1_ecg48.png",
-      "twelveleadPath": "/cases/candidates/wellens_b_01/wellens_b_01__c1_ecg48_12lead.png"
-    }
-  ],
-  "pe_s1q3t3_01": [
-    {
-      "rank": 1,
-      "ecg_id": 222,
-      "codes": "RVH(100), RAO/RAE(100), IRBBB(100)",
-      "stripPath": "/cases/candidates/pe_s1q3t3_01/pe_s1q3t3_01__c1_ecg222.png",
-      "twelveleadPath": "/cases/candidates/pe_s1q3t3_01/pe_s1q3t3_01__c1_ecg222_12lead.png"
-    }
-  ],
-  "pe_rv_strain_01": [
-    {
-      "rank": 1,
-      "ecg_id": 12025,
-      "codes": "IRBBB(100), RVH(100)",
-      "stripPath": "/cases/candidates/pe_rv_strain_01/pe_rv_strain_01__c1_ecg12025.png",
-      "twelveleadPath": "/cases/candidates/pe_rv_strain_01/pe_rv_strain_01__c1_ecg12025_12lead.png"
-    }
-  ],
-  "lv_strain_01": [
-    {
-      "rank": 1,
-      "ecg_id": 30,
-      "codes": "LVH(100)",
-      "stripPath": "/cases/candidates/lv_strain_01/lv_strain_01__c1_ecg30.png",
-      "twelveleadPath": "/cases/candidates/lv_strain_01/lv_strain_01__c1_ecg30_12lead.png"
-    }
-  ],
-  "rv_strain_01": [
-    {
-      "rank": 1,
-      "ecg_id": 1733,
-      "codes": "CRBBB(100), LPFB(100), RVH(100)",
-      "stripPath": "/cases/candidates/rv_strain_01/rv_strain_01__c1_ecg1733.png",
-      "twelveleadPath": "/cases/candidates/rv_strain_01/rv_strain_01__c1_ecg1733_12lead.png"
-    }
-  ],
-  "wpw_01": [
-    {
-      "rank": 1,
-      "ecg_id": 2145,
-      "codes": "WPW(100)",
-      "stripPath": "/cases/candidates/wpw_01/wpw_01__c1_ecg2145.png",
-      "twelveleadPath": "/cases/candidates/wpw_01/wpw_01__c1_ecg2145_12lead.png"
-    }
-  ],
-  "lngqt_01": [
-    {
-      "rank": 1,
-      "ecg_id": 39,
-      "codes": "LNGQT(100), NST_(100), DIG(100)",
-      "stripPath": "/cases/candidates/lngqt_01/lngqt_01__c1_ecg39.png",
-      "twelveleadPath": "/cases/candidates/lngqt_01/lngqt_01__c1_ecg39_12lead.png"
-    }
-  ],
-  "pace_atrial_01": [
-    {
-      "rank": 1,
-      "ecg_id": 144,
-      "codes": "PACE(100)",
-      "stripPath": "/cases/candidates/pace_atrial_01/pace_atrial_01__c1_ecg144.png",
-      "twelveleadPath": "/cases/candidates/pace_atrial_01/pace_atrial_01__c1_ecg144_12lead.png"
-    }
-  ],
-  "pace_ventricular_01": [
-    {
-      "rank": 1,
-      "ecg_id": 190,
-      "codes": "PACE(100)",
-      "stripPath": "/cases/candidates/pace_ventricular_01/pace_ventricular_01__c1_ecg190.png",
-      "twelveleadPath": "/cases/candidates/pace_ventricular_01/pace_ventricular_01__c1_ecg190_12lead.png"
-    }
-  ],
-  "pace_av_01": [
-    {
-      "rank": 1,
-      "ecg_id": 382,
-      "codes": "PACE(100)",
-      "stripPath": "/cases/candidates/pace_av_01/pace_av_01__c1_ecg382.png",
-      "twelveleadPath": "/cases/candidates/pace_av_01/pace_av_01__c1_ecg382_12lead.png"
+      "ecg_id": 41,
+      "codes": "LAFB(100)",
+      "stripPath": "/cases/candidates/lafb_01/lafb_01__c1_ecg41.png",
+      "twelveleadPath": "/cases/candidates/lafb_01/lafb_01__c1_ecg41_12lead.png"
     }
   ]
 }

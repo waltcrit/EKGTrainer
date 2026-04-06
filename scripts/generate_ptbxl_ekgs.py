@@ -175,6 +175,8 @@ def load_df_remote() -> "pd.DataFrame":
 
 
 def has_any(scp: dict, codes: list, min_conf: float = 50.0) -> bool:
+    if min_conf <= 0.0:
+        return any(c in scp for c in codes)
     return any(scp.get(c, 0.0) >= min_conf for c in codes)
 
 
@@ -293,6 +295,17 @@ DEDUP_GROUPS = [
 ]
 
 
+def primary_conf_threshold(case_id: str) -> float:
+    """Primary-code confidence cutoff by case.
+
+    PTB-XL stores TRIGU labels with 0 confidence; treat key presence as a match
+    for trigeminy selection while keeping the default 50 threshold elsewhere.
+    """
+    if case_id == "trigu_01":
+        return 0.0
+    return 50.0
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # Record selection
 # ══════════════════════════════════════════════════════════════════════════════
@@ -309,9 +322,10 @@ def find_record(
     or (None, None) if no suitable record found.
     """
     primary, exclude = QUERIES[case_id]
+    primary_min_conf = primary_conf_threshold(case_id)
 
     # Primary code match
-    mask = df["scp_codes"].apply(lambda d: has_any(d, primary, 50.0))
+    mask = df["scp_codes"].apply(lambda d: has_any(d, primary, primary_min_conf))
     # Exclude unwanted codes
     if exclude:
         mask &= ~df["scp_codes"].apply(lambda d: has_any(d, exclude, 70.0))
@@ -373,8 +387,9 @@ def rank_candidates(
 ) -> "pd.DataFrame":
     """Return ranked candidate rows for a case before signal loading."""
     primary, exclude = QUERIES[case_id]
+    primary_min_conf = primary_conf_threshold(case_id)
 
-    mask = df["scp_codes"].apply(lambda d: has_any(d, primary, 50.0))
+    mask = df["scp_codes"].apply(lambda d: has_any(d, primary, primary_min_conf))
     if exclude:
         mask &= ~df["scp_codes"].apply(lambda d: has_any(d, exclude, 70.0))
     mask &= ~df.index.isin(used_ids)
@@ -585,6 +600,8 @@ def main():
 
     if args.remote:
         print("\nLoading PTB-XL metadata from PhysioNet (remote mode)...")
+        print("  Note: remote mode is convenient but slower for repeated searches.")
+        print("  For faster future runs, keep a local PTB-XL copy and omit --remote.")
         df = load_df_remote()
     else:
         # Download if needed
@@ -622,6 +639,12 @@ def main():
     candidates_root = OUT_DIR / "candidates"
     candidates_root.mkdir(parents=True, exist_ok=True)
     manifest: dict[str, list[dict[str, Any]]] = {}
+    candidate_render_style = "physionet"
+
+    print(
+        f"\nRender styles: main={args.render_style}, "
+        f"candidates={candidate_render_style}"
+    )
 
     print(f"\nProcessing {len(processed_order)} cases → {OUT_DIR}\n")
 
@@ -661,8 +684,8 @@ def main():
                 lead_name = f"{case_id}__c{idx}_ecg{int(cast(Any, ecg_id))}_12lead.png"
                 strip_path = case_dir / strip_name
                 lead_path = case_dir / lead_name
-                render_strip(sig, strip_path, args.render_style)
-                render_12lead(sig, lead_path, args.render_style)
+                render_strip(sig, strip_path, candidate_render_style)
+                render_12lead(sig, lead_path, candidate_render_style)
                 case_manifest.append({
                     "rank": idx,
                     "ecg_id": int(cast(Any, ecg_id)),
