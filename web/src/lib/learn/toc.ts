@@ -28,6 +28,7 @@ const LEVEL_LABELS: Record<Level, string> = {
 };
 
 const LEVELS: Level[] = ["beginner", "intermediate", "advanced"];
+const BEGINNER_PIN_LAST_SLUG = "07-systematic-approach";
 
 export function getLessonsForLevel(level: Level): LessonMeta[] {
   const dir = path.join(process.cwd(), "content", "learn", level);
@@ -47,7 +48,15 @@ export function getLessonsForLevel(level: Level): LessonMeta[] {
     };
   });
 
-  return lessons.sort((a, b) => a.order - b.order);
+  return lessons.sort((a, b) => {
+    if (level === "beginner") {
+      const aPinnedLast = a.slug === BEGINNER_PIN_LAST_SLUG;
+      const bPinnedLast = b.slug === BEGINNER_PIN_LAST_SLUG;
+      if (aPinnedLast && !bPinnedLast) return 1;
+      if (!aPinnedLast && bPinnedLast) return -1;
+    }
+    return a.order - b.order;
+  });
 }
 
 export function getTOC(): TOC {
