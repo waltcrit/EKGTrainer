@@ -1,15 +1,15 @@
 # PTB-XL Diagnosis Codes & EKGTrainer Coverage
 
-**Last Updated:** April 5, 2026  
+**Last Updated:** April 7, 2026  
 **Data Source:** PhysioNet PTB-XL v1.0.3 (21,799 records)  
-**Teaching Cases:** 43 total (29 from PTB-XL real data, 14 synthetic-only)
+**Teaching Cases:** 43 total (35 from PTB-XL real data, 8 synthetic-only)
 
 ## Usage Status
 
 Total PTB-XL records: **21,799**  
 Diagnosis codes available: **71**  
-EKGTrainer cases using PTB-XL: **29/43**  
-Synthetic-only (no PTB-XL match): **14/43**  
+EKGTrainer cases using PTB-XL: **35/43**  
+Synthetic-only (no PTB-XL match): **8/43**  
 
 ---
 
@@ -27,8 +27,10 @@ Synthetic-only (no PTB-XL match): **14/43**
 - ✓ **PSVT** (Paroxysmal SVT) — svt_01 — 24 records
 - ✓ **PAC** (Premature Atrial Contractions) — pac_01 — 398 records [SYNTHETIC]
 
-### Ventricular Arrhythmias & Escape Rhythms (7 cases)
+### Ventricular Arrhythmias & Escape Rhythms (9 cases)
 - ✓ **3AVB** (Third-degree AV Block / Escape) — idio_01 — 16 records [ESCAPE PROXY]
+- ✓ **BIGU** (Ventricular Bigeminy) — bigu_01 — 82 records
+- ✓ **TRIGU** (Ventricular Trigeminy) — trigu_01 — 20 records
 - ✓ **VT** (Ventricular Tachycardia) — vtach_01, vtach_02 — 0 records [SYNTHETIC ONLY]
 - ✓ **VF** (Ventricular Fibrillation) — vfib_01 — 0 records [SYNTHETIC ONLY]
 - ✓ **ASYS** (Asystole) — asys_01 — 0 records [SYNTHETIC ONLY]
@@ -41,6 +43,9 @@ Synthetic-only (no PTB-XL match): **14/43**
 - ✓ **RBBB** (Right Bundle Branch Block) — rbbb_01 — 1,118 records [SYNTHETIC]
 - ✓ **WPW** (Wolff-Parkinson-White) — wpw_01 — 79 records
 - ✗ **Junctional Rhythms** — junct_01, junct_02 — [SYNTHETIC ONLY]
+
+### Fascicular/Axis Conduction (1 case)
+- ✓ **LAFB** (Left Anterior Fascicular Block) — lafb_01 — 1,623 records
 
 ### Ventricular Hypertrophy (2 cases)
 - ✓ **LVH** (Left Ventricular Hypertrophy) — lv_strain_01 — 2,132 records
@@ -63,6 +68,13 @@ Synthetic-only (no PTB-XL match): **14/43**
 - ✓ **LNGQT** (Long QT Syndrome) — lngqt_01 — 117 records
 - ✓ **BRGADA** (Brugada Syndrome) — brugada_01 — not in PTB-XL [SYNTHETIC ONLY]
 
+### Atrial Enlargement (2 cases)
+- ✓ **LAO/LAE** (Left Atrial Enlargement) — lae_01 — 426 records
+- ✓ **RAO/RAE** (Right Atrial Enlargement) — rae_01 — 99 records
+
+### Metabolic Pattern (1 case)
+- ✓ **EL** (Electrolyte abnormality / Hyperkalemia proxy) — hyperkal_01 — 96 records
+
 ### Pacing (3 cases)
 - ✓ **PACE** (Pacemaker) — pace_atrial_01, pace_ventricular_01, pace_av_01 — 294 records
 
@@ -75,11 +87,8 @@ Synthetic-only (no PTB-XL match): **14/43**
 
 ### Ventricular
 - **PVC** (Premature Ventricular Contractions) — 1,143 records ← high priority candidate
-- BIGU (Bigeminy) — 82 records
-- TRIGU (Trigeminy) — 20 records
 
 ### Conduction
-- **LAFB** (Left Anterior Fascicular Block) — 1,623 records ← high priority candidate
 - LPFB (Left Posterior Fascicular Block) — 177 records
 - ILBBB (Incomplete LBBB) — 77 records
 - IRBBB (Incomplete RBBB) — 1,118 records
@@ -104,12 +113,9 @@ Synthetic-only (no PTB-XL match): **14/43**
 - QWAVE (Q Wave) — 548 records
 - INVT (Inverted T-wave) — 294 records
 - ANEUR (Aneurysm) — 104 records
-- EL (Electrolyte abnormality) — 96 records
 - DIG (Digoxin effect) — 181 records
 - SEHYP (Secondary Hypertrophy) — 29 records
 - TAB_ (T-wave Abnormality) — 35 records
-- LAO/LAE (Left Atrial Overload/Enlargement) — 426 records
-- RAO/RAE (Right Atrial Overload/Enlargement) — 99 records
 - STE_ (ST Elevation) — 28 records
 - STD_ (ST Depression) — 1,009 records
 - PRC(S) (Pacing-related Changes) — 10 records
@@ -119,7 +125,7 @@ Synthetic-only (no PTB-XL match): **14/43**
 ## Synthetic-Only Cases (no PTB-XL equivalent)
 
 | Case | Reason |
-|------|--------|
+| --- | --- |
 | brady_01, brady_02 | SBRAD records exist but are excluded by query filters |
 | sarr_01 | SARRH records exist but are excluded |
 | pac_01 | SVPB code absent from PTB-XL |
