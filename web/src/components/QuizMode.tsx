@@ -13,6 +13,7 @@ interface QuizModeProps {
 }
 
 type QuizState = "question" | "revealed" | "analyzing";
+type DiagnosisScope = "all" | "selected";
 
 interface SessionStats {
   attempted: number;
@@ -87,6 +88,8 @@ export default function QuizMode({ cases, initialCase }: QuizModeProps) {
   const [queue, setQueue]               = useState<EKGCase[]>(cases);
   const [index, setIndex]               = useState(0);
   const [state, setState]               = useState<QuizState>("question");
+  const [sessionStarted, setSessionStarted] = useState(false);
+  const [diagnosisScope, setDiagnosisScope] = useState<DiagnosisScope>("all");
   const [selected, setSelected]         = useState<string | null>(null);
   const [showTwelveLead, setShowTwelveLead] = useState(false);
   const [aiResult, setAiResult]         = useState<AnalysisResult | null>(null);
@@ -97,12 +100,18 @@ export default function QuizMode({ cases, initialCase }: QuizModeProps) {
     new Set(ALL_CATEGORIES)
   );
 
+  const activeCases = useMemo(
+    () => (diagnosisScope === "all"
+      ? cases
+      : cases.filter((c) => selectedCategories.has(c.category))),
+    [cases, diagnosisScope, selectedCategories]
+  );
+
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    const active = selectedCategories.size === ALL_CATEGORIES.size
-      ? cases
-      : cases.filter((c) => selectedCategories.has(c.category));
+    if (!sessionStarted) return;
+    const active = activeCases;
     if (active.length === 0) return;
     setQueue(shuffle(active));
     setIndex(0);
@@ -111,7 +120,7 @@ export default function QuizMode({ cases, initialCase }: QuizModeProps) {
     setAiResult(null);
     setAiError(null);
     setShowTwelveLead(false);
-  }, [cases, selectedCategories]);
+  }, [activeCases, sessionStarted]);
 
   // Jump to a specific case when launched from the Library
   useEffect(() => {
@@ -121,6 +130,8 @@ export default function QuizMode({ cases, initialCase }: QuizModeProps) {
     setSelectedCategories((prev) => (
       prev.size === ALL_CATEGORIES.size ? prev : new Set(ALL_CATEGORIES)
     ));
+    setDiagnosisScope("all");
+    setSessionStarted(true);
     // Place the target case first in a freshly shuffled queue
     const rest = shuffle(cases.filter((c) => c.id !== initialCase.id));
     setQueue([initialCase, ...rest]);
@@ -144,9 +155,7 @@ export default function QuizMode({ cases, initialCase }: QuizModeProps) {
     ? Math.round((stats.correct / stats.attempted) * 100)
     : null;
   const isAllSelected = selectedCategories.size === ALL_CATEGORIES.size;
-  const activeCaseCount = isAllSelected
-    ? cases.length
-    : cases.filter((c) => selectedCategories.has(c.category)).length;
+  const activeCaseCount = activeCases.length;
   const tooFewCases = activeCaseCount < 4;
 
   const handleSelect = (choice: string) => {
@@ -223,7 +232,101 @@ export default function QuizMode({ cases, initialCase }: QuizModeProps) {
     setSelectedCategories(new Set(ALL_CATEGORIES));
   }, []);
 
+  const handleBegin = useCallback(() => {
+    if (tooFewCases) return;
+    setQueue(shuffle(activeCases));
+    setIndex(0);
+    setState("question");
+    setSelected(null);
+    setAiResult(null);
+    setAiError(null);
+    setShowTwelveLead(false);
+    setSessionStarted(true);
+  }, [activeCases, tooFewCases]);
+
   if (!mounted) return null;
+
+  if (!sessionStarted) {
+    return (
+      <div className="flex flex-col gap-4">
+        <div className="rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+            Diagnosis Set
+          </p>
+
+          <div className="flex items-center gap-2 mb-3">
+            <button
+              onClick={() => setDiagnosisScope("all")}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                diagnosisScope === "all"
+                  ? "bg-slate-100 border-slate-300 text-slate-700"
+                  : "bg-white border-slate-200 text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              All diagnoses
+            </button>
+            <button
+              onClick={() => setDiagnosisScope("selected")}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                diagnosisScope === "selected"
+                  ? "bg-slate-100 border-slate-300 text-slate-700"
+                  : "bg-white border-slate-200 text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              Selected diagnoses
+            </button>
+          </div>
+
+          {diagnosisScope === "selected" && (
+            <div className="flex flex-wrap gap-1.5 mb-2.5">
+              {Array.from(ALL_CATEGORIES).map((cat) => {
+                const count = cases.filter((c) => c.category === cat).length;
+                const isActive = selectedCategories.has(cat);
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => toggleCategory(cat)}
+                    className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border transition-all ${
+                      isActive
+                        ? "bg-slate-100 border-slate-300 text-slate-700"
+                        : "bg-white border-slate-200 text-slate-500 hover:text-slate-700"
+                    }`}
+                  >
+                    {CATEGORY_LABELS[cat]} · {count}
+                  </button>
+                );
+              })}
+              <button
+                onClick={resetToAll}
+                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border border-slate-200 text-slate-500 hover:text-slate-700"
+              >
+                Select all
+              </button>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs text-slate-500">
+              <span className="font-semibold text-slate-700">{activeCaseCount}</span> case{activeCaseCount !== 1 ? "s" : ""} available
+            </span>
+            {tooFewCases && (
+              <span className="text-xs text-amber-600 font-medium">Need ≥ 4 cases</span>
+            )}
+          </div>
+        </div>
+
+        <button
+          onClick={handleBegin}
+          disabled={tooFewCases}
+          className="w-full rounded-lg bg-slate-900 text-white py-3 text-sm font-semibold
+                     hover:bg-slate-700 active:bg-slate-800 transition-colors duration-150
+                     disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          BEGIN
+        </button>
+      </div>
+    );
+  }
 
   const showingTwelveLead = showTwelveLead || state === "revealed" || state === "analyzing";
 
