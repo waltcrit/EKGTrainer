@@ -92,7 +92,7 @@ export default function DiagramPQRST({
         height={h * ratio}
         role="img"
         aria-label="P-QRS-T waveform diagram"
-        style={{ display: "block" }}
+        className="block"
       >
         {/* Grid lines */}
         {[40, 90, 140, 190].map((y) => (
@@ -167,7 +167,7 @@ export default function DiagramPQRST({
       {highlight.length > 0 && (
         <p className="mt-1 text-xs text-slate-400 text-center">
           Highlighted:{" "}
-          <span className="font-semibold" style={{ color: HIGHLIGHT_COLOR }}>
+          <span className="font-semibold text-sky-500">
             {highlight.join(", ").toUpperCase()}
           </span>
         </p>
