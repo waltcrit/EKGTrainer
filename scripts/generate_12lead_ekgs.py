@@ -849,6 +849,17 @@ def nstemi_st_depression(hr=88):
     })
 
 
+def qwave_old_mi(hr=72):
+    """Old MI morphology: persistent Q waves without acute ST-elevation injury."""
+    return _normal_base(rr(hr), extra={
+        "II":  {"big_q": True, "st": -0.02, "t_amp": 0.20},
+        "III": {"big_q": True, "st": -0.03, "t_inv": True, "t_amp": 0.18},
+        "aVF": {"big_q": True, "st": -0.02, "t_inv": True, "t_amp": 0.16},
+        "V5":  {"st": -0.04, "t_amp": 0.16},
+        "V6":  {"st": -0.03, "t_amp": 0.15},
+    })
+
+
 def wellens_a(hr=72):
     """Type A: biphasic T in V2-V3 (positive then negative)."""
     r_t = rr(hr)
@@ -1220,6 +1231,7 @@ REVIEW_CASES = [
     ("lafb_01",      "Left Anterior Fascicular Block (LAFB)",          lambda: lafb(70),          True),
     ("bigu_01",      "Ventricular Bigeminy",                           lambda: bigeminy(72),      True),
     ("trigu_01",     "Ventricular Trigeminy",                          lambda: trigeminy(70),     True),
+    ("qwave_01",     "Pathological Q Waves (Old MI Pattern)",          lambda: qwave_old_mi(72),  True),
 ]
 
 CASES = CASES + REVIEW_CASES

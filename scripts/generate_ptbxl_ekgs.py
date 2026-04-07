@@ -274,6 +274,7 @@ REVIEW_QUERIES: dict = {
     "lafb_01":     (["LAFB"],           ["LBBB"]),     # 1,623 records (exclude LBBB)
     "bigu_01":     (["BIGU"],           ["AFIB"]),     # 82 records
     "trigu_01":    (["TRIGU"],          ["AFIB"]),     # 20 records
+    "qwave_01":    (["QWAVE"],          ["INJANT", "INJIN", "INJLA", "INJIL", "STE_"]),
 }
 QUERIES.update(REVIEW_QUERIES)
 
@@ -298,10 +299,11 @@ DEDUP_GROUPS = [
 def primary_conf_threshold(case_id: str) -> float:
     """Primary-code confidence cutoff by case.
 
-    PTB-XL stores TRIGU labels with 0 confidence; treat key presence as a match
-    for trigeminy selection while keeping the default 50 threshold elsewhere.
+    PTB-XL stores some labels (e.g., TRIGU, QWAVE) with 0 confidence; treat
+    key presence as a match for those selections while keeping the default 50
+    threshold elsewhere.
     """
-    if case_id == "trigu_01":
+    if case_id in {"trigu_01", "qwave_01"}:
         return 0.0
     return 50.0
 

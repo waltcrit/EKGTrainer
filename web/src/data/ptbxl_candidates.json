@@ -52,5 +52,14 @@
       "stripPath": "/cases/candidates/lafb_01/lafb_01__c1_ecg41.png",
       "twelveleadPath": "/cases/candidates/lafb_01/lafb_01__c1_ecg41_12lead.png"
     }
+  ],
+  "qwave_01": [
+    {
+      "rank": 1,
+      "ecg_id": 266,
+      "codes": "ALMI(100), LAFB(100), PVC(100), IMI(80), ANEUR(50)",
+      "stripPath": "/cases/candidates/qwave_01/qwave_01__c1_ecg266.png",
+      "twelveleadPath": "/cases/candidates/qwave_01/qwave_01__c1_ecg266_12lead.png"
+    }
   ]
 }

@@ -2,14 +2,14 @@
 
 **Last Updated:** April 7, 2026  
 **Data Source:** PhysioNet PTB-XL v1.0.3 (21,799 records)  
-**Teaching Cases:** 43 total (35 from PTB-XL real data, 8 synthetic-only)
+**Teaching Cases:** 44 total (36 from PTB-XL real data, 8 synthetic-only)
 
 ## Usage Status
 
 Total PTB-XL records: **21,799**  
 Diagnosis codes available: **71**  
-EKGTrainer cases using PTB-XL: **35/43**  
-Synthetic-only (no PTB-XL match): **8/43**  
+EKGTrainer cases using PTB-XL: **36/44**  
+Synthetic-only (no PTB-XL match): **8/44**  
 
 ---
 
@@ -51,12 +51,13 @@ Synthetic-only (no PTB-XL match): **8/43**
 - ✓ **LVH** (Left Ventricular Hypertrophy) — lv_strain_01 — 2,132 records
 - ✓ **RVH** (Right Ventricular Hypertrophy) — rv_strain_01 — 126 records
 
-### Ischemia/Infarction (5 cases)
+### Ischemia/Infarction (6 cases)
 - ✓ **AMI** (Anterior MI) — stemi_ant_01 — 353 records
 - ✓ **ILMI** (Inferolateral MI) — stemi_inf_01 — 478 records
 - ✓ **ISCAL** (Lateral Ischemia) — stemi_lat_01 — 659 records
 - ✓ **IPMI** (Posterior MI) — stemi_post_01 — 33 records
 - ✓ **NST_** (Non-specific ST changes) — nstemi_01 — 767 records
+- ✓ **QWAVE** (Pathological Q Waves / old MI pattern) — qwave_01 — 548 records
 
 ### T-Wave Patterns (2 cases)
 - ✓ **NDT** (Non-Diagnostic T-wave) — wellens_a_01, wellens_b_01 — 1,825 records
@@ -110,7 +111,6 @@ Synthetic-only (no PTB-XL match): **8/43**
 - HVOLT (High Voltage) — 62 records
 
 ### Other
-- QWAVE (Q Wave) — 548 records
 - INVT (Inverted T-wave) — 294 records
 - ANEUR (Aneurysm) — 104 records
 - DIG (Digoxin effect) — 181 records
