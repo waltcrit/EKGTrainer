@@ -852,6 +852,24 @@
     "teaching": "Trigeminy describes a grouping of three beats: two sinus beats followed by one PVC, repeating throughout the tracing. The PVC fires prematurely after the second sinus beat, followed by a compensatory pause. Same causes as bigeminy: structual disease, electrolyte imbalance (hypokalemia, hypomagnesemia), digoxin toxicity. Treatment: address the underlying trigger."
   },
   {
+    "id": "qwave_01",
+    "rhythm": "Pathological Q Waves (Old MI Pattern)",
+    "category": "nstemi",
+    "difficulty": 3,
+    "imagePath": "/cases/qwave_01.png",
+    "twelveleadPath": "/cases/qwave_01_12lead.png",
+    "rate": 72,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Pathological Q waves in inferior leads (II, III, aVF)",
+      "Q-wave width \u2265 40 ms or depth \u2265 25% of following R wave",
+      "No acute contiguous ST-segment elevation",
+      "Residual T-wave flattening or inversion can persist",
+      "Suggests prior transmural infarction/scar"
+    ],
+    "teaching": "Persistent pathological Q waves indicate electrically silent scar from a prior infarction. In old inferior MI patterns, Q waves are most prominent in II, III, and aVF. Unlike acute STEMI, there is no new contiguous ST elevation. Correlate with symptoms and serial troponins to determine whether the finding is chronic or part of an acute-on-chronic process."
+  },
+  {
     "id": "nsr_01",
     "rhythm": "Normal Sinus Rhythm",
     "category": "sinus",

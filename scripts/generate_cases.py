@@ -482,6 +482,19 @@ def nstemi_st_depression(hr=88):
     ]
 
 
+def qwave_old_mi(hr=72):
+    """Prior MI pattern: persistent pathological Q waves without acute STEMI changes."""
+    rs = _rr(hr)
+    return [
+        (lead_signal(rs, big_q=True, st_offset=-0.03, t_inverted=True, t_amp=0.18),
+         "III — pathological Q wave"),
+        (lead_signal(rs, big_q=True, st_offset=-0.02, t_amp=0.20),
+         "aVF — pathological Q wave"),
+        (lead_signal(rs, big_q=True, st_offset=-0.01, t_amp=0.22),
+         "II — old inferior infarct pattern"),
+    ]
+
+
 def wellens_a(hr=72):
     """Type A Wellens: biphasic T in V2–V3 (positive then negative deflection)."""
     rs = _rr(hr)
@@ -1229,6 +1242,19 @@ REVIEW_CASES = [
                "repeating throughout the tracing. The PVC fires prematurely after the second sinus beat, "
                "followed by a compensatory pause. Same causes as bigeminy: structual disease, electrolyte "
                "imbalance (hypokalemia, hypomagnesemia), digoxin toxicity. Treatment: address the underlying trigger."),
+
+    dict(id="qwave_01", rhythm="Pathological Q Waves (Old MI Pattern)", category="nstemi", difficulty=3,
+        review=True, generator=lambda: qwave_old_mi(72),
+        rate=72, regularity="regular",
+        key_features=["Pathological Q waves in inferior leads (II, III, aVF)",
+                   "Q-wave width ≥ 40 ms or depth ≥ 25% of following R wave",
+                   "No acute contiguous ST-segment elevation",
+                   "Residual T-wave flattening or inversion can persist",
+                   "Suggests prior transmural infarction/scar"],
+        teaching="Persistent pathological Q waves indicate electrically silent scar from a prior infarction. "
+               "In old inferior MI patterns, Q waves are most prominent in II, III, and aVF. "
+               "Unlike acute STEMI, there is no new contiguous ST elevation. Correlate with symptoms and serial troponins "
+               "to determine whether the finding is chronic or part of an acute-on-chronic process."),
 ]
 
 CASES = CASES + REVIEW_CASES
