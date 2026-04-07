@@ -157,6 +157,8 @@ export default function QuizMode({ cases, initialCase }: QuizModeProps) {
   const isAllSelected = selectedCategories.size === ALL_CATEGORIES.size;
   const activeCaseCount = activeCases.length;
   const tooFewCases = activeCaseCount < 4;
+  const noDiagnosisSelected = diagnosisScope === "selected" && selectedCategories.size === 0;
+  const beginDisabled = noDiagnosisSelected || tooFewCases;
 
   const handleSelect = (choice: string) => {
     if (state !== "question") return;
@@ -223,7 +225,6 @@ export default function QuizMode({ cases, initialCase }: QuizModeProps) {
     setSelectedCategories((prev) => {
       const next = new Set(prev);
       if (next.has(cat)) next.delete(cat); else next.add(cat);
-      if (next.size === 0) return prev;
       return next;
     });
   }, []);
@@ -233,7 +234,7 @@ export default function QuizMode({ cases, initialCase }: QuizModeProps) {
   }, []);
 
   const handleBegin = useCallback(() => {
-    if (tooFewCases) return;
+    if (beginDisabled) return;
     setQueue(shuffle(activeCases));
     setIndex(0);
     setState("question");
@@ -242,7 +243,7 @@ export default function QuizMode({ cases, initialCase }: QuizModeProps) {
     setAiError(null);
     setShowTwelveLead(false);
     setSessionStarted(true);
-  }, [activeCases, tooFewCases]);
+  }, [activeCases, beginDisabled]);
 
   if (!mounted) return null;
 
@@ -256,20 +257,26 @@ export default function QuizMode({ cases, initialCase }: QuizModeProps) {
 
           <div className="flex items-center gap-2 mb-3">
             <button
-              onClick={() => setDiagnosisScope("all")}
+              onClick={() => {
+                setDiagnosisScope("all");
+                setSelectedCategories(new Set(ALL_CATEGORIES));
+              }}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                 diagnosisScope === "all"
-                  ? "bg-slate-100 border-slate-300 text-slate-700"
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-800"
                   : "bg-white border-slate-200 text-slate-500 hover:text-slate-700"
               }`}
             >
               All diagnoses
             </button>
             <button
-              onClick={() => setDiagnosisScope("selected")}
+              onClick={() => {
+                setDiagnosisScope("selected");
+                setSelectedCategories(new Set());
+              }}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                 diagnosisScope === "selected"
-                  ? "bg-slate-100 border-slate-300 text-slate-700"
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-800"
                   : "bg-white border-slate-200 text-slate-500 hover:text-slate-700"
               }`}
             >
@@ -288,7 +295,7 @@ export default function QuizMode({ cases, initialCase }: QuizModeProps) {
                     onClick={() => toggleCategory(cat)}
                     className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border transition-all ${
                       isActive
-                        ? "bg-slate-100 border-slate-300 text-slate-700"
+                        ? "bg-emerald-50 border-emerald-200 text-emerald-800"
                         : "bg-white border-slate-200 text-slate-500 hover:text-slate-700"
                     }`}
                   >
@@ -309,6 +316,9 @@ export default function QuizMode({ cases, initialCase }: QuizModeProps) {
             <span className="text-xs text-slate-500">
               <span className="font-semibold text-slate-700">{activeCaseCount}</span> case{activeCaseCount !== 1 ? "s" : ""} available
             </span>
+            {noDiagnosisSelected && (
+              <span className="text-xs text-slate-500 font-medium">Select at least 1 diagnosis</span>
+            )}
             {tooFewCases && (
               <span className="text-xs text-amber-600 font-medium">Need ≥ 4 cases</span>
             )}
@@ -317,7 +327,7 @@ export default function QuizMode({ cases, initialCase }: QuizModeProps) {
 
         <button
           onClick={handleBegin}
-          disabled={tooFewCases}
+          disabled={beginDisabled}
           className="w-full rounded-lg bg-slate-900 text-white py-3 text-sm font-semibold
                      hover:bg-slate-700 active:bg-slate-800 transition-colors duration-150
                      disabled:opacity-50 disabled:cursor-not-allowed"

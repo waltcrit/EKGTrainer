@@ -1,6 +1,47 @@
-# EKGTrainer
+# EKG Trainer
 
-## Python Environment
+A full-stack EKG teaching platform combining a structured MDX lesson curriculum with an interactive strip viewer and AI-assisted interpretation.
+
+## What it is
+
+**EKG Academy** is the web interface — a structured, self-paced curriculum for learning to read electrocardiograms, with three levels (Beginner, Intermediate, Advanced) and embedded interactive components. The platform uses real PTB-XL ECG data alongside synthesized teaching cases.
+
+The **Python backend** serves pre-processed ECG strips, runs signal analysis, and exposes an API consumed by the Next.js frontend.
+
+## Project structure
+
+```
+EKGTrainer/
+├── web/               # Next.js 15 app (EKG Academy)
+│   ├── src/           # App source (pages, components, API routes)
+│   └── content/       # MDX lesson content
+│       └── learn/
+│           ├── beginner/
+│           ├── intermediate/
+│           └── advanced/
+├── python/            # FastAPI backend (ECG data + analysis)
+│   ├── server.py
+│   ├── analyze_ecg.py
+│   └── requirements.txt
+└── scripts/           # Data pipeline scripts (PTB-XL, case generation)
+    ├── generate_cases.py
+    ├── generate_12lead_ekgs.py
+    └── generate_ptbxl_ekgs.py
+```
+
+## Web app
+
+Built with Next.js 15, React 19, Tailwind CSS, and `next-mdx-remote`.
+
+```bash
+cd web
+npm install
+npm run dev        # http://localhost:3000
+npm run build
+npm run lint
+```
+
+## Python environment
 
 Base Python dependencies live in [python/requirements.txt](python/requirements.txt).
 
@@ -12,10 +53,32 @@ source .venv/bin/activate
 pip install -r python/requirements-lock.txt
 ```
 
-When the environment is intentionally updated, regenerate or refresh [python/requirements-lock.txt](python/requirements-lock.txt) from the project virtual environment with:
+When the environment is intentionally updated, regenerate [python/requirements-lock.txt](python/requirements-lock.txt) from the project virtual environment with:
 
 ```bash
 pip freeze > python/requirements-lock.txt
 ```
 
 The lock file includes the ECG-Digitiser Git dependency used by the Python pipeline.
+
+## EKG case data
+
+Teaching cases are sourced from the [PTB-XL dataset](https://physionet.org/content/ptb-xl/) (PhysioNet, CC BY 4.0) and from synthesized cases where no real-data equivalent exists. See [scripts/ptbxl_diagnosis_codes.md](scripts/ptbxl_diagnosis_codes.md) for the full coverage map.
+
+To regenerate cases:
+
+```bash
+# Rhythm strips
+python3 scripts/generate_cases.py --render-style physionet
+
+# 12-lead synthetic
+python3 scripts/generate_12lead_ekgs.py --render-style physionet
+
+# Replace with real PTB-XL data where available
+python3 scripts/generate_ptbxl_ekgs.py --render-style physionet --remote
+```
+
+## Deployment
+
+- **Web**: Vercel (`vercel.json`)
+- **Backend**: Railway (`railway.toml`, `Dockerfile`)

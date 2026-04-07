@@ -648,6 +648,76 @@ def hyperkalemia_strip(hr=65):
     return sig
 
 
+def pericarditis_strip(hr=90):
+    """Pericarditis: diffuse concave (saddle-shaped) STE + PR depression in Lead II."""
+    sig = np.zeros(N)
+    for r in regular_r_times(hr):
+        # PR depression — baseline dips slightly just before QRS
+        pr_seg_center = r - 0.055
+        sig += gauss(T, pr_seg_center, 22, -0.055)
+
+        # Standard beat (slightly elevated T to blend with STE)
+        place_normal_beat(sig, T, r, pr_ms=160, qrs_ms=80, qt_ms=360,
+                          p_amp=0.13, r_amp=0.95, t_amp=0.34)
+
+        # Concave (saddle-shaped) STE — gentle arch from J-point to T-wave onset
+        j_point = r + 0.043
+        t_onset = r + 0.180
+        sig += st_plateau(T, j_point, t_onset, amp=0.14)
+    return sig
+
+
+def pericarditis_12lead(hr=90):
+    """Pericarditis multi-lead: diffuse STE in II/aVF/V3–V5, PR depression, PR elevation in aVR."""
+    rs = _rr(hr)
+    return [
+        (lead_signal(rs, st_offset=+0.14, t_amp=0.34, pr_ms=160, p_amp=0.13), "II — diffuse STE + PR depression"),
+        (lead_signal(rs, st_offset=+0.12, t_amp=0.30, pr_ms=160, p_amp=0.12), "aVF — diffuse STE"),
+        (lead_signal(rs, st_offset=+0.13, t_amp=0.32, pr_ms=160, p_amp=0.11), "V4 — diffuse STE"),
+        (lead_signal(rs, st_offset=-0.06, t_inverted=True, t_amp=0.10,
+                     p_inverted=True, p_amp=0.10),                             "aVR — PR elevation (reciprocal)"),
+    ]
+
+
+def electrical_alternans_strip(hr=118):
+    """Electrical alternans: beat-to-beat QRS amplitude alternation at sinus tachycardia rate."""
+    sig = np.zeros(N)
+    r_times = list(regular_r_times(hr))
+    # Alternate high/low amplitude on each beat
+    amps = [1.05, 0.52]
+    for i, r in enumerate(r_times):
+        amp = amps[i % 2]
+        place_normal_beat(sig, T, r, pr_ms=150, qrs_ms=82, qt_ms=310,
+                          p_amp=0.11 * amp, r_amp=amp, t_amp=0.24 * amp)
+    return sig
+
+
+def electrical_alternans_12lead(hr=118):
+    """Electrical alternans multi-lead: alternating QRS height visible across precordial leads."""
+    rs = list(_rr(hr))
+    # Build an alternating signal per lead by interleaving high/low beats
+    def alt_lead(st_off=0.0, r_hi=1.05, r_lo=0.52, t_hi=0.24, t_lo=0.12):
+        sig = np.zeros(N)
+        for i, r in enumerate(rs):
+            amp = r_hi if i % 2 == 0 else r_lo
+            t = t_hi if i % 2 == 0 else t_lo
+            sig += gauss(T, r - 0.130 + 0.040, 45, 0.11)          # P wave
+            sig += gauss(T, r - 0.032, 20, -0.07 * amp)            # Q
+            sig += gauss(T, r,          36,  amp)                   # R
+            sig += gauss(T, r + 0.028, 24, -0.14 * amp)            # S
+            if abs(st_off) > 0.005:
+                sig += st_plateau(T, r + 0.045, r + 0.200, st_off)
+            sig += gauss(T, r + 0.196, 100, t)                     # T
+        return sig
+
+    return [
+        (alt_lead(r_hi=1.05, r_lo=0.52), "V3 — electrical alternans (QRS amplitude)"),
+        (alt_lead(r_hi=0.90, r_lo=0.44), "V4 — electrical alternans"),
+        (alt_lead(r_hi=0.78, r_lo=0.38), "V5 — electrical alternans"),
+        (alt_lead(r_hi=0.65, r_lo=0.31), "V6 — electrical alternans"),
+    ]
+
+
 def lae_strip(hr=70):
     """Left Atrial Enlargement: broad notched M-shaped P waves (P mitrale), Lead II."""
     sig = np.zeros(N)
@@ -1255,6 +1325,36 @@ REVIEW_CASES = [
                "In old inferior MI patterns, Q waves are most prominent in II, III, and aVF. "
                "Unlike acute STEMI, there is no new contiguous ST elevation. Correlate with symptoms and serial troponins "
                "to determine whether the finding is chronic or part of an acute-on-chronic process."),
+
+    dict(id="pericarditis_01", rhythm="Pericarditis", category="structural", difficulty=3,
+        review=True, generator=lambda: pericarditis_strip(90),
+        multilead=pericarditis_12lead(90),
+        rate=90, regularity="regular",
+        key_features=["Diffuse concave (saddle-shaped) ST elevation in most leads",
+                   "PR depression in leads with ST elevation",
+                   "PR elevation in aVR (reciprocal)",
+                   "No focal reciprocal ST depression (unlike STEMI)",
+                   "ST elevation spares aVR and V1"],
+        teaching="Pericarditis causes diffuse ST elevation from subepicardial irritation, not focal coronary occlusion. "
+               "The key distinguishing features from STEMI: concave (saddle-shaped) rather than convex STE, "
+               "diffuse distribution across multiple territories, PR depression in the same leads showing STE, "
+               "and absence of reciprocal ST depression. Stage I (days 1–2) is the classic presentation. "
+               "Treat with NSAIDs + colchicine; avoid corticosteroids initially."),
+
+    dict(id="tamponade_01", rhythm="Electrical Alternans", category="structural", difficulty=3,
+        review=True, generator=lambda: electrical_alternans_strip(118),
+        multilead=electrical_alternans_12lead(118),
+        rate=118, regularity="regular",
+        key_features=["Beat-to-beat alternation in QRS amplitude (electrical alternans)",
+                   "Sinus tachycardia (compensatory)",
+                   "Low voltage in limb leads",
+                   "No ST or T wave abnormalities (purely mechanical cause)",
+                   "Classic sign of cardiac tamponade"],
+        teaching="Electrical alternans occurs when a pericardial effusion is large enough that the heart swings "
+               "pendulum-like within the fluid, changing its electrical axis from the ECG's perspective on every "
+               "other beat. The result is alternating QRS height (and sometimes P and T wave height) in a perfectly "
+               "regular pattern. Sinus tachycardia is almost always present (compensatory response to reduced cardiac "
+               "output). This is a medical emergency — confirm with bedside echo and prepare for pericardiocentesis."),
 ]
 
 CASES = CASES + REVIEW_CASES

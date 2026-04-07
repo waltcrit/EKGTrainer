@@ -9,13 +9,13 @@
     "rate": 75,
     "regularity": "regular",
     "keyFeatures": [
-      "Rate 60\u2013100 bpm",
+      "Rate 60–100 bpm",
       "Regular rhythm",
       "Upright P wave before each QRS",
-      "Normal PR interval (120\u2013200 ms)",
+      "Normal PR interval (120–200 ms)",
       "Narrow QRS (<120 ms)"
     ],
-    "teaching": "The SA node fires regularly at 75 bpm. Every P wave is followed by a QRS. All intervals are within normal limits \u2014 the baseline rhythm for comparison."
+    "teaching": "The SA node fires regularly at 75 bpm. Every P wave is followed by a QRS. All intervals are within normal limits — the baseline rhythm for comparison."
   },
   {
     "id": "nsr_02",
@@ -32,7 +32,7 @@
       "1:1 P:QRS ratio",
       "Narrow QRS"
     ],
-    "teaching": "A slightly faster NSR \u2014 still within normal limits. Note how P waves are closer to the preceding T wave at higher rates."
+    "teaching": "A slightly faster NSR — still within normal limits. Note how P waves are closer to the preceding T wave at higher rates."
   },
   {
     "id": "brady_01",
@@ -62,7 +62,7 @@
     "rate": 38,
     "regularity": "regular",
     "keyFeatures": [
-      "Rate 38 bpm \u2014 marked bradycardia",
+      "Rate 38 bpm — marked bradycardia",
       "Regular",
       "Normal P morphology"
     ],
@@ -118,7 +118,7 @@
       "Normal P waves and PR interval",
       "R-R varies >0.12 s"
     ],
-    "teaching": "R-R intervals vary cyclically with respiration \u2014 a normal variant, especially in younger patients. Note the repeating pattern."
+    "teaching": "R-R intervals vary cyclically with respiration — a normal variant, especially in younger patients. Note the repeating pattern."
   },
   {
     "id": "pac_01",
@@ -147,7 +147,7 @@
     "rate": 70,
     "regularity": "irregular",
     "keyFeatures": [
-      "Early wide bizarre QRS (\u2265120 ms)",
+      "Early wide bizarre QRS (≥120 ms)",
       "No preceding P wave",
       "Full compensatory pause",
       "Discordant T wave"
@@ -164,7 +164,7 @@
     "rate": 190,
     "regularity": "regular",
     "keyFeatures": [
-      "Rate 150\u2013250 bpm",
+      "Rate 150–250 bpm",
       "Regular",
       "Narrow QRS",
       "P waves absent or buried in QRS/T wave"
@@ -186,7 +186,7 @@
       "Fibrillatory baseline",
       "Narrow QRS"
     ],
-    "teaching": "The hallmark of AFib: irregularly irregular with no P waves. The atria fire chaotically at 350\u2013600 bpm; the AV node filters randomly."
+    "teaching": "The hallmark of AFib: irregularly irregular with no P waves. The atria fire chaotically at 350–600 bpm; the AV node filters randomly."
   },
   {
     "id": "afib_02",
@@ -217,7 +217,7 @@
       "Atrial rate ~300 bpm",
       "Sawtooth flutter waves clearly visible (II, III, aVF)",
       "Regular ventricular rate ~75 bpm",
-      "4:1 conduction \u2014 3 flutter waves between QRS"
+      "4:1 conduction — 3 flutter waves between QRS"
     ],
     "teaching": "Classic sawtooth at 300 bpm with 4:1 conduction. Three flutter waves are clearly visible between each QRS. When in doubt about an oddly regular rhythm, look for the telltale sawtooth in inferior leads. Flutter can conduct at 2:1, 3:1, or 4:1."
   },
@@ -236,11 +236,11 @@
       "Every P followed by a QRS",
       "Narrow QRS"
     ],
-    "teaching": "PR is prolonged (>5 small boxes) but every P wave is conducted. Not a true block \u2014 a conduction delay. Rarely needs treatment alone."
+    "teaching": "PR is prolonged (>5 small boxes) but every P wave is conducted. Not a true block — a conduction delay. Rarely needs treatment alone."
   },
   {
     "id": "avb2m1_01",
-    "rhythm": "2nd Degree AV Block \u2014 Mobitz I (Wenckebach)",
+    "rhythm": "2nd Degree AV Block — Mobitz I (Wenckebach)",
     "category": "av_block",
     "difficulty": 3,
     "imagePath": "/cases/avb2m1_01.png",
@@ -257,7 +257,7 @@
   },
   {
     "id": "avb2m2_01",
-    "rhythm": "2nd Degree AV Block \u2014 Mobitz II",
+    "rhythm": "2nd Degree AV Block — Mobitz II",
     "category": "av_block",
     "difficulty": 3,
     "imagePath": "/cases/avb2m2_01.png",
@@ -270,7 +270,7 @@
       "P:QRS ratio 3:1",
       "Often wide QRS"
     ],
-    "teaching": "Fixed PR with unexpected dropped beats. More ominous than Wenckebach \u2014 below the AV node (His-Purkinje). Often requires permanent pacing."
+    "teaching": "Fixed PR with unexpected dropped beats. More ominous than Wenckebach — below the AV node (His-Purkinje). Often requires permanent pacing."
   },
   {
     "id": "avb3_01",
@@ -287,7 +287,7 @@
       "Wide escape QRS",
       "No fixed relationship between P and QRS"
     ],
-    "teaching": "Complete dissociation \u2014 atria and ventricles beat independently. A ventricular escape rhythm keeps the patient alive. Requires pacing."
+    "teaching": "Complete dissociation — atria and ventricles beat independently. A ventricular escape rhythm keeps the patient alive. Requires pacing."
   },
   {
     "id": "lbbb_01",
@@ -299,12 +299,12 @@
     "rate": 72,
     "regularity": "regular",
     "keyFeatures": [
-      "Wide QRS \u2265120 ms",
+      "Wide QRS ≥120 ms",
       "Broad monophasic R in lateral leads",
       "No septal Q in lateral leads",
       "Discordant ST-T"
     ],
-    "teaching": "Left ventricle activates late via slow cell-to-cell conduction. LBBB invalidates ST analysis \u2014 never diagnose ischemia from ST segments in LBBB alone."
+    "teaching": "Left ventricle activates late via slow cell-to-cell conduction. LBBB invalidates ST analysis — never diagnose ischemia from ST segments in LBBB alone."
   },
   {
     "id": "rbbb_01",
@@ -316,10 +316,10 @@
     "rate": 75,
     "regularity": "regular",
     "keyFeatures": [
-      "Wide QRS \u2265120 ms",
+      "Wide QRS ≥120 ms",
       "RSR' pattern in V1 ('rabbit ears')",
       "Wide slurred S in lateral leads",
-      "T wave inversion V1\u2013V2"
+      "T wave inversion V1–V2"
     ],
     "teaching": "Delayed right ventricular activation produces the RSR' in V1. RBBB can be a normal variant; new RBBB warrants investigation."
   },
@@ -333,7 +333,7 @@
     "rate": 48,
     "regularity": "regular",
     "keyFeatures": [
-      "Rate 40\u201360 bpm",
+      "Rate 40–60 bpm",
       "Narrow QRS",
       "Inverted P waves in lead II",
       "P may be before, during, or after QRS"
@@ -350,11 +350,11 @@
     "rate": 85,
     "regularity": "regular",
     "keyFeatures": [
-      "Rate 60\u2013100 bpm",
+      "Rate 60–100 bpm",
       "Narrow QRS",
       "Inverted or absent P waves"
     ],
-    "teaching": "Junctional rate exceeds 60 bpm \u2014 'accelerated'. Associated with digitalis toxicity, inferior MI, or post-cardiac surgery."
+    "teaching": "Junctional rate exceeds 60 bpm — 'accelerated'. Associated with digitalis toxicity, inferior MI, or post-cardiac surgery."
   },
   {
     "id": "idio_01",
@@ -366,12 +366,12 @@
     "rate": 33,
     "regularity": "regular",
     "keyFeatures": [
-      "Rate 20\u201340 bpm",
+      "Rate 20–40 bpm",
       "Wide bizarre QRS",
       "No P waves",
       "Ventricular escape rhythm"
     ],
-    "teaching": "The ventricle's last-resort pacemaker at 20\u201340 bpm. Seen in severe bradycardia, complete heart block, and post-arrest."
+    "teaching": "The ventricle's last-resort pacemaker at 20–40 bpm. Seen in severe bradycardia, complete heart block, and post-arrest."
   },
   {
     "id": "vtach_01",
@@ -384,7 +384,7 @@
     "regularity": "regular",
     "keyFeatures": [
       "Rate >100 bpm",
-      "Wide QRS \u2265120 ms",
+      "Wide QRS ≥120 ms",
       "Regular",
       "AV dissociation if P waves visible",
       "Treat immediately"
@@ -421,7 +421,7 @@
       "Chaotic disorganized waveform",
       "No identifiable P, QRS, or T",
       "Amplitude varies",
-      "Cardiac arrest \u2014 CPR + defibrillation"
+      "Cardiac arrest — CPR + defibrillation"
     ],
     "teaching": "The ventricles quiver without coordinated contraction. Immediate defibrillation and high-quality CPR are required. Do not delay."
   },
@@ -452,13 +452,13 @@
     "rate": 80,
     "regularity": "regular",
     "keyFeatures": [
-      "ST elevation V1\u2013V4 (LAD territory)",
+      "ST elevation V1–V4 (LAD territory)",
       "Hyperacute T waves",
       "Reciprocal ST depression in aVL/inferior leads",
       "May develop pathological Q waves",
       "Immediate reperfusion required"
     ],
-    "teaching": "Anterior STEMI is caused by LAD occlusion. ST elevation \u22651mm in 2 contiguous precordial leads (V1\u2013V4). Watch for reciprocal depression in aVL. The larger the territory, the worse the prognosis."
+    "teaching": "Anterior STEMI is caused by LAD occlusion. ST elevation ≥1mm in 2 contiguous precordial leads (V1–V4). Watch for reciprocal depression in aVL. The larger the territory, the worse the prognosis."
   },
   {
     "id": "stemi_inf_01",
@@ -487,12 +487,12 @@
     "rate": 82,
     "regularity": "regular",
     "keyFeatures": [
-      "ST elevation in I, aVL, V5\u2013V6 (circumflex territory)",
+      "ST elevation in I, aVL, V5–V6 (circumflex territory)",
       "Reciprocal depression in III and aVF",
       "Often caused by circumflex (LCx) occlusion",
       "May be missed without high lateral leads"
     ],
-    "teaching": "Lateral STEMI involves the circumflex artery. ST elevation in I, aVL, V5\u2013V6 with reciprocal changes inferiorly. High lateral STEMI (I, aVL only) can be subtle \u2014 measure carefully."
+    "teaching": "Lateral STEMI involves the circumflex artery. ST elevation in I, aVL, V5–V6 with reciprocal changes inferiorly. High lateral STEMI (I, aVL only) can be subtle — measure carefully."
   },
   {
     "id": "stemi_post_01",
@@ -504,16 +504,16 @@
     "rate": 76,
     "regularity": "regular",
     "keyFeatures": [
-      "ST depression in V1\u2013V3 (reciprocal to posterior elevation)",
-      "Tall broad R wave in V1\u2013V2 (reciprocal to posterior Q)",
+      "ST depression in V1–V3 (reciprocal to posterior elevation)",
+      "Tall broad R wave in V1–V2 (reciprocal to posterior Q)",
       "No obvious ST elevation on standard 12-lead",
-      "Confirm with posterior leads V7\u2013V9"
+      "Confirm with posterior leads V7–V9"
     ],
-    "teaching": "Posterior STEMI is a 'hidden' STEMI \u2014 the posterior wall isn't covered by standard leads. You see its mirror image: ST depression and tall R in V1\u2013V3. Flip V2 upside down mentally \u2014 it looks like STEMI. Confirm with V7\u2013V9."
+    "teaching": "Posterior STEMI is a 'hidden' STEMI — the posterior wall isn't covered by standard leads. You see its mirror image: ST depression and tall R in V1–V3. Flip V2 upside down mentally — it looks like STEMI. Confirm with V7–V9."
   },
   {
     "id": "nstemi_01",
-    "rhythm": "NSTEMI \u2014 ST Depression",
+    "rhythm": "NSTEMI — ST Depression",
     "category": "nstemi",
     "difficulty": 3,
     "imagePath": "/cases/nstemi_01.png",
@@ -521,7 +521,7 @@
     "rate": 88,
     "regularity": "regular",
     "keyFeatures": [
-      "Horizontal or downsloping ST depression \u22650.5mm",
+      "Horizontal or downsloping ST depression ≥0.5mm",
       "T wave flattening or inversion",
       "No ST elevation",
       "Troponin elevation confirms myocardial injury",
@@ -531,7 +531,7 @@
   },
   {
     "id": "wellens_a_01",
-    "rhythm": "Wellens Syndrome \u2014 Type A",
+    "rhythm": "Wellens Syndrome — Type A",
     "category": "nstemi",
     "difficulty": 4,
     "imagePath": "/cases/wellens_a_01.png",
@@ -539,17 +539,17 @@
     "rate": 72,
     "regularity": "regular",
     "keyFeatures": [
-      "Biphasic T waves in V2\u2013V3 (positive then negative)",
+      "Biphasic T waves in V2–V3 (positive then negative)",
       "Minimal or no ST elevation",
       "Usually pain-free at time of ECG",
       "Indicates critical proximal LAD stenosis",
-      "Do NOT stress test \u2014 high risk of anterior STEMI"
+      "Do NOT stress test — high risk of anterior STEMI"
     ],
-    "teaching": "Wellens Syndrome indicates critical proximal LAD stenosis between pain episodes. Type A: biphasic T waves in V2\u2013V3. Type B: deep symmetric inversions. These patients are at imminent risk of massive anterior STEMI \u2014 do not discharge."
+    "teaching": "Wellens Syndrome indicates critical proximal LAD stenosis between pain episodes. Type A: biphasic T waves in V2–V3. Type B: deep symmetric inversions. These patients are at imminent risk of massive anterior STEMI — do not discharge."
   },
   {
     "id": "wellens_b_01",
-    "rhythm": "Wellens Syndrome \u2014 Type B",
+    "rhythm": "Wellens Syndrome — Type B",
     "category": "nstemi",
     "difficulty": 4,
     "imagePath": "/cases/wellens_b_01.png",
@@ -557,16 +557,16 @@
     "rate": 68,
     "regularity": "regular",
     "keyFeatures": [
-      "Deep symmetric T wave inversion in V2\u2013V3",
+      "Deep symmetric T wave inversion in V2–V3",
       "No significant ST elevation",
       "Normal or minimally elevated troponin",
-      "Critical proximal LAD stenosis \u2014 do NOT stress test"
+      "Critical proximal LAD stenosis — do NOT stress test"
     ],
-    "teaching": "Wellens Type B shows deep symmetric T inversions in V2\u2013V3 during pain-free periods. This is a pre-infarction pattern. The patient needs urgent cath, not observation. A negative troponin does not rule out the danger."
+    "teaching": "Wellens Type B shows deep symmetric T inversions in V2–V3 during pain-free periods. This is a pre-infarction pattern. The patient needs urgent cath, not observation. A negative troponin does not rule out the danger."
   },
   {
     "id": "pe_s1q3t3_01",
-    "rhythm": "Pulmonary Embolism \u2014 S1Q3T3",
+    "rhythm": "Pulmonary Embolism — S1Q3T3",
     "category": "pe_strain",
     "difficulty": 4,
     "imagePath": "/cases/pe_s1q3t3_01.png",
@@ -577,14 +577,14 @@
       "Sinus tachycardia (most common ECG finding in PE)",
       "S wave in lead I (S1)",
       "Q wave + T wave inversion in lead III (Q3T3)",
-      "RV strain in V1 \u2014 T inversion, partial RBBB",
+      "RV strain in V1 — T inversion, partial RBBB",
       "S1Q3T3 is specific but only present in ~20% of PE"
     ],
     "teaching": "S1Q3T3 is the classic ECG pattern of massive PE but is neither sensitive nor specific. Sinus tachycardia is the most common finding. The pattern reflects acute right heart strain from sudden pulmonary hypertension. Always correlate with clinical picture."
   },
   {
     "id": "pe_rv_strain_01",
-    "rhythm": "Pulmonary Embolism \u2014 RV Strain",
+    "rhythm": "Pulmonary Embolism — RV Strain",
     "category": "pe_strain",
     "difficulty": 3,
     "imagePath": "/cases/pe_rv_strain_01.png",
@@ -592,13 +592,13 @@
     "rate": 112,
     "regularity": "regular",
     "keyFeatures": [
-      "T wave inversions in V1\u2013V4 (right precordial)",
+      "T wave inversions in V1–V4 (right precordial)",
       "Sinus tachycardia",
       "May have new RBBB",
       "Indicates significant RV pressure overload",
       "More common than classic S1Q3T3"
     ],
-    "teaching": "Right precordial T inversions (V1\u2013V4) with tachycardia are the most common ECG manifestation of significant PE. They reflect RV strain from elevated pulmonary pressures. New RBBB in this context is a high-risk finding."
+    "teaching": "Right precordial T inversions (V1–V4) with tachycardia are the most common ECG manifestation of significant PE. They reflect RV strain from elevated pulmonary pressures. New RBBB in this context is a high-risk finding."
   },
   {
     "id": "lv_strain_01",
@@ -610,13 +610,13 @@
     "rate": 72,
     "regularity": "regular",
     "keyFeatures": [
-      "Tall R wave in V5\u2013V6 (LVH voltage criteria)",
-      "Deep S wave in V1 (Sokolow: SV1 + RV5 \u226535mm)",
+      "Tall R wave in V5–V6 (LVH voltage criteria)",
+      "Deep S wave in V1 (Sokolow: SV1 + RV5 ≥35mm)",
       "ST depression + T wave inversion in lateral leads",
       "Strain pattern = pressure overload (hypertension, aortic stenosis)",
       "Do not confuse with ischemia"
     ],
-    "teaching": "The LV strain pattern \u2014 asymmetric ST depression with T inversion in lateral leads \u2014 accompanies LVH in pressure-overloaded ventricles (hypertension, AS). It differs from ischemic ST changes by its gradual upslope and asymmetric T wave."
+    "teaching": "The LV strain pattern — asymmetric ST depression with T inversion in lateral leads — accompanies LVH in pressure-overloaded ventricles (hypertension, AS). It differs from ischemic ST changes by its gradual upslope and asymmetric T wave."
   },
   {
     "id": "rv_strain_01",
@@ -628,7 +628,7 @@
     "rate": 90,
     "regularity": "regular",
     "keyFeatures": [
-      "T wave inversions in V1\u2013V3 (right precordial)",
+      "T wave inversions in V1–V3 (right precordial)",
       "May extend to V4",
       "Right axis deviation on full 12-lead",
       "Causes: PE, pulmonary hypertension, cor pulmonale, RVOT obstruction"
@@ -669,7 +669,7 @@
       "No consistent P wave before each QRS",
       "Left axis deviation typical"
     ],
-    "teaching": "Ventricular pacing (VVI mode) stimulates the RV apex, producing an LBBB-like wide QRS. The pacing spike immediately precedes each QRS. There are no P waves coordinated with the paced beats \u2014 AV synchrony is lost. Look for the telltale spike before the wide complex."
+    "teaching": "Ventricular pacing (VVI mode) stimulates the RV apex, producing an LBBB-like wide QRS. The pacing spike immediately precedes each QRS. There are no P waves coordinated with the paced beats — AV synchrony is lost. Look for the telltale spike before the wide complex."
   },
   {
     "id": "pace_av_01",
@@ -684,14 +684,14 @@
       "Two pacing spikes per beat: atrial spike then ventricular spike",
       "First spike precedes P wave (atrial); second precedes QRS (ventricular)",
       "Wide QRS with LBBB morphology",
-      "AV synchrony maintained \u2014 paced PR interval programmed",
+      "AV synchrony maintained — paced PR interval programmed",
       "Most physiological pacing mode"
     ],
-    "teaching": "DDD pacing is dual-chamber: the atrium and ventricle are both paced. Look for two spikes per beat \u2014 an atrial spike before the P wave and a ventricular spike before the wide QRS. The programmable AV delay preserves atrial contribution to cardiac output."
+    "teaching": "DDD pacing is dual-chamber: the atrium and ventricle are both paced. Look for two spikes per beat — an atrial spike before the P wave and a ventricular spike before the wide QRS. The programmable AV delay preserves atrial contribution to cardiac output."
   },
   {
     "id": "brugada_01",
-    "rhythm": "Brugada Syndrome \u2014 Type 1",
+    "rhythm": "Brugada Syndrome — Type 1",
     "category": "channelopathy",
     "difficulty": 4,
     "imagePath": "/cases/brugada_01.png",
@@ -699,13 +699,13 @@
     "rate": 72,
     "regularity": "regular",
     "keyFeatures": [
-      "Coved ST elevation \u22652mm in V1\u2013V2 (Type 1 pattern)",
+      "Coved ST elevation ≥2mm in V1–V2 (Type 1 pattern)",
       "Downsloping ST with terminal T-wave inversion",
       "RBBB-like QRS morphology (rSR' or r' in V1)",
       "Normal QTc, no ischemia elsewhere",
       "Can precipitate ventricular fibrillation"
     ],
-    "teaching": "Brugada syndrome is a sodium channelopathy (SCN5A) causing sudden cardiac death risk. Type 1 (coved) is the only diagnostic pattern: \u22652mm coved ST elevation in \u22651 right precordial lead (V1\u2013V2 in standard position or V1\u2013V2 one intercostal space higher). Can be spontaneous or unmasked by fever, Na-channel blockers, or cocaine. Treat symptomatic patients with an ICD. Screen all first-degree relatives."
+    "teaching": "Brugada syndrome is a sodium channelopathy (SCN5A) causing sudden cardiac death risk. Type 1 (coved) is the only diagnostic pattern: ≥2mm coved ST elevation in ≥1 right precordial lead (V1–V2 in standard position or V1–V2 one intercostal space higher). Can be spontaneous or unmasked by fever, Na-channel blockers, or cocaine. Treat symptomatic patients with an ICD. Screen all first-degree relatives."
   },
   {
     "id": "wpw_01",
@@ -719,11 +719,11 @@
     "keyFeatures": [
       "Short PR interval (<120 ms)",
       "Delta wave (slurred upstroke on QRS)",
-      "Wide QRS (\u2265120 ms) due to ventricular pre-excitation",
+      "Wide QRS (≥120 ms) due to ventricular pre-excitation",
       "Secondary ST-T changes discordant to delta wave",
       "Risk of SVT, atrial fibrillation, and sudden death"
     ],
-    "teaching": "WPW results from an accessory pathway (Bundle of Kent) bypassing the AV node. Pre-excitation produces the triad: short PR, delta wave, and wide QRS. The danger is AFib conducting rapidly down the pathway \u2014 can degenerate to VF. Avoid AV nodal blockers (adenosine, beta-blockers, digoxin) in AFib with WPW. Definitive treatment is catheter ablation of the accessory pathway."
+    "teaching": "WPW results from an accessory pathway (Bundle of Kent) bypassing the AV node. Pre-excitation produces the triad: short PR, delta wave, and wide QRS. The danger is AFib conducting rapidly down the pathway — can degenerate to VF. Avoid AV nodal blockers (adenosine, beta-blockers, digoxin) in AFib with WPW. Definitive treatment is catheter ablation of the accessory pathway."
   },
   {
     "id": "lngqt_01",
@@ -741,7 +741,7 @@
       "Risk of Torsades de Pointes (TdP)",
       "Triggered by bradycardia, hypokalemia, or QT-prolonging drugs"
     ],
-    "teaching": "Long QT syndrome predisposes to Torsades de Pointes \u2014 a polymorphic VT that can cause syncope or degenerate to VF. The corrected QT (QTc = QT / \u221aRR) >500 ms is high risk. Causes: congenital (LQTS1-3), electrolyte abnormalities (\u2193K, \u2193Mg), and drugs (antiarrhythmics, antipsychotics, antibiotics). Treat: correct electrolytes, remove offending drugs, magnesium IV for TdP, ICD for congenital LQTS."
+    "teaching": "Long QT syndrome predisposes to Torsades de Pointes — a polymorphic VT that can cause syncope or degenerate to VF. The corrected QT (QTc = QT / √RR) >500 ms is high risk. Causes: congenital (LQTS1-3), electrolyte abnormalities (↓K, ↓Mg), and drugs (antiarrhythmics, antipsychotics, antibiotics). Treat: correct electrolytes, remove offending drugs, magnesium IV for TdP, ICD for congenital LQTS."
   },
   {
     "id": "hyperkal_01",
@@ -754,12 +754,12 @@
     "regularity": "regular",
     "keyFeatures": [
       "Absent P waves (flat or invisible)",
-      "Widened QRS complex (\u2265120 ms)",
+      "Widened QRS complex (≥120 ms)",
       "Very tall, narrow, symmetric ('tented') T waves",
       "Shortened QT interval",
       "Progressive sine-wave QRS pattern at severe K+ levels"
     ],
-    "teaching": "Hyperkalemia produces a sequential ECG progression. Early changes: peaked tented T waves. Moderate: P wave flattening/disappearance, widening QRS. Severe: sine-wave pattern, VF risk. The tented T is characteristically narrow and symmetric \u2014 unlike the broad T of ischemia. Treat urgently: IV calcium (stabilises membrane), insulin + glucose, sodium bicarb, dialysis."
+    "teaching": "Hyperkalemia produces a sequential ECG progression. Early changes: peaked tented T waves. Moderate: P wave flattening/disappearance, widening QRS. Severe: sine-wave pattern, VF risk. The tented T is characteristically narrow and symmetric — unlike the broad T of ischemia. Treat urgently: IV calcium (stabilises membrane), insulin + glucose, sodium bicarb, dialysis."
   },
   {
     "id": "lae_01",
@@ -772,12 +772,12 @@
     "regularity": "regular",
     "keyFeatures": [
       "Broad, notched (M-shaped) P wave in Lead II (P mitrale)",
-      "P wave duration \u2265 120 ms (\u2265 3 small squares)",
+      "P wave duration ≥ 120 ms (≥ 3 small squares)",
       "Biphasic P in V1 with deep wide negative terminal deflection",
       "Associated with mitral valve disease, hypertension",
       "Often co-exists with atrial fibrillation or flutter"
     ],
-    "teaching": "LAE prolongs left-atrial depolarisation, producing a bifid (M-shaped) P wave in Lead II called P mitrale (duration \u2265120 ms). In V1, the terminal component is negative (wide and deep), reflecting delayed LA depolarisation. Common causes: mitral stenosis, hypertension, dilated cardiomyopathy. Patients with LAE are at high risk for atrial fibrillation."
+    "teaching": "LAE prolongs left-atrial depolarisation, producing a bifid (M-shaped) P wave in Lead II called P mitrale (duration ≥120 ms). In V1, the terminal component is negative (wide and deep), reflecting delayed LA depolarisation. Common causes: mitral stenosis, hypertension, dilated cardiomyopathy. Patients with LAE are at high risk for atrial fibrillation."
   },
   {
     "id": "rae_01",
@@ -789,13 +789,13 @@
     "rate": 72,
     "regularity": "regular",
     "keyFeatures": [
-      "Tall, peaked P wave \u2265 0.25 mV (2.5 mm) in II, III, aVF \u2014 P pulmonale",
-      "P wave duration normal (< 120 ms) \u2014 amplitude is the hallmark",
-      "Also peaked P in V1\u2013V2",
+      "Tall, peaked P wave ≥ 0.25 mV (2.5 mm) in II, III, aVF — P pulmonale",
+      "P wave duration normal (< 120 ms) — amplitude is the hallmark",
+      "Also peaked P in V1–V2",
       "Associated with pulmonary hypertension, COPD, pulmonary stenosis",
       "Often seen with right ventricular hypertrophy"
     ],
-    "teaching": "RAE enlarges the right atrium, making right-atrial depolarisation dominate the P vector. The result is a tall, narrow, peaked P wave (P pulmonale) \u22652.5 mm in II, III, aVF. Duration is normal (<120 ms) because only amplitude is affected \u2014 unlike LAE where duration is prolonged. Causes: cor pulmonale, COPD, pulmonary hypertension, tricuspid stenosis."
+    "teaching": "RAE enlarges the right atrium, making right-atrial depolarisation dominate the P vector. The result is a tall, narrow, peaked P wave (P pulmonale) ≥2.5 mm in II, III, aVF. Duration is normal (<120 ms) because only amplitude is affected — unlike LAE where duration is prolonged. Causes: cor pulmonale, COPD, pulmonary hypertension, tricuspid stenosis."
   },
   {
     "id": "lafb_01",
@@ -807,13 +807,13 @@
     "rate": 70,
     "regularity": "regular",
     "keyFeatures": [
-      "Left axis deviation (\u221245\u00b0 to \u221290\u00b0) \u2014 the key criterion",
+      "Left axis deviation (−45° to −90°) — the key criterion",
       "rS pattern in II, III, aVF (small r, deep S)",
       "qR pattern in I and aVL (small q, tall R)",
-      "Narrow QRS (< 120 ms) \u2014 not a bundled branch block",
+      "Narrow QRS (< 120 ms) — not a bundled branch block",
       "No other cause of LAD (inferior MI, hyperkalemia) present"
     ],
-    "teaching": "LAFB blocks the anterior fascicle of the left bundle, redirecting ventricular activation superiorly and leftward. The axis shifts to \u221245\u00b0 to \u221290\u00b0 (left axis deviation). In Lead II: small initial r then deep S (rS). In Leads I and aVL: small q then tall R (qR). QRS is narrow (<120 ms) \u2014 distinguish from LBBB. Causes: CAD, cardiomyopathy, hypertension."
+    "teaching": "LAFB blocks the anterior fascicle of the left bundle, redirecting ventricular activation superiorly and leftward. The axis shifts to −45° to −90° (left axis deviation). In Lead II: small initial r then deep S (rS). In Leads I and aVL: small q then tall R (qR). QRS is narrow (<120 ms) — distinguish from LBBB. Causes: CAD, cardiomyopathy, hypertension."
   },
   {
     "id": "bigu_01",
@@ -831,7 +831,7 @@
       "Short coupling interval (< 70 % of RR) from sinus to PVC",
       "Underlying rate often appears slow due to bigeminal pauses"
     ],
-    "teaching": "Bigeminy describes a pattern where every other beat is ectopic. In ventricular bigeminy, a narrow-complex sinus beat alternates with a wide-complex PVC. The PVC couples at ~55\u201365 % of the sinus RR, followed by a compensatory pause. Causes: structural heart disease, CAD, hypokalemia, digoxin toxicity, stimulants. Treat the underlying cause; beta-blockers if symptomatic."
+    "teaching": "Bigeminy describes a pattern where every other beat is ectopic. In ventricular bigeminy, a narrow-complex sinus beat alternates with a wide-complex PVC. The PVC couples at ~55–65 % of the sinus RR, followed by a compensatory pause. Causes: structural heart disease, CAD, hypokalemia, digoxin toxicity, stimulants. Treat the underlying cause; beta-blockers if symptomatic."
   },
   {
     "id": "trigu_01",
@@ -862,7 +862,7 @@
     "regularity": "regular",
     "keyFeatures": [
       "Pathological Q waves in inferior leads (II, III, aVF)",
-      "Q-wave width \u2265 40 ms or depth \u2265 25% of following R wave",
+      "Q-wave width ≥ 40 ms or depth ≥ 25% of following R wave",
       "No acute contiguous ST-segment elevation",
       "Residual T-wave flattening or inversion can persist",
       "Suggests prior transmural infarction/scar"
@@ -879,13 +879,13 @@
     "rate": 75,
     "regularity": "regular",
     "keyFeatures": [
-      "Rate 60\u2013100 bpm",
+      "Rate 60–100 bpm",
       "Regular rhythm",
       "Upright P wave before each QRS",
-      "Normal PR interval (120\u2013200 ms)",
+      "Normal PR interval (120–200 ms)",
       "Narrow QRS (<120 ms)"
     ],
-    "teaching": "The SA node fires regularly at 75 bpm. Every P wave is followed by a QRS. All intervals are within normal limits \u2014 the baseline rhythm for comparison."
+    "teaching": "The SA node fires regularly at 75 bpm. Every P wave is followed by a QRS. All intervals are within normal limits — the baseline rhythm for comparison."
   },
   {
     "id": "nsr_02",
@@ -902,7 +902,7 @@
       "1:1 P:QRS ratio",
       "Narrow QRS"
     ],
-    "teaching": "A slightly faster NSR \u2014 still within normal limits. Note how P waves are closer to the preceding T wave at higher rates."
+    "teaching": "A slightly faster NSR — still within normal limits. Note how P waves are closer to the preceding T wave at higher rates."
   },
   {
     "id": "brady_01",
@@ -932,7 +932,7 @@
     "rate": 38,
     "regularity": "regular",
     "keyFeatures": [
-      "Rate 38 bpm \u2014 marked bradycardia",
+      "Rate 38 bpm — marked bradycardia",
       "Regular",
       "Normal P morphology"
     ],
@@ -988,7 +988,7 @@
       "Normal P waves and PR interval",
       "R-R varies >0.12 s"
     ],
-    "teaching": "R-R intervals vary cyclically with respiration \u2014 a normal variant, especially in younger patients. Note the repeating pattern."
+    "teaching": "R-R intervals vary cyclically with respiration — a normal variant, especially in younger patients. Note the repeating pattern."
   },
   {
     "id": "pac_01",
@@ -1017,7 +1017,7 @@
     "rate": 70,
     "regularity": "irregular",
     "keyFeatures": [
-      "Early wide bizarre QRS (\u2265120 ms)",
+      "Early wide bizarre QRS (≥120 ms)",
       "No preceding P wave",
       "Full compensatory pause",
       "Discordant T wave"
@@ -1034,7 +1034,7 @@
     "rate": 190,
     "regularity": "regular",
     "keyFeatures": [
-      "Rate 150\u2013250 bpm",
+      "Rate 150–250 bpm",
       "Regular",
       "Narrow QRS",
       "P waves absent or buried in QRS/T wave"
@@ -1056,7 +1056,7 @@
       "Fibrillatory baseline",
       "Narrow QRS"
     ],
-    "teaching": "The hallmark of AFib: irregularly irregular with no P waves. The atria fire chaotically at 350\u2013600 bpm; the AV node filters randomly."
+    "teaching": "The hallmark of AFib: irregularly irregular with no P waves. The atria fire chaotically at 350–600 bpm; the AV node filters randomly."
   },
   {
     "id": "afib_02",
@@ -1087,7 +1087,7 @@
       "Atrial rate ~300 bpm",
       "Sawtooth flutter waves clearly visible (II, III, aVF)",
       "Regular ventricular rate ~75 bpm",
-      "4:1 conduction \u2014 3 flutter waves between QRS"
+      "4:1 conduction — 3 flutter waves between QRS"
     ],
     "teaching": "Classic sawtooth at 300 bpm with 4:1 conduction. Three flutter waves are clearly visible between each QRS. When in doubt about an oddly regular rhythm, look for the telltale sawtooth in inferior leads. Flutter can conduct at 2:1, 3:1, or 4:1."
   },
@@ -1106,11 +1106,11 @@
       "Every P followed by a QRS",
       "Narrow QRS"
     ],
-    "teaching": "PR is prolonged (>5 small boxes) but every P wave is conducted. Not a true block \u2014 a conduction delay. Rarely needs treatment alone."
+    "teaching": "PR is prolonged (>5 small boxes) but every P wave is conducted. Not a true block — a conduction delay. Rarely needs treatment alone."
   },
   {
     "id": "avb2m1_01",
-    "rhythm": "2nd Degree AV Block \u2014 Mobitz I (Wenckebach)",
+    "rhythm": "2nd Degree AV Block — Mobitz I (Wenckebach)",
     "category": "av_block",
     "difficulty": 3,
     "imagePath": "/cases/avb2m1_01.png",
@@ -1127,7 +1127,7 @@
   },
   {
     "id": "avb2m2_01",
-    "rhythm": "2nd Degree AV Block \u2014 Mobitz II",
+    "rhythm": "2nd Degree AV Block — Mobitz II",
     "category": "av_block",
     "difficulty": 3,
     "imagePath": "/cases/avb2m2_01.png",
@@ -1140,7 +1140,7 @@
       "P:QRS ratio 3:1",
       "Often wide QRS"
     ],
-    "teaching": "Fixed PR with unexpected dropped beats. More ominous than Wenckebach \u2014 below the AV node (His-Purkinje). Often requires permanent pacing."
+    "teaching": "Fixed PR with unexpected dropped beats. More ominous than Wenckebach — below the AV node (His-Purkinje). Often requires permanent pacing."
   },
   {
     "id": "avb3_01",
@@ -1157,7 +1157,7 @@
       "Wide escape QRS",
       "No fixed relationship between P and QRS"
     ],
-    "teaching": "Complete dissociation \u2014 atria and ventricles beat independently. A ventricular escape rhythm keeps the patient alive. Requires pacing."
+    "teaching": "Complete dissociation — atria and ventricles beat independently. A ventricular escape rhythm keeps the patient alive. Requires pacing."
   },
   {
     "id": "lbbb_01",
@@ -1169,12 +1169,12 @@
     "rate": 72,
     "regularity": "regular",
     "keyFeatures": [
-      "Wide QRS \u2265120 ms",
+      "Wide QRS ≥120 ms",
       "Broad monophasic R in lateral leads",
       "No septal Q in lateral leads",
       "Discordant ST-T"
     ],
-    "teaching": "Left ventricle activates late via slow cell-to-cell conduction. LBBB invalidates ST analysis \u2014 never diagnose ischemia from ST segments in LBBB alone."
+    "teaching": "Left ventricle activates late via slow cell-to-cell conduction. LBBB invalidates ST analysis — never diagnose ischemia from ST segments in LBBB alone."
   },
   {
     "id": "rbbb_01",
@@ -1186,10 +1186,10 @@
     "rate": 75,
     "regularity": "regular",
     "keyFeatures": [
-      "Wide QRS \u2265120 ms",
+      "Wide QRS ≥120 ms",
       "RSR' pattern in V1 ('rabbit ears')",
       "Wide slurred S in lateral leads",
-      "T wave inversion V1\u2013V2"
+      "T wave inversion V1–V2"
     ],
     "teaching": "Delayed right ventricular activation produces the RSR' in V1. RBBB can be a normal variant; new RBBB warrants investigation."
   },
@@ -1203,7 +1203,7 @@
     "rate": 48,
     "regularity": "regular",
     "keyFeatures": [
-      "Rate 40\u201360 bpm",
+      "Rate 40–60 bpm",
       "Narrow QRS",
       "Inverted P waves in lead II",
       "P may be before, during, or after QRS"
@@ -1220,11 +1220,11 @@
     "rate": 85,
     "regularity": "regular",
     "keyFeatures": [
-      "Rate 60\u2013100 bpm",
+      "Rate 60–100 bpm",
       "Narrow QRS",
       "Inverted or absent P waves"
     ],
-    "teaching": "Junctional rate exceeds 60 bpm \u2014 'accelerated'. Associated with digitalis toxicity, inferior MI, or post-cardiac surgery."
+    "teaching": "Junctional rate exceeds 60 bpm — 'accelerated'. Associated with digitalis toxicity, inferior MI, or post-cardiac surgery."
   },
   {
     "id": "idio_01",
@@ -1236,12 +1236,12 @@
     "rate": 33,
     "regularity": "regular",
     "keyFeatures": [
-      "Rate 20\u201340 bpm",
+      "Rate 20–40 bpm",
       "Wide bizarre QRS",
       "No P waves",
       "Ventricular escape rhythm"
     ],
-    "teaching": "The ventricle's last-resort pacemaker at 20\u201340 bpm. Seen in severe bradycardia, complete heart block, and post-arrest."
+    "teaching": "The ventricle's last-resort pacemaker at 20–40 bpm. Seen in severe bradycardia, complete heart block, and post-arrest."
   },
   {
     "id": "vtach_01",
@@ -1254,7 +1254,7 @@
     "regularity": "regular",
     "keyFeatures": [
       "Rate >100 bpm",
-      "Wide QRS \u2265120 ms",
+      "Wide QRS ≥120 ms",
       "Regular",
       "AV dissociation if P waves visible",
       "Treat immediately"
@@ -1291,7 +1291,7 @@
       "Chaotic disorganized waveform",
       "No identifiable P, QRS, or T",
       "Amplitude varies",
-      "Cardiac arrest \u2014 CPR + defibrillation"
+      "Cardiac arrest — CPR + defibrillation"
     ],
     "teaching": "The ventricles quiver without coordinated contraction. Immediate defibrillation and high-quality CPR are required. Do not delay."
   },
@@ -1322,13 +1322,13 @@
     "rate": 80,
     "regularity": "regular",
     "keyFeatures": [
-      "ST elevation V1\u2013V4 (LAD territory)",
+      "ST elevation V1–V4 (LAD territory)",
       "Hyperacute T waves",
       "Reciprocal ST depression in aVL/inferior leads",
       "May develop pathological Q waves",
       "Immediate reperfusion required"
     ],
-    "teaching": "Anterior STEMI is caused by LAD occlusion. ST elevation \u22651mm in 2 contiguous precordial leads (V1\u2013V4). Watch for reciprocal depression in aVL. The larger the territory, the worse the prognosis."
+    "teaching": "Anterior STEMI is caused by LAD occlusion. ST elevation ≥1mm in 2 contiguous precordial leads (V1–V4). Watch for reciprocal depression in aVL. The larger the territory, the worse the prognosis."
   },
   {
     "id": "stemi_inf_01",
@@ -1357,12 +1357,12 @@
     "rate": 82,
     "regularity": "regular",
     "keyFeatures": [
-      "ST elevation in I, aVL, V5\u2013V6 (circumflex territory)",
+      "ST elevation in I, aVL, V5–V6 (circumflex territory)",
       "Reciprocal depression in III and aVF",
       "Often caused by circumflex (LCx) occlusion",
       "May be missed without high lateral leads"
     ],
-    "teaching": "Lateral STEMI involves the circumflex artery. ST elevation in I, aVL, V5\u2013V6 with reciprocal changes inferiorly. High lateral STEMI (I, aVL only) can be subtle \u2014 measure carefully."
+    "teaching": "Lateral STEMI involves the circumflex artery. ST elevation in I, aVL, V5–V6 with reciprocal changes inferiorly. High lateral STEMI (I, aVL only) can be subtle — measure carefully."
   },
   {
     "id": "stemi_post_01",
@@ -1374,16 +1374,16 @@
     "rate": 76,
     "regularity": "regular",
     "keyFeatures": [
-      "ST depression in V1\u2013V3 (reciprocal to posterior elevation)",
-      "Tall broad R wave in V1\u2013V2 (reciprocal to posterior Q)",
+      "ST depression in V1–V3 (reciprocal to posterior elevation)",
+      "Tall broad R wave in V1–V2 (reciprocal to posterior Q)",
       "No obvious ST elevation on standard 12-lead",
-      "Confirm with posterior leads V7\u2013V9"
+      "Confirm with posterior leads V7–V9"
     ],
-    "teaching": "Posterior STEMI is a 'hidden' STEMI \u2014 the posterior wall isn't covered by standard leads. You see its mirror image: ST depression and tall R in V1\u2013V3. Flip V2 upside down mentally \u2014 it looks like STEMI. Confirm with V7\u2013V9."
+    "teaching": "Posterior STEMI is a 'hidden' STEMI — the posterior wall isn't covered by standard leads. You see its mirror image: ST depression and tall R in V1–V3. Flip V2 upside down mentally — it looks like STEMI. Confirm with V7–V9."
   },
   {
     "id": "nstemi_01",
-    "rhythm": "NSTEMI \u2014 ST Depression",
+    "rhythm": "NSTEMI — ST Depression",
     "category": "nstemi",
     "difficulty": 3,
     "imagePath": "/cases/nstemi_01.png",
@@ -1391,7 +1391,7 @@
     "rate": 88,
     "regularity": "regular",
     "keyFeatures": [
-      "Horizontal or downsloping ST depression \u22650.5mm",
+      "Horizontal or downsloping ST depression ≥0.5mm",
       "T wave flattening or inversion",
       "No ST elevation",
       "Troponin elevation confirms myocardial injury",
@@ -1401,7 +1401,7 @@
   },
   {
     "id": "wellens_a_01",
-    "rhythm": "Wellens Syndrome \u2014 Type A",
+    "rhythm": "Wellens Syndrome — Type A",
     "category": "nstemi",
     "difficulty": 4,
     "imagePath": "/cases/wellens_a_01.png",
@@ -1409,17 +1409,17 @@
     "rate": 72,
     "regularity": "regular",
     "keyFeatures": [
-      "Biphasic T waves in V2\u2013V3 (positive then negative)",
+      "Biphasic T waves in V2–V3 (positive then negative)",
       "Minimal or no ST elevation",
       "Usually pain-free at time of ECG",
       "Indicates critical proximal LAD stenosis",
-      "Do NOT stress test \u2014 high risk of anterior STEMI"
+      "Do NOT stress test — high risk of anterior STEMI"
     ],
-    "teaching": "Wellens Syndrome indicates critical proximal LAD stenosis between pain episodes. Type A: biphasic T waves in V2\u2013V3. Type B: deep symmetric inversions. These patients are at imminent risk of massive anterior STEMI \u2014 do not discharge."
+    "teaching": "Wellens Syndrome indicates critical proximal LAD stenosis between pain episodes. Type A: biphasic T waves in V2–V3. Type B: deep symmetric inversions. These patients are at imminent risk of massive anterior STEMI — do not discharge."
   },
   {
     "id": "wellens_b_01",
-    "rhythm": "Wellens Syndrome \u2014 Type B",
+    "rhythm": "Wellens Syndrome — Type B",
     "category": "nstemi",
     "difficulty": 4,
     "imagePath": "/cases/wellens_b_01.png",
@@ -1427,16 +1427,16 @@
     "rate": 68,
     "regularity": "regular",
     "keyFeatures": [
-      "Deep symmetric T wave inversion in V2\u2013V3",
+      "Deep symmetric T wave inversion in V2–V3",
       "No significant ST elevation",
       "Normal or minimally elevated troponin",
-      "Critical proximal LAD stenosis \u2014 do NOT stress test"
+      "Critical proximal LAD stenosis — do NOT stress test"
     ],
-    "teaching": "Wellens Type B shows deep symmetric T inversions in V2\u2013V3 during pain-free periods. This is a pre-infarction pattern. The patient needs urgent cath, not observation. A negative troponin does not rule out the danger."
+    "teaching": "Wellens Type B shows deep symmetric T inversions in V2–V3 during pain-free periods. This is a pre-infarction pattern. The patient needs urgent cath, not observation. A negative troponin does not rule out the danger."
   },
   {
     "id": "pe_s1q3t3_01",
-    "rhythm": "Pulmonary Embolism \u2014 S1Q3T3",
+    "rhythm": "Pulmonary Embolism — S1Q3T3",
     "category": "pe_strain",
     "difficulty": 4,
     "imagePath": "/cases/pe_s1q3t3_01.png",
@@ -1447,14 +1447,14 @@
       "Sinus tachycardia (most common ECG finding in PE)",
       "S wave in lead I (S1)",
       "Q wave + T wave inversion in lead III (Q3T3)",
-      "RV strain in V1 \u2014 T inversion, partial RBBB",
+      "RV strain in V1 — T inversion, partial RBBB",
       "S1Q3T3 is specific but only present in ~20% of PE"
     ],
     "teaching": "S1Q3T3 is the classic ECG pattern of massive PE but is neither sensitive nor specific. Sinus tachycardia is the most common finding. The pattern reflects acute right heart strain from sudden pulmonary hypertension. Always correlate with clinical picture."
   },
   {
     "id": "pe_rv_strain_01",
-    "rhythm": "Pulmonary Embolism \u2014 RV Strain",
+    "rhythm": "Pulmonary Embolism — RV Strain",
     "category": "pe_strain",
     "difficulty": 3,
     "imagePath": "/cases/pe_rv_strain_01.png",
@@ -1462,13 +1462,13 @@
     "rate": 112,
     "regularity": "regular",
     "keyFeatures": [
-      "T wave inversions in V1\u2013V4 (right precordial)",
+      "T wave inversions in V1–V4 (right precordial)",
       "Sinus tachycardia",
       "May have new RBBB",
       "Indicates significant RV pressure overload",
       "More common than classic S1Q3T3"
     ],
-    "teaching": "Right precordial T inversions (V1\u2013V4) with tachycardia are the most common ECG manifestation of significant PE. They reflect RV strain from elevated pulmonary pressures. New RBBB in this context is a high-risk finding."
+    "teaching": "Right precordial T inversions (V1–V4) with tachycardia are the most common ECG manifestation of significant PE. They reflect RV strain from elevated pulmonary pressures. New RBBB in this context is a high-risk finding."
   },
   {
     "id": "lv_strain_01",
@@ -1480,13 +1480,13 @@
     "rate": 72,
     "regularity": "regular",
     "keyFeatures": [
-      "Tall R wave in V5\u2013V6 (LVH voltage criteria)",
-      "Deep S wave in V1 (Sokolow: SV1 + RV5 \u226535mm)",
+      "Tall R wave in V5–V6 (LVH voltage criteria)",
+      "Deep S wave in V1 (Sokolow: SV1 + RV5 ≥35mm)",
       "ST depression + T wave inversion in lateral leads",
       "Strain pattern = pressure overload (hypertension, aortic stenosis)",
       "Do not confuse with ischemia"
     ],
-    "teaching": "The LV strain pattern \u2014 asymmetric ST depression with T inversion in lateral leads \u2014 accompanies LVH in pressure-overloaded ventricles (hypertension, AS). It differs from ischemic ST changes by its gradual upslope and asymmetric T wave."
+    "teaching": "The LV strain pattern — asymmetric ST depression with T inversion in lateral leads — accompanies LVH in pressure-overloaded ventricles (hypertension, AS). It differs from ischemic ST changes by its gradual upslope and asymmetric T wave."
   },
   {
     "id": "rv_strain_01",
@@ -1498,7 +1498,7 @@
     "rate": 90,
     "regularity": "regular",
     "keyFeatures": [
-      "T wave inversions in V1\u2013V3 (right precordial)",
+      "T wave inversions in V1–V3 (right precordial)",
       "May extend to V4",
       "Right axis deviation on full 12-lead",
       "Causes: PE, pulmonary hypertension, cor pulmonale, RVOT obstruction"
@@ -1539,7 +1539,7 @@
       "No consistent P wave before each QRS",
       "Left axis deviation typical"
     ],
-    "teaching": "Ventricular pacing (VVI mode) stimulates the RV apex, producing an LBBB-like wide QRS. The pacing spike immediately precedes each QRS. There are no P waves coordinated with the paced beats \u2014 AV synchrony is lost. Look for the telltale spike before the wide complex."
+    "teaching": "Ventricular pacing (VVI mode) stimulates the RV apex, producing an LBBB-like wide QRS. The pacing spike immediately precedes each QRS. There are no P waves coordinated with the paced beats — AV synchrony is lost. Look for the telltale spike before the wide complex."
   },
   {
     "id": "pace_av_01",
@@ -1554,14 +1554,14 @@
       "Two pacing spikes per beat: atrial spike then ventricular spike",
       "First spike precedes P wave (atrial); second precedes QRS (ventricular)",
       "Wide QRS with LBBB morphology",
-      "AV synchrony maintained \u2014 paced PR interval programmed",
+      "AV synchrony maintained — paced PR interval programmed",
       "Most physiological pacing mode"
     ],
-    "teaching": "DDD pacing is dual-chamber: the atrium and ventricle are both paced. Look for two spikes per beat \u2014 an atrial spike before the P wave and a ventricular spike before the wide QRS. The programmable AV delay preserves atrial contribution to cardiac output."
+    "teaching": "DDD pacing is dual-chamber: the atrium and ventricle are both paced. Look for two spikes per beat — an atrial spike before the P wave and a ventricular spike before the wide QRS. The programmable AV delay preserves atrial contribution to cardiac output."
   },
   {
     "id": "brugada_01",
-    "rhythm": "Brugada Syndrome \u2014 Type 1",
+    "rhythm": "Brugada Syndrome — Type 1",
     "category": "channelopathy",
     "difficulty": 4,
     "imagePath": "/cases/brugada_01.png",
@@ -1569,13 +1569,13 @@
     "rate": 72,
     "regularity": "regular",
     "keyFeatures": [
-      "Coved ST elevation \u22652mm in V1\u2013V2 (Type 1 pattern)",
+      "Coved ST elevation ≥2mm in V1–V2 (Type 1 pattern)",
       "Downsloping ST with terminal T-wave inversion",
       "RBBB-like QRS morphology (rSR' or r' in V1)",
       "Normal QTc, no ischemia elsewhere",
       "Can precipitate ventricular fibrillation"
     ],
-    "teaching": "Brugada syndrome is a sodium channelopathy (SCN5A) causing sudden cardiac death risk. Type 1 (coved) is the only diagnostic pattern: \u22652mm coved ST elevation in \u22651 right precordial lead (V1\u2013V2 in standard position or V1\u2013V2 one intercostal space higher). Can be spontaneous or unmasked by fever, Na-channel blockers, or cocaine. Treat symptomatic patients with an ICD. Screen all first-degree relatives."
+    "teaching": "Brugada syndrome is a sodium channelopathy (SCN5A) causing sudden cardiac death risk. Type 1 (coved) is the only diagnostic pattern: ≥2mm coved ST elevation in ≥1 right precordial lead (V1–V2 in standard position or V1–V2 one intercostal space higher). Can be spontaneous or unmasked by fever, Na-channel blockers, or cocaine. Treat symptomatic patients with an ICD. Screen all first-degree relatives."
   },
   {
     "id": "wpw_01",
@@ -1589,11 +1589,11 @@
     "keyFeatures": [
       "Short PR interval (<120 ms)",
       "Delta wave (slurred upstroke on QRS)",
-      "Wide QRS (\u2265120 ms) due to ventricular pre-excitation",
+      "Wide QRS (≥120 ms) due to ventricular pre-excitation",
       "Secondary ST-T changes discordant to delta wave",
       "Risk of SVT, atrial fibrillation, and sudden death"
     ],
-    "teaching": "WPW results from an accessory pathway (Bundle of Kent) bypassing the AV node. Pre-excitation produces the triad: short PR, delta wave, and wide QRS. The danger is AFib conducting rapidly down the pathway \u2014 can degenerate to VF. Avoid AV nodal blockers (adenosine, beta-blockers, digoxin) in AFib with WPW. Definitive treatment is catheter ablation of the accessory pathway."
+    "teaching": "WPW results from an accessory pathway (Bundle of Kent) bypassing the AV node. Pre-excitation produces the triad: short PR, delta wave, and wide QRS. The danger is AFib conducting rapidly down the pathway — can degenerate to VF. Avoid AV nodal blockers (adenosine, beta-blockers, digoxin) in AFib with WPW. Definitive treatment is catheter ablation of the accessory pathway."
   },
   {
     "id": "lngqt_01",
@@ -1611,6 +1611,42 @@
       "Risk of Torsades de Pointes (TdP)",
       "Triggered by bradycardia, hypokalemia, or QT-prolonging drugs"
     ],
-    "teaching": "Long QT syndrome predisposes to Torsades de Pointes \u2014 a polymorphic VT that can cause syncope or degenerate to VF. The corrected QT (QTc = QT / \u221aRR) >500 ms is high risk. Causes: congenital (LQTS1-3), electrolyte abnormalities (\u2193K, \u2193Mg), and drugs (antiarrhythmics, antipsychotics, antibiotics). Treat: correct electrolytes, remove offending drugs, magnesium IV for TdP, ICD for congenital LQTS."
+    "teaching": "Long QT syndrome predisposes to Torsades de Pointes — a polymorphic VT that can cause syncope or degenerate to VF. The corrected QT (QTc = QT / √RR) >500 ms is high risk. Causes: congenital (LQTS1-3), electrolyte abnormalities (↓K, ↓Mg), and drugs (antiarrhythmics, antipsychotics, antibiotics). Treat: correct electrolytes, remove offending drugs, magnesium IV for TdP, ICD for congenital LQTS."
+  },
+  {
+    "id": "pericarditis_01",
+    "rhythm": "Pericarditis",
+    "category": "structural",
+    "difficulty": 3,
+    "imagePath": "/cases/pericarditis_01.png",
+    "twelveleadPath": "/cases/pericarditis_01_12lead.png",
+    "rate": 92,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Diffuse concave (saddle-shaped) ST elevation in most leads",
+      "PR depression in leads with ST elevation",
+      "PR elevation in aVR (reciprocal)",
+      "No focal reciprocal ST depression (unlike STEMI)",
+      "ST elevation spares aVR and V1"
+    ],
+    "teaching": "Pericarditis causes diffuse ST elevation from subepicardial irritation, not focal coronary occlusion. The key distinguishing features from STEMI: concave (saddle-shaped) rather than convex STE, diffuse distribution across multiple territories, PR depression in the same leads showing STE, and absence of reciprocal ST depression. Stage I (days 1–2) is the classic presentation. Treat with NSAIDs + colchicine; avoid corticosteroids initially."
+  },
+  {
+    "id": "tamponade_01",
+    "rhythm": "Electrical Alternans",
+    "category": "structural",
+    "difficulty": 3,
+    "imagePath": "/cases/tamponade_01.png",
+    "twelveleadPath": "/cases/tamponade_01_12lead.png",
+    "rate": 118,
+    "regularity": "regular",
+    "keyFeatures": [
+      "Beat-to-beat alternation in QRS amplitude (electrical alternans)",
+      "Sinus tachycardia (compensatory)",
+      "Low voltage in limb leads",
+      "No ST or T wave abnormalities (purely mechanical cause)",
+      "Classic sign of cardiac tamponade"
+    ],
+    "teaching": "Electrical alternans occurs when a pericardial effusion is large enough that the heart swings pendulum-like within the fluid, changing its electrical axis from the ECG’s perspective on every other beat. The result is alternating QRS height (and sometimes P and T wave height) in a perfectly regular pattern. Sinus tachycardia is almost always present (compensatory response to reduced cardiac output). This is a medical emergency — confirm with bedside echo and prepare for pericardiocentesis."
   }
 ]

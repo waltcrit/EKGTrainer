@@ -12,5 +12,13 @@
   ],
   "problems.exclude": {
     "**/.vscode/extensions/**": true
+  },
+  "chat.tools.terminal.autoApprove": {
+    "/Users/waltcrit/EKGTrainer/.venv/bin/python": true,
+    "printf": true,
+    "test": true,
+    "git add": true,
+    "git commit": true,
+    "npm test": true
   }
 }
