@@ -11,9 +11,6 @@ import AboutPage from "@/components/AboutPage";
 import SystematicChecklist from "@/components/learn/SystematicChecklist";
 import type { EKGAnalysisResult } from "@/types/analysis";
 import type { EKGCase } from "@/types/cases";
-import casesData from "@/data/cases.json";
-
-const cases = casesData as EKGCase[];
 
 type Tab = "practice" | "library" | "analyze" | "about";
 type AnalyzeState = "idle" | "analyzing" | "result" | "error";
@@ -58,7 +55,7 @@ function resolveCaseId(caseId: string): string {
   return CASE_ID_ALIASES[caseId] ?? caseId;
 }
 
-function LandingPage({ onEnter }: { onEnter: (tab: Tab) => void }) {
+function LandingPage({ onEnter, caseCount }: { onEnter: (tab: Tab) => void; caseCount: number }) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6">
       <div className="flex flex-col items-center gap-8 max-w-lg w-full">
@@ -68,7 +65,7 @@ function LandingPage({ onEnter }: { onEnter: (tab: Tab) => void }) {
           <EcgMark className="w-20 h-10 text-sky-600" />
           <div className="text-center">
             <h1 className="academy-heading text-4xl font-semibold text-[var(--academy-ink)]">EKG Academy</h1>
-            <p className="text-[var(--academy-muted)] text-sm mt-1">Systematic ECG interpretation · {cases.length} teaching cases</p>
+            <p className="text-[var(--academy-muted)] text-sm mt-1">Systematic ECG interpretation · {caseCount} teaching cases</p>
           </div>
         </div>
 
@@ -115,7 +112,7 @@ function LandingPage({ onEnter }: { onEnter: (tab: Tab) => void }) {
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-[var(--academy-ink)] text-sm">Case Library</p>
               <p className="text-xs text-[var(--academy-muted)] mt-0.5">
-                Browse all {cases.length} rhythms · Key features and teaching points
+                Browse all {caseCount} rhythms · Key features and teaching points
               </p>
             </div>
             <svg className="w-4 h-4 text-[var(--academy-muted)] group-hover:text-emerald-400 transition-colors shrink-0"
@@ -198,13 +195,34 @@ export default function Home() {
   const [analyzeState, setAnalyzeState] = useState<AnalyzeState>("idle");
   const [result, setResult]   = useState<EKGAnalysisResult | null>(null);
   const [error, setError]     = useState<string | null>(null);
-  const [practiceCase, setPracticeCase]   = useState<EKGCase | null>(null);
+  const [practiceCaseId, setPracticeCaseId] = useState<string | null>(null);
+  const [libraryCases, setLibraryCases] = useState<EKGCase[] | null>(null);
+  const [caseCount, setCaseCount] = useState<number>(0);
   // The image currently being analyzed — shown as a preview in the Analyze tab
   const [analyzePreview, setAnalyzePreview] = useState<string | null>(null);
   // Systematic checklist panel open/closed
   const [checklistOpen, setChecklistOpen] = useState(false);
   // Current strip ID for scoping checklist state
   const [currentStripId, setCurrentStripId] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadQuizMeta() {
+      try {
+        const res = await fetch("/api/quiz/meta");
+        const data = await res.json();
+        if (!cancelled && data.success) {
+          setCaseCount(data.totalCases ?? 0);
+        }
+      } catch {
+        if (!cancelled) setCaseCount(0);
+      }
+    }
+    loadQuizMeta();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Handle ?caseId=...&tab=... params from LoadStripButton in the Learn module
   useEffect(() => {
@@ -213,16 +231,13 @@ export default function Home() {
     const tabParam = params.get("tab") as Tab | null;
     if (caseId) {
       const resolvedCaseId = resolveCaseId(caseId);
-      const found = cases.find((c) => c.id === resolvedCaseId);
-      if (found) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setPracticeCase(found);
-        setCurrentStripId(found.id);
-        setChecklistOpen(true);
-        setLanded(true);
-        if (tabParam && ["practice", "library", "analyze", "about"].includes(tabParam)) {
-          setTab(tabParam);
-        }
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPracticeCaseId(resolvedCaseId);
+      setCurrentStripId(resolvedCaseId);
+      setChecklistOpen(true);
+      setLanded(true);
+      if (tabParam && ["practice", "library", "analyze", "about"].includes(tabParam)) {
+        setTab(tabParam);
       }
       // Clean URL without reloading
       window.history.replaceState({}, "", window.location.pathname);
@@ -263,7 +278,9 @@ export default function Home() {
   // ── Handlers ─────────────────────────────────────────────────────────────
 
   const handlePracticeFromLibrary = (c: EKGCase) => {
-    setPracticeCase(c);
+    setPracticeCaseId(c.id);
+    setCurrentStripId(c.id);
+    setChecklistOpen(true);
     setTab("practice");
   };
 
@@ -306,7 +323,30 @@ export default function Home() {
 
   const handleEnter = (dest: Tab) => { setTab(dest); setLanded(true); };
 
-  if (!landed) return <LandingPage onEnter={handleEnter} />;
+  useEffect(() => {
+    if (tab !== "library" && tab !== "analyze") return;
+    if (libraryCases) return;
+
+    let cancelled = false;
+    async function loadLibraryCases() {
+      try {
+        const res = await fetch("/api/library/cases");
+        const data = await res.json();
+        if (!cancelled && data.success) {
+          setLibraryCases(data.cases as EKGCase[]);
+        }
+      } catch {
+        if (!cancelled) setLibraryCases([]);
+      }
+    }
+
+    loadLibraryCases();
+    return () => {
+      cancelled = true;
+    };
+  }, [tab, libraryCases]);
+
+  if (!landed) return <LandingPage onEnter={handleEnter} caseCount={caseCount} />;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -405,16 +445,20 @@ export default function Home() {
               )}
             </div>
 
-            <QuizMode cases={cases} initialCase={practiceCase} />
+            <QuizMode initialCaseId={practiceCaseId} />
           </div>
         )}
 
         {tab === "library" && (
-          <CaseLibrary
-            cases={cases}
-            onPractice={handlePracticeFromLibrary}
-            onAnalyze={handleAnalyzeFromLibrary}
-          />
+          libraryCases ? (
+            <CaseLibrary
+              cases={libraryCases}
+              onPractice={handlePracticeFromLibrary}
+              onAnalyze={handleAnalyzeFromLibrary}
+            />
+          ) : (
+            <div className="academy-panel rounded-xl p-6 text-sm text-[var(--academy-muted)]">Loading case library...</div>
+          )
         )}
 
         {tab === "about" && <AboutPage />}

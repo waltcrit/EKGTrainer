@@ -260,7 +260,7 @@ async function runPythonPipeline(imageBase64: string, mediaType: string): Promis
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    throw new Error(`Python service unreachable (${PYTHON_SERVICE_URL}): ${msg}`);
+    throw new Error(`Python service unreachable: ${msg}`);
   }
 
   if (!res.ok) {
