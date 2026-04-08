@@ -11,6 +11,26 @@ export interface LessonData {
   nextLesson: LessonMeta | null;
 }
 
+function normalizeHeadingText(value: string): string {
+  return value.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function stripLeadingTitleHeading(content: string, title: string): string {
+  const match = content.match(/^\s*#\s+(.+)\n*/);
+
+  if (!match) {
+    return content;
+  }
+
+  const headingText = match[1].trim();
+
+  if (normalizeHeadingText(headingText) !== normalizeHeadingText(title)) {
+    return content;
+  }
+
+  return content.slice(match[0].length).replace(/^\s*\n/, "");
+}
+
 export function loadLesson(
   level: Level,
   slug: string,
@@ -35,6 +55,7 @@ export function loadLesson(
     order: data.order ?? 0,
     title: data.title ?? slug,
   };
+  const source = stripLeadingTitleHeading(content, meta.title);
 
   // Prev / next within the same level, sorted by order
   const sorted = allLessons
@@ -45,5 +66,5 @@ export function loadLesson(
   const prevLesson = idx > 0 ? sorted[idx - 1] : null;
   const nextLesson = idx < sorted.length - 1 ? sorted[idx + 1] : null;
 
-  return { meta, source: content, prevLesson, nextLesson };
+  return { meta, source, prevLesson, nextLesson };
 }

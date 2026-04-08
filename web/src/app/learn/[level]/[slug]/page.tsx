@@ -10,6 +10,7 @@ import LoadStripButton from "@/components/learn/LoadStripButton";
 import IdentifyPWave from "@/components/learn/IdentifyPWave";
 import MeasureInterval from "@/components/learn/MeasureInterval";
 import SystematicChecklist from "@/components/learn/SystematicChecklist";
+import LeadPlacementDiagram from "@/components/learn/LeadPlacementDiagram";
 import MarkCompleteButton from "./MarkCompleteButton";
 
 const VALID_LEVELS: Level[] = ["beginner", "intermediate", "advanced"];
@@ -21,6 +22,7 @@ const MDX_COMPONENTS = {
   IdentifyPWave,
   MeasureInterval,
   SystematicChecklist,
+  LeadPlacementDiagram,
 };
 
 interface PageProps {

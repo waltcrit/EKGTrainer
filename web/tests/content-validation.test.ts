@@ -34,6 +34,7 @@ const REGISTERED_COMPONENTS = new Set([
   "IdentifyPWave",
   "MeasureInterval",
   "SystematicChecklist",
+  "LeadPlacementDiagram",
 ]);
 
 // web/src/components/learn/DiagramPQRST.tsx → Segment type
