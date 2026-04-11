@@ -4,11 +4,10 @@
  *   `Table`            Accepts `{ headers, rows }` JSON. Use directly in MDX:
  *                        <Table data={{ headers: [...], rows: [[...]] }} />
  *
- *   `MdxTableOverride` Drop-in MDX `<table>` override. Parses the React
- *                      element tree that MDXRemote generates and delegates to
- *                      `Table`. Register as `{ table: MdxTableOverride }` in
- *                      your MDX components map to automatically style every
- *                      Markdown table with the same component.
+ *   `MdxTableOverride` Drop-in MDX `<table>` override. Applies consistent
+ *                      styling to the React element tree MDXRemote produces,
+ *                      preserving all inline formatting (bold, italic, code)
+ *                      inside cells. Register as `{ table: MdxTableOverride }`.
  */
 
 import React from 'react';
@@ -102,107 +101,84 @@ export function Table({ data, caption }: TableProps) {
 }
 
 // ---------------------------------------------------------------------------
-// MDX child-tree helpers  (Server-Component-safe — no hooks used)
+// <MdxTableOverride> — drop-in MDX <table> override
 // ---------------------------------------------------------------------------
 
 type AnyProps = { children?: React.ReactNode };
 type AnyElement = React.ReactElement<AnyProps>;
-
-/** Recursively extracts plain text content from any React node tree. */
-function getTextContent(node: React.ReactNode): string {
-  if (node == null || typeof node === 'boolean') return '';
-  if (typeof node === 'string' || typeof node === 'number') return String(node);
-  if (Array.isArray(node)) return node.map(getTextContent).join('');
-  if (React.isValidElement(node)) {
-    return getTextContent((node as AnyElement).props.children);
-  }
-  return '';
-}
-
-/** Extracts cell strings from the children of a <tr> element. */
-function extractCellsFromTr(trChildren: React.ReactNode): string[] {
-  const cells: string[] = [];
-  React.Children.forEach(trChildren, (child) => {
-    if (!React.isValidElement(child)) return;
-    const tag = (child as AnyElement).type;
-    if (typeof tag === 'string' && (tag === 'th' || tag === 'td')) {
-      cells.push(getTextContent((child as AnyElement).props.children).trim());
-    }
-  });
-  return cells;
-}
-
-/** Extracts row arrays from the children of a <thead> or <tbody> element. */
-function extractRowsFromSection(sectionChildren: React.ReactNode): string[][] {
-  const rows: string[][] = [];
-  React.Children.forEach(sectionChildren, (child) => {
-    if (!React.isValidElement(child)) return;
-    const tag = (child as AnyElement).type;
-    if (typeof tag === 'string' && tag === 'tr') {
-      rows.push(extractCellsFromTr((child as AnyElement).props.children));
-    }
-  });
-  return rows;
-}
-
-// ---------------------------------------------------------------------------
-// <MdxTableOverride> — drop-in MDX <table> override
-// ---------------------------------------------------------------------------
 
 interface MdxTableOverrideProps {
   children?: React.ReactNode;
 }
 
 /**
- * MDX component override for `<table>`. Parses the React element tree that
- * MDXRemote emits when it encounters a GFM table and renders it with `<Table>`.
+ * MDX component override for `<table>`. Applies consistent styling while
+ * preserving all inline formatting (bold, italic, code) inside cells.
  *
- * Falls back to a plain scrollable native `<table>` if extraction fails
- * (e.g. a table with no `<thead>` block).
+ * Rather than converting cells to plain strings (which strips formatting),
+ * this component passes React children straight through and applies Tailwind
+ * classes directly to each section/row/cell element.
  *
  * Registration:
  * ```tsx
  * const MDX_COMPONENTS = {
- *   // ... other components
  *   table: MdxTableOverride,
  * };
  * ```
  */
 export function MdxTableOverride({ children }: MdxTableOverrideProps) {
-  let headers: string[] = [];
-  const rows: string[][] = [];
-
-  React.Children.forEach(children, (child) => {
-    if (!React.isValidElement(child)) return;
+  const styledChildren = React.Children.map(children, (child) => {
+    if (!React.isValidElement(child)) return child;
     const tag = (child as AnyElement).type;
-    if (typeof tag !== 'string') return;
+    if (typeof tag !== 'string') return child;
 
-    const props = (child as AnyElement).props;
-
-    switch (tag) {
-      case 'thead': {
-        const headRows = extractRowsFromSection(props.children);
-        if (headRows.length > 0) headers = headRows[0];
-        break;
-      }
-      case 'tbody': {
-        const bodyRows = extractRowsFromSection(props.children);
-        rows.push(...bodyRows);
-        break;
-      }
+    if (tag === 'thead') {
+      const theadProps = (child as AnyElement).props;
+      const styledRows = React.Children.map(theadProps.children, (tr) => {
+        if (!React.isValidElement(tr)) return tr;
+        const trProps = (tr as AnyElement).props;
+        const styledCells = React.Children.map(trProps.children, (th) => {
+          if (!React.isValidElement(th)) return th;
+          return React.cloneElement(th as AnyElement, {
+            className:
+              'whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600',
+          });
+        });
+        return React.cloneElement(tr as AnyElement, {}, styledCells);
+      });
+      return React.cloneElement(child as AnyElement, { className: 'bg-slate-50' }, styledRows);
     }
+
+    if (tag === 'tbody') {
+      const tbodyProps = (child as AnyElement).props;
+      const styledRows = React.Children.map(tbodyProps.children, (tr, rowIdx) => {
+        if (!React.isValidElement(tr)) return tr;
+        const trProps = (tr as AnyElement).props;
+        const styledCells = React.Children.map(trProps.children, (td) => {
+          if (!React.isValidElement(td)) return td;
+          return React.cloneElement(td as AnyElement, {
+            className: 'px-4 py-3 align-top leading-snug text-slate-700',
+          });
+        });
+        const rowClass =
+          rowIdx % 2 === 1
+            ? 'bg-slate-50/60 transition-colors hover:bg-slate-100/70'
+            : 'bg-white transition-colors hover:bg-slate-50';
+        return React.cloneElement(tr as AnyElement, { className: rowClass }, styledCells);
+      });
+      return React.cloneElement(child as AnyElement, { className: 'divide-y divide-slate-100 bg-white' }, styledRows);
+    }
+
+    return child;
   });
 
-  if (headers.length === 0) {
-    // Extraction failed — render a plain scrollable native table as fallback.
-    return (
-      <div className="not-prose my-6 w-full overflow-x-auto rounded-lg border border-slate-200">
-        <table className="min-w-full text-sm">{children}</table>
-      </div>
-    );
-  }
-
-  return <Table data={{ headers, rows }} />;
+  return (
+    <div className="not-prose my-6 w-full overflow-x-auto rounded-lg border border-slate-200 shadow-sm">
+      <table className="min-w-full divide-y divide-slate-200 text-sm" role="grid">
+        {styledChildren}
+      </table>
+    </div>
+  );
 }
 
 export default Table;

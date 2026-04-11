@@ -11,6 +11,7 @@ import MeasureInterval from "@/components/learn/MeasureInterval";
 import SystematicChecklist from "@/components/learn/SystematicChecklist";
 import { Table, MdxTableOverride } from "@/components/learn/Table";
 import { remarkFixCollapsedTables } from "@/lib/mdx/remark-fix-tables";
+import remarkGfm from "remark-gfm";
 import type { MDXRemoteProps } from "next-mdx-remote/rsc";
 import QTIntervalDrag from "@/components/learn/QTIntervalDrag";
 import PQRSTDiagram from "@/components/learn/PQRSTDiagram";
@@ -42,7 +43,7 @@ const MDX_COMPONENTS = {
 // remarkPlugins to be a mutable Pluggable[], not a readonly tuple.
 const MDX_OPTIONS: MDXRemoteProps["options"] = {
   mdxOptions: {
-    remarkPlugins: [remarkFixCollapsedTables],
+    remarkPlugins: [remarkGfm, remarkFixCollapsedTables],
   },
 };
 

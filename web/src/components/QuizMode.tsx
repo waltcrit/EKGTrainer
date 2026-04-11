@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { EKGCase, RhythmCategory } from "@/types/cases";
 import { CATEGORY_LABELS } from "@/types/cases";
 import type { EKGAnalysisResult as AnalysisResult } from "@/types/analysis";
@@ -65,10 +65,17 @@ export default function QuizMode({ cases, initialCase }: QuizModeProps) {
   const [selectedCategories, setSelectedCategories] = useState<Set<RhythmCategory>>(
     new Set(ALL_CATEGORIES)
   );
+  // Prevents the selectedCategories effect from overwriting the queue when
+  // the initialCase effect resets the filter.
+  const skipNextCategoryEffect = useRef(false);
 
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
+    if (skipNextCategoryEffect.current) {
+      skipNextCategoryEffect.current = false;
+      return;
+    }
     const active = selectedCategories.size === ALL_CATEGORIES.size
       ? cases
       : cases.filter((c) => selectedCategories.has(c.category));
@@ -82,10 +89,12 @@ export default function QuizMode({ cases, initialCase }: QuizModeProps) {
     setShowTwelveLead(false);
   }, [cases, selectedCategories]);
 
-  // Jump to a specific case when launched from the Library
+  // Jump to a specific case when launched from the Academy or Library
   useEffect(() => {
     if (!initialCase) return;
-    // Reset filter so the case is always reachable
+    // Mark the upcoming selectedCategories effect (triggered by setSelectedCategories
+    // below) so it does not reshuffle and overwrite this queue.
+    skipNextCategoryEffect.current = true;
     setSelectedCategories(new Set(ALL_CATEGORIES));
     // Place the target case first in a freshly shuffled queue
     const rest = shuffle(cases.filter((c) => c.id !== initialCase.id));
