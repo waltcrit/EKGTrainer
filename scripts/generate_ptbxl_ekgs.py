@@ -36,28 +36,29 @@ import sys
 import warnings
 from pathlib import Path
 
-import numpy as np
-import matplotlib
+import numpy as np  # type: ignore[import-untyped]
+import matplotlib  # type: ignore[import-untyped]
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # type: ignore[import-untyped]
 
 warnings.filterwarnings('ignore')
 
 # ── optional deps ──────────────────────────────────────────────────────────────
 try:
-    import wfdb
+    import wfdb  # type: ignore[import-untyped]
 except ImportError:
     sys.exit("Install wfdb first:  pip install wfdb")
 
 try:
-    import pandas as pd
+    import pandas as pd  # type: ignore[import-untyped]
 except ImportError:
     sys.exit("Install pandas first:  pip install pandas")
 
 try:
-    from scipy.signal import butter, filtfilt
+    from scipy.signal import butter, filtfilt  # type: ignore[import-untyped]
     _SCIPY = True
 except ImportError:
+    butter = filtfilt = None  # type: ignore[assignment]
     _SCIPY = False
     print("⚠  scipy not found — signals won't be bandpass-filtered (pip install scipy)")
 
@@ -318,7 +319,7 @@ def render_strip(sig: np.ndarray, out_path: Path):
     lo, hi = lead_ylim(lead_ii)
 
     fig, ax = plt.subplots(figsize=(12, 2.4), dpi=150)
-    fig.patch.set_facecolor(BG)
+    fig.patch.set_facecolor(BG)  # type: ignore[attr-defined]
     _style_ax(ax, "II", xlim=(0, DUR), ylim=(lo, hi))
     ax.plot(T, lead_ii, color=TRACE, linewidth=1.2, zorder=3, antialiased=True)
     ax.text(0.99, 0.97, '25 mm/s  |  10 mm/mV  |  Lead II',
@@ -332,7 +333,7 @@ def render_strip(sig: np.ndarray, out_path: Path):
 def render_12lead(sig: np.ndarray, out_path: Path):
     """Standard 4×3+strip 12-lead — anonymised (no rhythm title in image)."""
     fig = plt.figure(figsize=(11, 8.5), dpi=150)
-    fig.patch.set_facecolor(BG)
+    fig.patch.set_facecolor(BG)  # type: ignore[attr-defined]
 
     gs = fig.add_gridspec(
         4, 4,
@@ -436,9 +437,10 @@ def main():
         render_strip( sig, OUT_DIR / f"{case_id}.png")
         render_12lead(sig, OUT_DIR / f"{case_id}_12lead.png")
 
+        scp_dict: dict = df.loc[ecg_id, "scp_codes"]
         codes_str = ", ".join(
             f"{k}({v:.0f})"
-            for k, v in sorted(df.loc[ecg_id, "scp_codes"].items(), key=lambda x: -x[1])
+            for k, v in sorted(scp_dict.items(), key=lambda x: -x[1])
             if v >= 50
         )
         print(f"  ✓  {case_id:<24}  ECG {ecg_id:6d}  [{codes_str}]")
@@ -450,8 +452,8 @@ def main():
     if failures:
         print(f"\nNo PTB-XL match for: {', '.join(failures)}")
         print("(Those cases retain their synthesized PNGs as fallback.)")
-    print(f"\nAttribution reminder: derived PNG images use PTB-XL data")
-    print(f"(CC BY 4.0). Ensure the app includes the required citation.")
+    print("\nAttribution reminder: derived PNG images use PTB-XL data")
+    print("(CC BY 4.0). Ensure the app includes the required citation.")
 
 
 if __name__ == "__main__":

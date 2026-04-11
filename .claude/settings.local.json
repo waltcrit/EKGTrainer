@@ -29,7 +29,12 @@
       "Bash(powershell.exe -NoProfile -Command \"Get-ChildItem 'C:\\\\Program Files' -Recurse -Filter 'node.exe' -ErrorAction SilentlyContinue -Depth 4 | Select-Object FullName\")",
       "Bash(\"C:/Users/waltc/AppData/Local/Microsoft/WindowsApps/winget.exe\" install:*)",
       "Bash(xargs grep:*)",
-      "Bash(head -20 \"c:/Users/waltc/Documents/Programming/EKGTrainer/content/learn/beginner/\"*.mdx)"
+      "Bash(head -20 \"c:/Users/waltc/Documents/Programming/EKGTrainer/content/learn/beginner/\"*.mdx)",
+      "Bash(python -m py_compile generate_ptbxl_ekgs.py)",
+      "Bash(python -m pyflakes generate_ptbxl_ekgs.py)",
+      "Bash(pip install:*)",
+      "Bash(python -c \"import numpy, wfdb, scipy, matplotlib, pandas; print\\('all ok'\\)\")",
+      "Bash(python -)"
     ]
   }
 }
