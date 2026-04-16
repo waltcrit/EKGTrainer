@@ -40,28 +40,29 @@ import warnings
 from pathlib import Path
 from typing import Any, cast
 
-import numpy as np
-import matplotlib
+import numpy as np  # type: ignore[import-untyped]
+import matplotlib  # type: ignore[import-untyped]
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # type: ignore[import-untyped]
 
 warnings.filterwarnings('ignore')
 
 # ── optional deps ──────────────────────────────────────────────────────────────
 try:
-    import wfdb
+    import wfdb  # type: ignore[import-untyped]
 except ImportError:
     sys.exit("Install wfdb first:  pip install wfdb")
 
 try:
-    import pandas as pd
+    import pandas as pd  # type: ignore[import-untyped]
 except ImportError:
     sys.exit("Install pandas first:  pip install pandas")
 
 try:
-    from scipy.signal import butter, filtfilt
+    from scipy.signal import butter, filtfilt  # type: ignore[import-untyped]
     _SCIPY = True
 except ImportError:
+    butter = filtfilt = None  # type: ignore[assignment]
     _SCIPY = False
     print("⚠  scipy not found — signals won't be bandpass-filtered (pip install scipy)")
 

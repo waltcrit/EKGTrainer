@@ -15,52 +15,93 @@ interface Props {
   compact?: boolean;
 }
 
+// ── State shape ───────────────────────────────────────────────────────────────
+
+/**
+ * `checked` — the set of completed step IDs.
+ * `ready`   — true once localStorage has been read post-mount.
+ *             Used to prevent showing localStorage values before hydration,
+ *             which would cause a mismatch between server and client HTML.
+ *
+ * Both fields are updated in a single atomic setState call inside useEffect.
+ * This keeps the component correct during React's double-invocation in
+ * Strict Mode and avoids a cascading second render from two separate calls.
+ *
+ * Why useEffect instead of lazy initialization:
+ *   SystematicChecklist is server-rendered inside MDX lesson pages (RSC).
+ *   Lazy-initializing from localStorage would yield `new Set()` on the server
+ *   but real data on the client, producing a hydration mismatch. The effect
+ *   pattern is intentional and correct for this case.
+ */
+interface ChecklistState {
+  checked: Set<string>;
+  ready: boolean;
+}
+
+const INITIAL_STATE: ChecklistState = { checked: new Set(), ready: false };
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function readFromStorage(key: string): Set<string> {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw) return new Set(JSON.parse(raw) as string[]);
+  } catch {
+    // ignore — corrupt or unavailable storage
+  }
+  return new Set();
+}
+
+function writeToStorage(key: string, checked: Set<string>): void {
+  try {
+    localStorage.setItem(key, JSON.stringify([...checked]));
+  } catch {
+    // ignore
+  }
+}
+
+function removeFromStorage(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // ignore
+  }
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
 export default function SystematicChecklist({ stripId, compact = false }: Props) {
   const storageKey = `${STORAGE_KEY_PREFIX}${stripId ?? "global"}`;
 
-  const [checked, setChecked] = useState<Set<string>>(new Set());
-  const [mounted, setMounted] = useState(false);
+  const [state, setState] = useState<ChecklistState>(INITIAL_STATE);
 
-  // Hydrate from localStorage after mount (avoids SSR mismatch)
+  // Read localStorage once after mount (and whenever storageKey changes).
+  // A single setState call avoids cascading renders while keeping the component
+  // hydration-safe. See the ChecklistState comment above for full rationale.
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setChecked(new Set(JSON.parse(raw) as string[]));
-      }
-    } catch {
-      // ignore
-    }
-    setMounted(true);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setState({ checked: readFromStorage(storageKey), ready: true });
   }, [storageKey]);
 
   function toggle(id: string) {
-    setChecked((prev) => {
-      const next = new Set(prev);
+    setState((prev) => {
+      const next = new Set(prev.checked);
       if (next.has(id)) {
         next.delete(id);
       } else {
         next.add(id);
       }
-      try {
-        localStorage.setItem(storageKey, JSON.stringify([...next]));
-      } catch {
-        // ignore
-      }
-      return next;
+      writeToStorage(storageKey, next);
+      return { checked: next, ready: prev.ready };
     });
   }
 
   function reset() {
-    setChecked(new Set());
-    try {
-      localStorage.removeItem(storageKey);
-    } catch {
-      // ignore
-    }
+    removeFromStorage(storageKey);
+    setState((prev) => ({ checked: new Set(), ready: prev.ready }));
   }
 
+  const { checked, ready } = state;
   const completedCount = checked.size;
   const totalCount = SYSTEMATIC_STEPS.length;
   const allDone = completedCount === totalCount;
@@ -107,9 +148,9 @@ export default function SystematicChecklist({ stripId, compact = false }: Props)
                 : "bg-slate-50 border-slate-200 text-slate-500"
             }`}
           >
-            {mounted ? completedCount : 0}/{totalCount}
+            {ready ? completedCount : 0}/{totalCount}
           </span>
-          {mounted && completedCount > 0 && (
+          {ready && completedCount > 0 && (
             <button
               onClick={reset}
               className="text-xs text-slate-400 hover:text-slate-600 underline"
@@ -123,14 +164,17 @@ export default function SystematicChecklist({ stripId, compact = false }: Props)
       {/* Progress bar */}
       <div className="w-full h-1 bg-slate-100 rounded-full mb-3 overflow-hidden">
         <div
-          className={`${progressClass} h-full bg-sky-500 rounded-full transition-all duration-300`}
+          className="h-full bg-sky-500 rounded-full transition-all duration-300"
+          style={{
+            width: ready ? `${(completedCount / totalCount) * 100}%` : "0%",
+          }}
         />
       </div>
 
       {/* Steps */}
       <ol className={`space-y-${compact ? "1" : "2"}`}>
         {SYSTEMATIC_STEPS.map((step: SystematicStep, idx: number) => {
-          const isChecked = mounted && checked.has(step.id);
+          const isChecked = ready && checked.has(step.id);
           return (
             <li key={step.id}>
               <button
@@ -196,7 +240,7 @@ export default function SystematicChecklist({ stripId, compact = false }: Props)
       </ol>
 
       {/* Done state */}
-      {mounted && allDone && (
+      {ready && allDone && (
         <div className="mt-3 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-center">
           <p className="text-sm font-semibold text-emerald-700">
             All steps complete - great systematic read!

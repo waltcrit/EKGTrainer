@@ -1,8 +1,7 @@
 "use client";
 
-import Image from "next/image";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import type { RhythmCategory } from "@/types/cases";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { EKGCase, RhythmCategory } from "@/types/cases";
 import { CATEGORY_LABELS } from "@/types/cases";
 import type { EKGAnalysisResult as AnalysisResult } from "@/types/analysis";
 import RhythmReport from "./RhythmReport";
@@ -95,73 +94,32 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
   const [diagnosisScope, setDiagnosisScope] = useState<DiagnosisScope>("all");
   const [selected, setSelected] = useState<string | null>(null);
   const [showTwelveLead, setShowTwelveLead] = useState(false);
-  const [aiResult, setAiResult] = useState<AnalysisResult | null>(null);
-  const [aiError, setAiError] = useState<string | null>(null);
-  const [stats, setStats] = useState<SessionStats>({ attempted: 0, correct: 0, byCategory: {} });
-  const [mounted, setMounted] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<Set<RhythmCategory>>(new Set(ALL_CATEGORIES));
-  const [meta, setMeta] = useState<QuizMeta | null>(null);
-  const [current, setCurrent] = useState<QuizQuestion | null>(null);
-  const [reveal, setReveal] = useState<QuizReveal | null>(null);
-  const [seenOpaqueIds, setSeenOpaqueIds] = useState<string[]>([]);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function loadMeta() {
-      const res = await fetch("/api/quiz/meta");
-      const data = await res.json();
-      if (!cancelled && data.success) {
-        setMeta({ totalCases: data.totalCases, categoryCounts: data.categoryCounts });
-      }
-    }
-    loadMeta();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const categoryCounts = useMemo(() => meta?.categoryCounts ?? {}, [meta]);
-
-  const activeCaseCount = useMemo(() => {
-    if (!meta) return 0;
-    if (diagnosisScope === "all") return meta.totalCases;
-    return Array.from(selectedCategories).reduce((acc, cat) => acc + (categoryCounts[cat] ?? 0), 0);
-  }, [categoryCounts, diagnosisScope, meta, selectedCategories]);
-
-  const noDiagnosisSelected = diagnosisScope === "selected" && selectedCategories.size === 0;
-  const tooFewCases = activeCaseCount < 4;
-  const beginDisabled = !meta || noDiagnosisSelected || tooFewCases;
-
-  async function fetchNextQuestion(initialId?: string) {
-    const payload = {
-      selectedCategories: diagnosisScope === "all" ? [] : Array.from(selectedCategories),
-      excludeOpaqueIds: seenOpaqueIds.slice(-20),
-      initialCaseId: initialId,
-    };
-
-    const res = await fetch("/api/quiz/question", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.error ?? "Unable to load next case");
-    }
+  const [aiResult, setAiResult]         = useState<AnalysisResult | null>(null);
+  const [aiError, setAiError]           = useState<string | null>(null);
+  const [stats, setStats]               = useState<SessionStats>({ attempted: 0, correct: 0, byCategory: {} });
+  const [mounted, setMounted]           = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<Set<RhythmCategory>>(
+    new Set(ALL_CATEGORIES)
+  );
+  // Prevents the selectedCategories effect from overwriting the queue when
+  // the initialCase effect resets the filter.
+  const skipNextCategoryEffect = useRef(false);
 
     setCurrent(data.question as QuizQuestion);
     setSeenOpaqueIds((prev) => [...prev, data.question.opaqueId]);
   }
 
   useEffect(() => {
-    if (!sessionStarted || !meta) return;
-    if (beginDisabled) return;
-
+    if (skipNextCategoryEffect.current) {
+      skipNextCategoryEffect.current = false;
+      return;
+    }
+    const active = selectedCategories.size === ALL_CATEGORIES.size
+      ? cases
+      : cases.filter((c) => selectedCategories.has(c.category));
+    if (active.length === 0) return;
+    setQueue(shuffle(active));
+    setIndex(0);
     setState("question");
     setSelected(null);
     setReveal(null);
@@ -169,14 +127,12 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
     setAiError(null);
     setShowTwelveLead(false);
 
-    fetchNextQuestion().catch((err) => {
-      setAiError(err instanceof Error ? err.message : "Unable to load quiz case");
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [diagnosisScope, selectedCategories, sessionStarted, meta]);
-
+  // Jump to a specific case when launched from the Academy or Library
   useEffect(() => {
-    if (!initialCaseId || !meta) return;
+    if (!initialCase) return;
+    // Mark the upcoming selectedCategories effect (triggered by setSelectedCategories
+    // below) so it does not reshuffle and overwrite this queue.
+    skipNextCategoryEffect.current = true;
     setSelectedCategories(new Set(ALL_CATEGORIES));
     setDiagnosisScope("all");
     setSessionStarted(true);

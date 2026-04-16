@@ -13,19 +13,42 @@ import LoadStripButton from "@/components/learn/LoadStripButton";
 import IdentifyPWave from "@/components/learn/IdentifyPWave";
 import MeasureInterval from "@/components/learn/MeasureInterval";
 import SystematicChecklist from "@/components/learn/SystematicChecklist";
-import LeadPlacementDiagram from "@/components/learn/LeadPlacementDiagram";
+import { Table, MdxTableOverride } from "@/components/learn/Table";
+import { remarkFixCollapsedTables } from "@/lib/mdx/remark-fix-tables";
+import remarkGfm from "remark-gfm";
+import type { MDXRemoteProps } from "next-mdx-remote/rsc";
+import QTIntervalDrag from "@/components/learn/QTIntervalDrag";
+import PQRSTDiagram from "@/components/learn/PQRSTDiagram";
+import ScrollRestorer from "@/components/learn/ScrollRestorer";
 import MarkCompleteButton from "./MarkCompleteButton";
 
 const VALID_LEVELS: Level[] = ["beginner", "intermediate", "advanced"];
 
-// MDX component map — all custom components available in lessons
+// MDX component map — all custom components available in lessons.
+// `table` (lowercase) overrides the HTML element emitted for every Markdown
+// table, routing it through our styled + accessible Table component.
+// `Table` (capitalised) allows explicit <Table data={...} /> usage in MDX.
 const MDX_COMPONENTS = {
   DiagramPQRST,
   LoadStripButton,
   IdentifyPWave,
   MeasureInterval,
   SystematicChecklist,
-  LeadPlacementDiagram,
+  QTIntervalDrag,
+  PQRSTDiagram,
+  Table,
+  table: MdxTableOverride,
+};
+
+// Remark plugins for the MDX pipeline (Layer 2 of the collapsed-table fix).
+// Layer 1 is the string preprocessor applied in lesson-loader.ts.
+//
+// NOTE: do NOT use `as const` here. next-mdx-remote's SerializeOptions requires
+// remarkPlugins to be a mutable Pluggable[], not a readonly tuple.
+const MDX_OPTIONS: MDXRemoteProps["options"] = {
+  mdxOptions: {
+    remarkPlugins: [remarkGfm, remarkFixCollapsedTables],
+  },
 };
 
 interface PageProps {
@@ -112,6 +135,9 @@ export default async function LessonPage({ params }: PageProps) {
 
         {/* Main content */}
         <main className="flex-1 min-w-0">
+          {/* Restores scroll position when returning from the Trainer */}
+          <ScrollRestorer />
+
           {/* Breadcrumb */}
           <nav className="mb-5 text-xs text-slate-400 flex items-center gap-1.5">
             <Link href="/learn" className="hover:text-slate-700 transition-colors">
@@ -138,12 +164,7 @@ export default async function LessonPage({ params }: PageProps) {
             <MDXRemote
               source={source}
               components={MDX_COMPONENTS}
-              options={{
-                mdxOptions: {
-                  remarkPlugins: [remarkGfm, remarkMath],
-                  rehypePlugins: [rehypeKatex],
-                },
-              }}
+              options={MDX_OPTIONS}
             />
           </div>
 

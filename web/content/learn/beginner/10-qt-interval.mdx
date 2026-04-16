@@ -82,6 +82,13 @@ Hypercalcemia, digitalis toxicity, short QT syndrome (rare, high risk of VF).
 
 ## Practice
 
-<MeasureInterval stripId="nsr_01" intervalType="QT" normalRange={[360, 440]} />
+Drag to select the QT interval on the strip below. Both boundaries are evaluated — you need to land the start of the QRS **and** the end of the T wave within tolerance to get a "Correct" result.
 
-Drag from the start of the QRS to the end of the T wave. Remember this represents the total electrical systole of the ventricles.
+<QTIntervalDrag
+  stripId="nsr_01"
+  trueStart={0.08}
+  trueEnd={0.12}
+  tolerance={0.03}
+/>
+
+The QT interval represents the total electrical systole of the ventricles. At a normal resting rate the uncorrected QT is typically 360–440 ms; always correct for heart rate (QTc) before interpreting.

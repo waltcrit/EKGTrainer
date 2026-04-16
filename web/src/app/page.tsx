@@ -9,8 +9,7 @@ import CaseLibrary from "@/components/CaseLibrary";
 import QuizMode from "@/components/QuizMode";
 import AboutPage from "@/components/AboutPage";
 import SystematicChecklist from "@/components/learn/SystematicChecklist";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import ReturnToAcademy from "@/components/learn/ReturnToAcademy";
 import type { EKGAnalysisResult } from "@/types/analysis";
 import type { EKGCase } from "@/types/cases";
 
@@ -150,24 +149,24 @@ function LandingPage({ onEnter, caseCount }: { onEnter: (tab: Tab) => void; case
 
           <Link
             href="/learn"
-            className="academy-fade-up academy-delay-4 academy-panel group flex items-center gap-4 rounded-xl
-                       px-5 py-4 text-left shadow-sm hover:border-orange-300 hover:shadow-md
+            className="group flex items-center gap-4 rounded-xl border border-slate-200 bg-white
+                       px-5 py-4 text-left shadow-sm hover:border-sky-300 hover:shadow-md
                        transition-all duration-150"
           >
-            <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center shrink-0
-                            group-hover:bg-orange-100 transition-colors">
-              <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-10 h-10 rounded-lg bg-sky-50 flex items-center justify-center shrink-0
+                            group-hover:bg-sky-100 transition-colors">
+              <svg className="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
-                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-[var(--academy-ink)] text-sm">EKG Academy</p>
-              <p className="text-xs text-[var(--academy-muted)] mt-0.5">
-                Structured lessons · Build your EKG interpretation skills
+              <p className="font-semibold text-slate-900 text-sm">EKG Academy</p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Guided lessons · Master the 9-step systematic approach
               </p>
             </div>
-            <svg className="w-4 h-4 text-[var(--academy-muted)] group-hover:text-orange-400 transition-colors shrink-0"
+            <svg className="w-4 h-4 text-slate-300 group-hover:text-sky-400 transition-colors shrink-0"
               fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
@@ -368,6 +367,11 @@ export default function Home() {
               {label}
             </button>
           ))}
+        </div>
+
+        {/* Return-to-Academy banner — visible only after navigating from a lesson */}
+        <div className="mb-4">
+          <ReturnToAcademy />
         </div>
 
         {tab === "practice" && (

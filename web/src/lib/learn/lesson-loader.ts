@@ -2,6 +2,7 @@ import path from "path";
 import fs from "fs";
 import matter from "gray-matter";
 import type { Level, LessonMeta } from "./toc";
+import { fixCollapsedTables } from "@/lib/mdx/remark-fix-tables";
 
 export interface LessonData {
   meta: LessonMeta;
@@ -47,7 +48,10 @@ export function loadLesson(
   if (!fs.existsSync(filePath)) return null;
 
   const raw = fs.readFileSync(filePath, "utf-8");
-  const { data, content } = matter(raw);
+  // Expand any collapsed inline tables before handing off to MDXRemote.
+  // This is Layer 1 of the two-layer fix; the remark plugin is Layer 2.
+  const normalised = fixCollapsedTables(raw);
+  const { data, content } = matter(normalised);
 
   const meta: LessonMeta = {
     slug,
