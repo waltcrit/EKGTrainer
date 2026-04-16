@@ -57,12 +57,12 @@ export default function CaseLibrary({ cases, onPractice, onAnalyze }: CaseLibrar
 
       {/* ── Case list ────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-2">
-        {visible.map((c) => {
+        {visible.map((c, index) => {
           const acc = DIFF_ACCENT[c.difficulty];
           const isOpen = expanded === c.id;
 
           return (
-            <div key={c.id}
+            <div key={`${c.id}-${index}`}
               className="academy-panel rounded-xl overflow-hidden
                          transition-shadow hover:shadow-md"
             >

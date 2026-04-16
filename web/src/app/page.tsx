@@ -9,6 +9,8 @@ import CaseLibrary from "@/components/CaseLibrary";
 import QuizMode from "@/components/QuizMode";
 import AboutPage from "@/components/AboutPage";
 import SystematicChecklist from "@/components/learn/SystematicChecklist";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 import type { EKGAnalysisResult } from "@/types/analysis";
 import type { EKGCase } from "@/types/cases";
 
@@ -350,56 +352,13 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* ── Sticky top nav ──────────────────────────────────────────────── */}
-      <header className="academy-nav sticky top-0 z-50 border-b backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
-          {/* Logo + Home button */}
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="flex items-center gap-2.5">
-              <EcgMark className="w-8 h-4 text-sky-600" />
-              <span className="academy-heading text-[var(--academy-ink)] text-[17px] leading-none select-none">
-                EKG Academy
-              </span>
-            </div>
-            <button
-              onClick={() => setLanded(false)}
-              className="academy-pill flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-150"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
-                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              Home
-            </button>
-          </div>
+      <Header />
 
-          {/* Tab navigation */}
-          <nav className="flex items-center gap-0.5">
-            {TABS.map(({ id, label }) => (
-              <button
-                key={id}
-                onClick={() => setTab(id)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-150
-                  ${tab === id
-                    ? "academy-pill-active"
-                    : "academy-pill"
-                  }`}
-              >
-                {label}
-              </button>
-            ))}
-            <Link
-              href="/learn"
-              className="ml-1 academy-pill px-4 py-1.5 rounded-full text-sm font-medium text-teal-700 hover:bg-teal-50 transition-all duration-150"
-            >
-              Academy
-            </Link>
-          </nav>
+      {/* Main content */}
+      <main className="flex-1">
+        <div className="hero-banner">
+          <img src="/ekg-academy-banner.png" alt="EKG Academy Banner" />
         </div>
-      </header>
-
-      {/* ── Main content ────────────────────────────────────────────────── */}
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-6">
 
         {tab === "practice" && (
           <div className="space-y-4">
@@ -576,12 +535,7 @@ export default function Home() {
         )}
       </main>
 
-      {/* ── Footer ──────────────────────────────────────────────────────── */}
-      <footer className="border-t border-[var(--academy-line)] py-4 mt-8">
-        <p className="text-center text-xs text-[var(--academy-muted)]">
-          For educational use only · Not a substitute for clinical judgment
-        </p>
-      </footer>
+      <Footer />
     </div>
   );
 }
