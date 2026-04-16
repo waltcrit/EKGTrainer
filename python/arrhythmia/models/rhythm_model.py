@@ -1,3 +1,5 @@
+# pyright: basic
+
 """
 Strip-level deep learning models for rhythm classification.
 
@@ -26,7 +28,7 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional, Self, cast
 
 import numpy as np
 
@@ -66,13 +68,14 @@ class _RhythmModelMixin:
         input_len: int = 2500,
         device: str = "cpu",
         **kwargs,
-    ):
+    ) -> Self:
         _require_torch()
-        model = cls(num_classes=num_classes, input_len=input_len, **kwargs)
+        assert torch is not None
+        model = cast(Any, cls)(num_classes=num_classes, input_len=input_len, **kwargs)
         state = torch.load(checkpoint_path, map_location=device)
         model.load_state_dict(state)
         model.eval()
-        return model
+        return cast(Self, model)
 
     def predict_numpy(
         self,
@@ -80,6 +83,7 @@ class _RhythmModelMixin:
         label_map: Optional[list[str]] = None,
     ) -> list[dict]:
         _require_torch()
+        assert torch is not None
         if label_map is None:
             from arrhythmia.constants import ArrhythmiaClass
             label_map = [
@@ -91,14 +95,15 @@ class _RhythmModelMixin:
         from arrhythmia.segments import pad_or_truncate
 
         results = []
-        self.eval()
+        model = cast(Any, self)
+        model.eval()
         with torch.no_grad():
             for w in windows:
                 arr = np.asarray(w, dtype=np.float32)
                 arr = pad_or_truncate(arr, self.input_len).astype(np.float32)
                 # Shape depends on model type — handled in subclasses
-                tensor = self._prepare_input(arr)
-                logits = self(tensor)
+                tensor = model._prepare_input(arr)
+                logits = model(tensor)
                 probs = torch.softmax(logits, dim=-1).squeeze().cpu().numpy()
                 pred_idx = int(np.argmax(probs))
                 results.append({
@@ -132,38 +137,41 @@ class RhythmCNN(_RhythmModelMixin, nn.Module if _TORCH_AVAILABLE else object):  
 
     def __init__(self, num_classes: int = 9, input_len: int = 2500) -> None:
         _require_torch()
+        assert nn is not None
         super().__init__()
+        nn_module = nn
         self.num_classes = num_classes
         self.input_len = input_len
 
         def conv_block(in_ch, out_ch, k, pool=2):
-            return nn.Sequential(
-                nn.Conv1d(in_ch, out_ch, kernel_size=k, padding=k // 2),
-                nn.BatchNorm1d(out_ch),
-                nn.ReLU(),
-                nn.MaxPool1d(pool),
+            return nn_module.Sequential(
+                nn_module.Conv1d(in_ch, out_ch, kernel_size=k, padding=k // 2),
+                nn_module.BatchNorm1d(out_ch),
+                nn_module.ReLU(),
+                nn_module.MaxPool1d(pool),
             )
 
-        self.backbone = nn.Sequential(
+        self.backbone = nn_module.Sequential(
             conv_block(1, 32, 15),
             conv_block(32, 64, 11),
             conv_block(64, 128, 7),
             conv_block(128, 256, 5),
             conv_block(256, 256, 3),
         )
-        self.head = nn.Sequential(
-            nn.AdaptiveAvgPool1d(1),
-            nn.Flatten(),
-            nn.Linear(256, 128),
-            nn.ReLU(),
-            nn.Dropout(0.4),
-            nn.Linear(128, num_classes),
+        self.head = nn_module.Sequential(
+            nn_module.AdaptiveAvgPool1d(1),
+            nn_module.Flatten(),
+            nn_module.Linear(256, 128),
+            nn_module.ReLU(),
+            nn_module.Dropout(0.4),
+            nn_module.Linear(128, num_classes),
         )
 
     def forward(self, x):  # type: ignore
         return self.head(self.backbone(x))
 
     def _prepare_input(self, arr):  # type: ignore
+        assert torch is not None
         return torch.tensor(arr).unsqueeze(0).unsqueeze(0)  # (1,1,L)
 
 
@@ -196,6 +204,8 @@ class RhythmRNN(_RhythmModelMixin, nn.Module if _TORCH_AVAILABLE else object):  
         lstm_layers: int = 2,
     ) -> None:
         _require_torch()
+        assert nn is not None
+        assert torch is not None
         super().__init__()
         self.num_classes = num_classes
         self.input_len = input_len
@@ -224,6 +234,7 @@ class RhythmRNN(_RhythmModelMixin, nn.Module if _TORCH_AVAILABLE else object):  
         self.classifier = nn.Linear(lstm_out_size, num_classes)
 
     def forward(self, x):  # type: ignore
+        assert torch is not None
         # x: (batch, 1, L) or (batch, L, 1)
         if x.dim() == 3 and x.shape[1] != 1:
             x = x.permute(0, 2, 1)  # -> (batch, 1, L)
@@ -239,6 +250,7 @@ class RhythmRNN(_RhythmModelMixin, nn.Module if _TORCH_AVAILABLE else object):  
         return self.classifier(context)
 
     def _prepare_input(self, arr):  # type: ignore
+        assert torch is not None
         return torch.tensor(arr).unsqueeze(0).unsqueeze(0)  # (1,1,L)
 
 
@@ -251,6 +263,8 @@ class _PositionalEncoding(nn.Module if _TORCH_AVAILABLE else object):  # type: i
 
     def __init__(self, d_model: int, max_len: int = 5000, dropout: float = 0.1) -> None:
         _require_torch()
+        assert nn is not None
+        assert torch is not None
         super().__init__()
         self.dropout = nn.Dropout(dropout)
         pe = torch.zeros(max_len, d_model)
@@ -301,6 +315,8 @@ class RhythmTransformer(
         dropout: float = 0.1,
     ) -> None:
         _require_torch()
+        assert nn is not None
+        assert torch is not None
         super().__init__()
         self.num_classes = num_classes
         self.input_len = input_len
@@ -329,6 +345,7 @@ class RhythmTransformer(
         self.classifier = nn.Linear(d_model, num_classes)
 
     def forward(self, x):  # type: ignore
+        assert torch is not None
         # x: (batch, 1, L)
         patches = self.patch_embed(x).permute(0, 2, 1)  # (batch, T, d_model)
         batch_size = patches.size(0)
@@ -340,4 +357,5 @@ class RhythmTransformer(
         return self.classifier(cls_out)
 
     def _prepare_input(self, arr):  # type: ignore
+        assert torch is not None
         return torch.tensor(arr).unsqueeze(0).unsqueeze(0)  # (1,1,L)

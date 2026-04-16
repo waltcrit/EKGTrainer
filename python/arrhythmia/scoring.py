@@ -24,7 +24,7 @@ ClassificationReport
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 import numpy as np
@@ -54,7 +54,7 @@ class ClassificationReport:
     confusion_matrix: np.ndarray
     label_order: list[str]
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, object]:
         return {
             "per_class": {
                 k: {

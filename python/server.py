@@ -16,13 +16,14 @@ import os
 import tempfile
 import traceback
 from pathlib import Path
+from typing import cast
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from analyze_ecg import (
-    _NumpyEncoder,
+    NumpyEncoder,
     analyze_signal,
     build_claude_prompt,
     digitize_image,
@@ -47,12 +48,12 @@ class AnalyzeRequest(BaseModel):
 
 
 @app.get("/healthz")
-def health():
+def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
 @app.post("/analyze")
-def analyze(req: AnalyzeRequest):
+def analyze(req: AnalyzeRequest) -> dict[str, object]:
     # Decode base64 → temp file
     ext = req.media_type.split("/")[-1].replace("jpeg", "jpg")
     tmp_path = None
@@ -82,7 +83,7 @@ def analyze(req: AnalyzeRequest):
             measurements, digitized["method"], pipeline_classification
         )
 
-        result = {
+        result: dict[str, object] = {
             "success": True,
             "measurements": measurements,
             "claude_prompt": prompt,
@@ -92,7 +93,7 @@ def analyze(req: AnalyzeRequest):
             "pipeline_classification": pipeline_classification,
         }
         # Use NumpyEncoder to serialize any remaining numpy scalars
-        return json.loads(json.dumps(result, cls=_NumpyEncoder))
+        return cast(dict[str, object], json.loads(json.dumps(result, cls=NumpyEncoder)))
 
     except Exception as e:
         tb = traceback.format_exc()

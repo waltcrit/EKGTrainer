@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# pyright: basic
+
 """
 Full 12-lead EKG Synthesizer for EKGTrainer
 Generates standard 4×3+strip PNGs for all 37 teaching cases,
@@ -6,11 +8,14 @@ replacing the existing single/multi-lead strips.
 
 Usage (from repo root):
     pip install -r scripts/requirements.txt
-    python3 scripts/generate_12lead_ekgs.py
+    python3 scripts/generate_12lead_ekgs.py [--render-style {house,physionet}]
 """
 
+import argparse
 import math
 import warnings
+from typing import Any
+
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
@@ -34,6 +39,22 @@ T   = np.linspace(0, DUR, N)
 # ── Paper style ───────────────────────────────────────────────────────────────
 BG, MINOR, MAJOR, TRACE = "#FFF5E6", "#FFBBBB", "#EE6666", "#111111"
 
+# Render styles: house (traditional tan) and physionet (neutral white/gray)
+RENDER_STYLES = {
+    "house": {
+        "bg": "#FFF5E6",
+        "minor": "#FFBBBB",
+        "major": "#EE6666",
+        "trace": "#111111",
+    },
+    "physionet": {
+        "bg": "#ffffff",
+        "minor": "#e3e3e3",
+        "major": "#bdbdbd",
+        "trace": "#111111",
+    },
+}
+
 # ── Lead definitions ──────────────────────────────────────────────────────────
 ALL_LEADS = ["I", "II", "III", "aVR", "aVL", "aVF",
              "V1", "V2", "V3", "V4", "V5", "V6"]
@@ -46,6 +67,7 @@ LEAD_AX = {"I": 0, "II": 60, "III": 120, "aVR": -150, "aVL": -30, "aVF": 90}
 # Standard 4×3 layout: each cell = (lead_name, col_index)
 # col_index determines time window: col * 2.5s → (col+1) * 2.5s
 COL_W = 2.5  # seconds per column
+SEGMENT_PAD = 0.012  # keep trace slightly off the boundary to avoid false continuity
 LAYOUT = [
     [("I", 0),   ("aVR", 1), ("V1", 2), ("V4", 3)],
     [("II", 0),  ("aVL", 1), ("V2", 2), ("V5", 3)],
@@ -61,6 +83,16 @@ def gauss(center, fwhm_ms, amp):
     """Return Gaussian bump on the global time array T."""
     sigma = (fwhm_ms / 1000.0) / 2.3548
     return amp * np.exp(-0.5 * ((T - center) / sigma) ** 2)
+
+
+def st_plateau(j_point, t_onset, amp):
+    """Smooth ST-segment plateau between J-point and T-wave onset."""
+    if t_onset <= j_point:
+        return np.zeros(N)
+    edge = 0.012
+    up = 0.5 * (1.0 + np.tanh((T - j_point) / edge))
+    down = 0.5 * (1.0 + np.tanh((t_onset - T) / edge))
+    return amp * up * down
 
 
 def _proj(axis_deg, lead):
@@ -132,9 +164,11 @@ def place_beat(sig, r_at, *,
         sig += gauss(r_at,               qrs_ms * 0.45,   r_amp)
         sig += gauss(r_at + hw * 0.7,    qrs_ms * 0.30,  -s_frac * r_amp)
 
-    # ST offset (Gaussian centred in ST segment)
+    # ST displacement as a plateau from J-point to early T onset.
     if abs(st) > 0.004:
-        sig += gauss(r_at + 0.210, 175, st * 0.72)
+        j_point = r_at + max(0.045, (qrs_ms / 1000.0) * 0.55)
+        t_onset = r_at + (qt_ms / 1000.0) * 0.50
+        sig += st_plateau(j_point, t_onset, st)
 
     # T wave
     t_c = r_at + qt_ms / 1000.0 * 0.63
@@ -238,15 +272,18 @@ def with_pacs(hr=70):
     """NSR with 2 PACs — slightly different P morphology, narrow QRS."""
     r_list = rr(hr)
     rr_int = 60.0 / hr
-    pac_r = sorted({r_list[3] + rr_int * 0.65,
-                    r_list[7] + rr_int * 0.65} if len(r_list) > 8 else {r_list[3] + rr_int * 0.65})
-    skip = {r_list[3] + rr_int, r_list[7] + rr_int} if len(r_list) > 8 else {r_list[3] + rr_int}
-    all_r = sorted([r for r in r_list if not any(abs(r - s) < 0.05 for s in skip)] + list(pac_r))
+    pac_r = sorted({r_list[2] + rr_int * 0.40,
+                    r_list[5] + rr_int * 0.40,
+                    r_list[8] + rr_int * 0.40} if len(r_list) > 9 else {
+                        r_list[2] + rr_int * 0.40,
+                        r_list[5] + rr_int * 0.40,
+                    })
+    all_r = sorted(r_list + list(pac_r))
 
     leads = {}
     for lead in FRONTAL:
         c = _proj(60, lead)
-        normal_kw = dict(pr_ms=160, qrs_ms=80, qt_ms=380,
+        normal_kw: dict[str, Any] = dict(pr_ms=160, qrs_ms=80, qt_ms=380,
                          p_amp=0.15, r_amp=max(c, 0.25) if c > 0 else 0.20,
                          s_frac=0.15, t_amp=0.22)
         if lead == "aVR":
@@ -254,9 +291,9 @@ def with_pacs(hr=70):
         sig = np.zeros(N)
         for r in all_r:
             if 0.08 < r < DUR - 0.12:
-                kw = dict(normal_kw)
+                kw: dict[str, Any] = dict(normal_kw)
                 if r in pac_r:
-                    kw.update(pr_ms=110, p_amp=0.24)  # PAC: shorter PR, different P
+                    kw.update(pr_ms=95, p_amp=0.26, p_inv=True, r_amp=max(0.22, normal_kw.get("r_amp", 0.25) * 0.9), t_amp=0.16)
                 place_beat(sig, r, **kw)
         leads[lead] = sig
 
@@ -266,10 +303,10 @@ def with_pacs(hr=70):
         sig = np.zeros(N)
         for r in all_r:
             if 0.08 < r < DUR - 0.12:
-                kw = dict(pr_ms=160, qrs_ms=80, qt_ms=380,
-                          p_amp=0.12, r_amp=r_a, s_frac=s_a/max(r_a,0.01), t_amp=max(0.12, 0.28*r_a))
+                kw: dict[str, Any] = dict(pr_ms=160, qrs_ms=80, qt_ms=380,
+                                          p_amp=0.12, r_amp=r_a, s_frac=s_a/max(r_a,0.01), t_amp=max(0.12, 0.28*r_a))
                 if r in pac_r:
-                    kw.update(pr_ms=110, p_amp=0.22)
+                    kw.update(pr_ms=95, p_amp=0.24, r_amp=max(0.18, r_a * 0.88), t_amp=max(0.10, 0.18 * r_a))
                 place_beat(sig, r, **kw)
         leads[lead] = sig
     return leads
@@ -279,31 +316,28 @@ def with_pvcs(hr=70):
     """NSR with 2 PVCs — wide bizarre QRS, no P, full comp pause."""
     r_list = rr(hr)
     rr_int = 60.0 / hr
-    pvc_times = {r_list[3], r_list[7]} if len(r_list) > 8 else {r_list[3]}
-    skip_after = {r + rr_int for r in pvc_times}
-
-    def is_skipped(r):
-        return any(abs(r - s) < 0.06 for s in skip_after)
+    pvc_times = ({r_list[2] + rr_int * 0.52, r_list[5] + rr_int * 0.52, r_list[8] + rr_int * 0.52}
+                 if len(r_list) > 9 else {r_list[2] + rr_int * 0.52, r_list[5] + rr_int * 0.52})
 
     leads = {}
     # Limb: PVC is wide negative in most leads except aVR
     for lead in FRONTAL:
         c = _proj(60, lead)
         sig = np.zeros(N)
-        for r in r_list:
+        for r in sorted(r_list + list(pvc_times)):
             if 0.08 < r < DUR - 0.12:
                 if r in pvc_times:
                     # PVC: wide, bizarre, negative in inferior leads (inferior axis)
                     if lead in ("II", "III", "aVF"):
-                        place_beat(sig, r, no_p=True, qrs_ms=140, qt_ms=440,
-                                   r_amp=0.10, s_frac=8.0, t_amp=0.30, t_inv=False)
+                        place_beat(sig, r, no_p=True, qrs_ms=170, qt_ms=420,
+                                   r_amp=1.15, wide_neg=True, t_amp=0.24, t_inv=False)
                     elif lead == "aVR":
-                        place_beat(sig, r, no_p=True, qrs_ms=140, qt_ms=440,
-                                   r_amp=0.90, qs=False, s_frac=0.10, t_inv=True, t_amp=0.25)
+                        place_beat(sig, r, no_p=True, qrs_ms=170, qt_ms=420,
+                                   r_amp=0.95, broad_r=True, t_inv=True, t_amp=0.18)
                     else:
-                        place_beat(sig, r, no_p=True, qrs_ms=140, qt_ms=440,
-                                   r_amp=max(abs(c), 0.30), s_frac=0.40, t_inv=True, t_amp=0.22)
-                elif not is_skipped(r):
+                        place_beat(sig, r, no_p=True, qrs_ms=170, qt_ms=420,
+                                   r_amp=max(abs(c), 0.70), broad_r=True, t_inv=True, t_amp=0.18)
+                else:
                     if lead == "aVR":
                         place_beat(sig, r, r_amp=0.80, qs=True, p_inv=True, t_inv=True, t_amp=0.20)
                     else:
@@ -313,17 +347,17 @@ def with_pvcs(hr=70):
     for v_num, lead in enumerate(PRECORDIAL, start=1):
         r_a = _precordial_r(v_num)
         sig = np.zeros(N)
-        for r in r_list:
+        for r in sorted(r_list + list(pvc_times)):
             if 0.08 < r < DUR - 0.12:
                 if r in pvc_times:
                     # PVC in precordial: tall positive in right (V1-V3), wide negative in left
                     if v_num <= 3:
-                        place_beat(sig, r, no_p=True, qrs_ms=140, qt_ms=440,
-                                   r_amp=1.1, s_frac=0.10, t_inv=True, t_amp=0.28)
+                        place_beat(sig, r, no_p=True, qrs_ms=170, qt_ms=420,
+                                   r_amp=1.25, broad_r=True, t_inv=True, t_amp=0.22)
                     else:
-                        place_beat(sig, r, no_p=True, qrs_ms=140, qt_ms=440,
-                                   r_amp=0.15, s_frac=5.0, t_amp=0.30)
-                elif not is_skipped(r):
+                        place_beat(sig, r, no_p=True, qrs_ms=170, qt_ms=420,
+                                   r_amp=1.05, wide_neg=True, t_amp=0.24)
+                else:
                     s_a = _precordial_s(v_num)
                     place_beat(sig, r, r_amp=r_a, s_frac=s_a/max(r_a,0.01), t_amp=max(0.12,0.28*r_a))
         leads[lead] = sig
@@ -693,7 +727,36 @@ def idioventricular(hr=33):
 # ─────────────────────────────────────────────────────────────────────────────
 
 def vtach(hr=175):
-    return idioventricular(hr)   # same wide-complex morphology, faster rate
+    # Start slightly earlier so 2.5 s column boundaries fall nearer the
+    # isoelectric segment instead of mid-complex.
+    r_t = rr(hr, start=0.16)
+    leads = {}
+    for lead in FRONTAL:
+        if lead == "aVR":
+            leads[lead] = build_lead(r_t, no_p=True, qrs_ms=180, qt_ms=320,
+                                     r_amp=1.00, qs=True, t_inv=False, t_amp=0.10)
+        elif lead in ("II", "III", "aVF"):
+            leads[lead] = build_lead(r_t, no_p=True, qrs_ms=180, qt_ms=320,
+                                     r_amp=1.18, broad_r=True, t_inv=True, t_amp=0.16)
+        else:
+            leads[lead] = build_lead(r_t, no_p=True, qrs_ms=180, qt_ms=320,
+                                     r_amp=0.92, broad_r=True, t_inv=True, t_amp=0.14)
+    for v_num, lead in enumerate(PRECORDIAL, start=1):
+        if v_num <= 2:
+            leads[lead] = build_lead(r_t, no_p=True, qrs_ms=180, qt_ms=320,
+                                     r_amp=1.05, wide_neg=True, t_amp=0.14)
+        else:
+            leads[lead] = build_lead(r_t, no_p=True, qrs_ms=180, qt_ms=320,
+                                     r_amp=1.15, broad_r=True, t_inv=True, t_amp=0.16)
+
+    # Keep problematic VT leads on the same isoelectric level as their row anchors.
+    row1_anchor = float(np.median(leads["I"]))
+    row2_anchor = float(np.median(leads["II"]))
+    for lead in ("aVR", "V1"):
+        leads[lead] = leads[lead] + (row1_anchor - float(np.median(leads[lead])))
+    leads["V2"] = leads["V2"] + (row2_anchor - float(np.median(leads["V2"])))
+
+    return leads
 
 
 def vfib():
@@ -721,14 +784,14 @@ def asystole():
 def anterior_stemi(hr=80):
     """LAD territory: ST elevation V1-V4, reciprocal in aVL and inferior leads."""
     return _normal_base(rr(hr), extra={
-        "V1": {"st": +0.18, "t_amp": 0.40},
-        "V2": {"st": +0.38, "t_amp": 0.55, "q_frac": 0.06},
-        "V3": {"st": +0.30, "t_amp": 0.48, "q_frac": 0.06},
-        "V4": {"st": +0.18, "t_amp": 0.38},
-        "V5": {"st": +0.08, "t_amp": 0.30},
-        "aVL": {"st": -0.14, "t_inv": True, "t_amp": 0.18},
-        "III": {"st": -0.10, "t_inv": True, "t_amp": 0.15},
-        "aVF": {"st": -0.08},
+        "V1": {"st": +0.34, "t_amp": 0.40, "qrs_ms": 90},
+        "V2": {"st": +0.74, "t_amp": 0.58, "big_q": True, "r_amp": 0.82, "qrs_ms": 96},
+        "V3": {"st": +0.66, "t_amp": 0.54, "big_q": True, "r_amp": 0.88, "qrs_ms": 94},
+        "V4": {"st": +0.46, "t_amp": 0.44, "q_frac": 0.06, "qrs_ms": 90},
+        "V5": {"st": +0.18, "t_amp": 0.34},
+        "aVL": {"st": -0.22, "t_inv": True, "t_amp": 0.22},
+        "III": {"st": -0.16, "t_inv": True, "t_amp": 0.18},
+        "aVF": {"st": -0.12, "t_inv": True, "t_amp": 0.14},
     })
 
 
@@ -783,6 +846,17 @@ def nstemi_st_depression(hr=88):
         "I":  {"st": -0.10, "t_amp": 0.18},
         "II": {"st": -0.12, "t_amp": 0.20},
         "aVL": {"st": -0.08},
+    })
+
+
+def qwave_old_mi(hr=72):
+    """Old MI morphology: persistent Q waves without acute ST-elevation injury."""
+    return _normal_base(rr(hr), extra={
+        "II":  {"big_q": True, "st": -0.02, "t_amp": 0.20},
+        "III": {"big_q": True, "st": -0.03, "t_inv": True, "t_amp": 0.18},
+        "aVF": {"big_q": True, "st": -0.02, "t_inv": True, "t_amp": 0.16},
+        "V5":  {"st": -0.04, "t_amp": 0.16},
+        "V6":  {"st": -0.03, "t_amp": 0.15},
     })
 
 
@@ -971,22 +1045,65 @@ def brugada_type1(hr=72):
     })
 
 
+def wpw(hr=72):
+    """Wolff-Parkinson-White: shortened PR interval (~90 ms), delta wave slur
+    on QRS upstroke, wide QRS (110-140 ms), secondary ST-T changes."""
+    return _normal_base(rr(hr), pr_ms=90, extra={
+        "I":   {"r_amp": 1.15, "st": -0.10, "t_inv": True, "t_amp": 0.18},
+        "aVL": {"r_amp": 0.92, "st": -0.08, "t_inv": True, "t_amp": 0.16},
+        "V1": {"rsrp": True, "r_amp": 0.68, "s_frac": 0.18,
+               "st": -0.12, "t_inv": True, "t_amp": 0.20},
+        "V2": {"r_amp": 0.85, "st": -0.10, "t_inv": True, "t_amp": 0.18},
+        "V5": {"r_amp": 1.32, "st": -0.14, "t_inv": True, "t_amp": 0.22},
+        "V6": {"r_amp": 1.08, "st": -0.12, "t_inv": True, "t_amp": 0.20},
+    })
+
+
+def long_qt(hr=68):
+    """Long QT Syndrome: markedly prolonged QT interval (> 500 ms),
+    normal PR, normal QRS, sinus rhythm with subtle U wave."""
+    r_t = rr(hr)
+    return _normal_base(r_t, pr_ms=160, extra={
+        # Extend QT to ~520 ms (normal male ~400 ms)
+        "I":   {"qt_ms": 520, "t_amp": 0.20},
+        "II":  {"qt_ms": 520, "t_amp": 0.22},
+        "III": {"qt_ms": 520, "t_amp": 0.18},
+        "aVL": {"qt_ms": 520, "t_amp": 0.20},
+        "aVF": {"qt_ms": 520, "t_amp": 0.20},
+        "V2":  {"qt_ms": 520, "t_amp": 0.22},
+        "V3":  {"qt_ms": 520, "t_amp": 0.24},
+        "V4":  {"qt_ms": 520, "t_amp": 0.24},
+        "V5":  {"qt_ms": 520, "t_amp": 0.22},
+        "V6":  {"qt_ms": 520, "t_amp": 0.20},
+    })
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Renderer
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def _style_ax(ax, label, xlim, ylim=(-0.6, 1.4)):
-    ax.set_facecolor(BG)
+def _style_ax(ax, label, xlim, ylim=(-0.6, 1.4), render_style="house"):
+    style = RENDER_STYLES.get(render_style, RENDER_STYLES["house"])
+    bg = style["bg"]
+    minor = style["minor"]
+    major = style["major"]
+    trace = style["trace"]
+    
+    ax.set_facecolor(bg)
     # Minor grid: 0.04s (1mm at 25mm/s) × 0.1mV
-    ax.set_xticks(np.arange(0, xlim[1] + 0.04, 0.04), minor=True)
-    ax.set_yticks(np.arange(ylim[0], ylim[1] + 0.10, 0.10), minor=True)
+    major_x = np.arange(0, xlim[1] + 1e-9, 0.20)
+    minor_x = np.arange(0, xlim[1] + 1e-9, 0.04)
+    minor_x = minor_x[np.abs((minor_x / 0.20) - np.round(minor_x / 0.20)) > 1e-9]
+    major_y = np.arange(ylim[0], ylim[1] + 1e-9, 0.50)
+    minor_y = np.arange(ylim[0], ylim[1] + 1e-9, 0.10)
+    minor_y = minor_y[np.abs((minor_y / 0.50) - np.round(minor_y / 0.50)) > 1e-9]
+    ax.set_xticks(minor_x, minor=True)
+    ax.set_yticks(minor_y, minor=True)
     # Major grid: 0.20s × 0.50mV
-    ax.set_xticks(np.arange(0, xlim[1] + 0.20, 0.20))
-    ax.set_yticks(np.arange(ylim[0], ylim[1] + 0.50, 0.50))
-    ax.grid(True, which='minor', color=MINOR, linewidth=0.28, zorder=1)
-    ax.grid(True, which='major', color=MAJOR, linewidth=0.65, zorder=2)
-    ax.set_xlim(*xlim)
-    ax.set_ylim(*ylim)
+    ax.set_xticks(major_x)
+    ax.set_yticks(major_y)
+    ax.grid(True, which='minor', color=minor, linewidth=0.28, zorder=1)
+
     ax.tick_params(which='both', bottom=False, left=False,
                    labelbottom=False, labelleft=False)
     for sp in ax.spines.values():
@@ -995,44 +1112,62 @@ def _style_ax(ax, label, xlim, ylim=(-0.6, 1.4)):
             fontsize=7.5, fontweight='bold', va='top', color='#1a1a1a', zorder=5)
 
 
-def render_12lead(leads, out_path):
+def _shared_ylim(leads):
+    """Shared zero-centered limits for continuous 12-lead rows."""
+    arr = np.concatenate([leads[lead] for lead in ALL_LEADS])
+    q = np.percentile(np.abs(arr), 99.5)
+    amp = float(np.clip(q + 0.15, 1.2, 3.0))
+    return -amp, amp
+
+
+def render_12lead(leads, out_path, render_style="house"):
     """
-    Standard 12-lead layout:
-      Row 0-2: 4 columns × 3 rows (2.5s each)
+    Standard 12-lead layout on continuous row grids:
+      Row 0-2: continuous 10s rows with 4 sequential 2.5s lead segments
       Row 3:   Lead II rhythm strip (full 10s)
     No diagnosis title in the image — kept anonymized for quiz use.
     """
+    style = RENDER_STYLES.get(render_style, RENDER_STYLES["house"])
+    bg = style["bg"]
+    trace = style["trace"]
+    
     fig = plt.figure(figsize=(11, 8.5), dpi=150)
-    fig.patch.set_facecolor(BG)
+    fig.patch.set_facecolor(bg)
 
     gs = fig.add_gridspec(
-        4, 4,
+        4, 1,
         height_ratios=[1, 1, 1, 0.75],
-        hspace=0.06, wspace=0.04,
+        hspace=0.05,
         left=0.02, right=0.98, top=0.96, bottom=0.03,
     )
 
+    ylim = _shared_ylim(leads)
+
     for row_i, row in enumerate(LAYOUT):
+        ax = fig.add_subplot(gs[row_i, 0])
+        _style_ax(ax, "", xlim=(0, DUR), ylim=ylim, render_style=render_style)
+
         for col_i, (lead, _) in enumerate(row):
-            ax = fig.add_subplot(gs[row_i, col_i])
             t0 = col_i * COL_W
             t1 = t0 + COL_W
-            mask = (T >= t0) & (T < t1)
-            ax_t = T[mask] - t0
+            mask = (T >= t0 + SEGMENT_PAD) & (T < t1 - SEGMENT_PAD)
+            ax_t = T[mask]
             ax_sig = leads[lead][mask]
-            _style_ax(ax, lead, xlim=(0, COL_W))
-            ax.plot(ax_t, ax_sig, color=TRACE, lw=1.05, zorder=3, antialiased=True)
+            ax.plot(ax_t, ax_sig, color=trace, lw=1.05, zorder=3, antialiased=True)
+            ax.text(t0 + 0.04, ylim[1] - 0.08, lead,
+                    fontsize=7.5, fontweight='bold', va='top',
+                    color='#1a1a1a', zorder=5)
 
     # Rhythm strip — Lead II full width
-    ax_strip = fig.add_subplot(gs[3, :])
-    _style_ax(ax_strip, "II (rhythm strip)", xlim=(0, DUR))
-    ax_strip.plot(T, leads["II"], color=TRACE, lw=1.05, zorder=3, antialiased=True)
+    ax_strip = fig.add_subplot(gs[3, 0])
+    _style_ax(ax_strip, "II (rhythm strip)", xlim=(0, DUR), ylim=ylim, render_style=render_style)
+    ax_strip.plot(T, leads["II"], color=trace, lw=1.05, zorder=3, antialiased=True)
 
     # Calibration label only (no diagnosis title — anonymized)
     fig.text(0.985, 0.985, '25 mm/s  ·  10 mm/mV', fontsize=6.5,
              ha='right', va='top', color='#888888')
 
-    plt.savefig(out_path, dpi=150, bbox_inches='tight', facecolor=BG)
+    plt.savefig(out_path, dpi=150, bbox_inches='tight', facecolor=bg)
     plt.close(fig)
 
 
@@ -1080,10 +1215,26 @@ CASES = [
     ("lv_strain_01",     "LVH with LV Strain Pattern",                      lambda: lv_strain(72)),
     ("rv_strain_01",     "RV Strain Pattern",                               lambda: rv_strain(90)),
     ("brugada_01",       "Brugada Syndrome — Type 1 (coved)",               lambda: brugada_type1(72)),
+    ("wpw_01",           "Wolff-Parkinson-White (WPW)",                     lambda: wpw(72)),
+    ("lngqt_01",         "Long QT Syndrome (LNGQT)",                        lambda: long_qt(68)),
     ("pace_atrial_01",   "Atrial Pacing (AAI, 70 bpm)",                     lambda: atrial_paced(70)),
     ("pace_ventricular_01", "Ventricular Pacing (VVI, 70 bpm)",             lambda: ventricular_paced(70)),
     ("pace_av_01",       "AV Sequential Pacing (DDD, 70 bpm)",              lambda: av_paced(70)),
 ]
+
+# Review cases: generated to web/public/cases/review/ and excluded from live app
+# until approved.  Tuple: (case_id, title, gen_fn, review=True)
+REVIEW_CASES = [
+    ("hyperkal_01",  "Hyperkalemia",                                   lambda: hyperkalemia(65),  True),
+    ("lae_01",       "Left Atrial Enlargement (LAE)",                  lambda: lae(70),           True),
+    ("rae_01",       "Right Atrial Enlargement (RAE)",                 lambda: rae(72),           True),
+    ("lafb_01",      "Left Anterior Fascicular Block (LAFB)",          lambda: lafb(70),          True),
+    ("bigu_01",      "Ventricular Bigeminy",                           lambda: bigeminy(72),      True),
+    ("trigu_01",     "Ventricular Trigeminy",                          lambda: trigeminy(70),     True),
+    ("qwave_01",     "Pathological Q Waves (Old MI Pattern)",          lambda: qwave_old_mi(72),  True),
+]
+
+CASES = CASES + REVIEW_CASES
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1091,14 +1242,43 @@ CASES = [
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def main():
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        '--render-style',
+        type=str,
+        default='house',
+        choices=sorted(RENDER_STYLES.keys()),
+        help='Rendering palette/style for PNG outputs (default: house)'
+    )
+    args = parser.parse_args()
+    
     np.random.seed(42)
+    REVIEW_DIR = OUT_DIR / "review"
+    REVIEW_DIR.mkdir(parents=True, exist_ok=True)
+    live_count = 0
+    review_count = 0
+
     print(f"\nGenerating {len(CASES)} full 12-lead EKG PNGs → {OUT_DIR}\n")
-    for case_id, _title, gen_fn in CASES:
-        out_path = OUT_DIR / f"{case_id}_12lead.png"
+    for item in CASES:
+        if len(item) == 4:
+            case_id, _title, gen_fn, is_review = item
+        else:
+            case_id, _title, gen_fn = item
+            is_review = False
+        out_dir = REVIEW_DIR if is_review else OUT_DIR
+        out_path = out_dir / f"{case_id}_12lead.png"
         leads = gen_fn()
-        render_12lead(leads, out_path)
-        print(f"  ✓  {out_path.name}")
-    print(f"\nDone — {len(CASES)} files written.\n")
+        render_12lead(leads, out_path, render_style=args.render_style)
+        if is_review:
+            review_count += 1
+            print(f"  ⏳  {out_path.name}  (review)")
+        else:
+            live_count += 1
+            print(f"  ✓  {out_path.name}")
+    print(f"\nDone — {live_count} live, {review_count} review files written.\n")
 
 
 if __name__ == "__main__":

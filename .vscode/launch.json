@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Debug Server",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/python/server.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/python"
+      }
+    },
+    {
+      "name": "Python: Analyze ECG",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/python/analyze_ecg.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/python"
+      }
+    },
+    {
+      "name": "Next.js: Debug Web",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/web",
+      "sourceMaps": true,
+      "skipFiles": ["node_modules/**"]
+    }
+  ]
+}

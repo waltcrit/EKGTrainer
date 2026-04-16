@@ -27,29 +27,35 @@ Requires
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional, TypedDict, cast
 
 import numpy as np
 
 try:
     import torch
     import torch.nn as nn
-    _TORCH_AVAILABLE = True
+    _torch_available = True
 except ImportError:
     torch = None  # type: ignore
     nn = None  # type: ignore
-    _TORCH_AVAILABLE = False
+    _torch_available = False
+
+
+class BeatPrediction(TypedDict):
+    label: str
+    confidence: float
+    probabilities: dict[str, float]
 
 
 def _require_torch() -> None:
-    if not _TORCH_AVAILABLE:
+    if not _torch_available:
         raise ImportError(
             "PyTorch is required for deep learning models. "
             "Install with: pip install torch"
         )
 
 
-class BeatCNN(nn.Module if _TORCH_AVAILABLE else object):  # type: ignore
+class BeatCNN(nn.Module if _torch_available else object):  # type: ignore
     """
     1-D Convolutional Neural Network for beat-level ECG classification.
 
@@ -70,7 +76,8 @@ class BeatCNN(nn.Module if _TORCH_AVAILABLE else object):  # type: ignore
 
     def __init__(self, num_classes: int = 3, input_len: int = 150) -> None:
         _require_torch()
-        super().__init__()
+        assert nn is not None
+        super().__init__()  # type: ignore[misc]
         self.num_classes = num_classes
         self.input_len = input_len
 
@@ -137,17 +144,18 @@ class BeatCNN(nn.Module if _TORCH_AVAILABLE else object):  # type: ignore
         model : BeatCNN instance with loaded weights, set to eval mode
         """
         _require_torch()
-        model = cls(num_classes=num_classes, input_len=input_len)
+        assert torch is not None
+        model = cast(Any, cls(num_classes=num_classes, input_len=input_len))
         state = torch.load(checkpoint_path, map_location=device)
         model.load_state_dict(state)
         model.eval()
-        return model
+        return cast(BeatCNN, model)
 
     def predict_numpy(
         self,
         windows: list[np.ndarray],
         label_map: Optional[list[str]] = None,
-    ) -> list[dict]:
+    ) -> list[BeatPrediction]:
         """
         Convenience method: run inference on a list of beat windows.
 
@@ -161,12 +169,14 @@ class BeatCNN(nn.Module if _TORCH_AVAILABLE else object):  # type: ignore
         list of dicts: [{"label": str, "probabilities": {class: float}, ...}]
         """
         _require_torch()
+        assert torch is not None
         if label_map is None:
             from arrhythmia.constants import ArrhythmiaClass
             label_map = [ArrhythmiaClass.NSR, ArrhythmiaClass.PAC, ArrhythmiaClass.PVC]
 
-        results = []
-        self.eval()
+        results: list[BeatPrediction] = []
+        model = cast(Any, self)
+        model.eval()
         with torch.no_grad():
             for w in windows:
                 arr = np.asarray(w, dtype=np.float32)
@@ -174,7 +184,7 @@ class BeatCNN(nn.Module if _TORCH_AVAILABLE else object):  # type: ignore
                     from arrhythmia.segments import pad_or_truncate
                     arr = pad_or_truncate(arr, self.input_len).astype(np.float32)
                 tensor = torch.tensor(arr).unsqueeze(0).unsqueeze(0)  # (1,1,L)
-                logits = self(tensor)
+                logits = model(tensor)
                 probs = torch.softmax(logits, dim=-1).squeeze().cpu().numpy()
                 pred_idx = int(np.argmax(probs))
                 results.append({

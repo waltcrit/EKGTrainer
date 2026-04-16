@@ -19,8 +19,13 @@ preprocess(signal, fs, target_fs, bp_low, bp_high, bp_order, bw_cutoff)
 
 from __future__ import annotations
 
+import importlib
+from typing import Any, cast
+
 import numpy as np
-from scipy import signal as sp_signal
+
+
+_sp_signal = cast(Any, importlib.import_module("scipy.signal"))
 
 
 def bandpass_filter(
@@ -52,8 +57,8 @@ def bandpass_filter(
     # Clip to valid range
     low = max(low, 1e-4)
     high = min(high, 1.0 - 1e-4)
-    sos = sp_signal.butter(order, [low, high], btype="bandpass", output="sos")
-    return sp_signal.sosfiltfilt(sos, ecg)
+    sos = _sp_signal.butter(order, [low, high], btype="bandpass", output="sos")
+    return np.asarray(_sp_signal.sosfiltfilt(sos, ecg), dtype=np.float64)
 
 
 def remove_baseline_wander(
@@ -84,8 +89,8 @@ def remove_baseline_wander(
     nyq = fs / 2.0
     normalized_cutoff = max(cutoff / nyq, 1e-4)
     normalized_cutoff = min(normalized_cutoff, 1.0 - 1e-4)
-    sos = sp_signal.butter(order, normalized_cutoff, btype="highpass", output="sos")
-    return sp_signal.sosfiltfilt(sos, ecg)
+    sos = _sp_signal.butter(order, normalized_cutoff, btype="highpass", output="sos")
+    return np.asarray(_sp_signal.sosfiltfilt(sos, ecg), dtype=np.float64)
 
 
 def resample_signal(
@@ -115,7 +120,7 @@ def resample_signal(
     g = gcd(int(fs_in), int(fs_out))
     up = int(fs_out) // g
     down = int(fs_in) // g
-    resampled = sp_signal.resample_poly(ecg, up, down)
+    resampled = _sp_signal.resample_poly(ecg, up, down)
     return resampled.astype(np.float64), fs_out
 
 

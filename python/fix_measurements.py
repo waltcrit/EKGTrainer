@@ -11,40 +11,49 @@ import json
 import math
 import sys
 from pathlib import Path
+from typing import cast
+
+import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent))
-from analyze_ecg import build_claude_prompt, _NumpyEncoder
+from analyze_ecg import (
+    NumpyEncoder,
+    PipelineClassification,
+    STResults,
+    SignalMeasurements,
+    build_claude_prompt,
+)
 
 # Arrhythmia pipeline — optional; produces pipeline_classification for pre-computed cases
 try:
-    from arrhythmia.postprocess import apply_physiologic_constraints, smooth_predictions
-    from arrhythmia.constants import DISPLAY_NAMES as _ARR_DISPLAY_NAMES
-    _PIPELINE_AVAILABLE = True
+    from arrhythmia.constants import DISPLAY_NAMES as _arr_display_names
+    _pipeline_available = True
 except Exception:
-    _PIPELINE_AVAILABLE = False
+    _arr_display_names: dict[str, str] = {}
+    _pipeline_available = False
 
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
 
-def rr_regular(hr_bpm, n=5, jitter_ms=8):
+def rr_regular(hr_bpm: float, n: int = 5, jitter_ms: float = 8) -> list[float]:
     """Generate n RR intervals for a regular rhythm."""
     rr = 60000.0 / hr_bpm
     return [round(rr + (i % 2 * 2 - 1) * jitter_ms, 1) for i in range(n)]
 
-def qtc(qt_ms, rr_ms):
+def qtc(qt_ms: float | None, rr_ms: float | None) -> float | None:
     """Bazett QTc."""
     if qt_ms is None or rr_ms is None or rr_ms == 0:
         return None
     return round(qt_ms / math.sqrt(rr_ms / 1000.0), 1)
 
-def st_no_change():
+def st_no_change() -> STResults:
     return {"II": {"elevation": False, "depression": False, "mean_mv": 0.0}}
 
-def st_elevation(mv=0.15):
+def st_elevation(mv: float = 0.15) -> STResults:
     return {"II": {"elevation": True, "depression": False, "mean_mv": mv}}
 
-def st_depression(mv=-0.15):
+def st_depression(mv: float = -0.15) -> STResults:
     return {"II": {"elevation": False, "depression": True, "mean_mv": mv}}
 
 # ---------------------------------------------------------------------------
@@ -56,8 +65,18 @@ def st_depression(mv=-0.15):
 #   p_waves_present, pr_interval_ms, qrs_duration_ms, qrs_wide,
 #   qt_ms, qtc_ms, qtc_prolonged, st, rhythm_lead, r_peaks
 
-def make(hr, rr_list, regularity, p_waves, pr_ms, qrs_ms, qt_ms, st,
-         num_beats=6, qtc_prolonged=None):
+def make(
+    hr: float,
+    rr_list: list[float],
+    regularity: str,
+    p_waves: bool,
+    pr_ms: float | None,
+    qrs_ms: float | None,
+    qt_ms: float | None,
+    st: STResults,
+    num_beats: int = 6,
+    qtc_prolonged: bool | None = None,
+) -> SignalMeasurements:
     avg_rr = sum(rr_list) / len(rr_list) if rr_list else None
     qtc_ms = qtc(qt_ms, avg_rr)
     if qtc_prolonged is None:
@@ -79,38 +98,40 @@ def make(hr, rr_list, regularity, p_waves, pr_ms, qrs_ms, qt_ms, st,
         "rhythm_lead": "II",
     }
 
-def _pipeline_from_measurements(measurements: dict) -> dict | None:
+def _pipeline_from_measurements(
+    measurements: SignalMeasurements,
+) -> PipelineClassification | None:
     """
     Derive a pipeline_classification dict from pre-computed measurements
     using the rule-based classical classifier (no live signal required).
     """
-    if not _PIPELINE_AVAILABLE:
+    if not _pipeline_available:
         return None
+
+    def _label_to_str(value: object) -> str:
+        raw_value = getattr(value, "value", value)
+        return raw_value if isinstance(raw_value, str) else str(raw_value)
 
     try:
         from arrhythmia.features import extract_rr_features
-        from arrhythmia.inference import _classical_classify
+        from arrhythmia.inference import classical_classify
 
         rr_ms = measurements.get("rr_intervals_ms", [])
-        feats = extract_rr_features(rr_ms) if rr_ms else {}
+        feats = extract_rr_features(np.asarray(rr_ms, dtype=np.float64)) if rr_ms else {}
         feats["num_beats"] = float(measurements.get("num_beats", 0))
         feats["signal_power"] = 0.25  # assume reasonable signal for pre-computed cases
         # Inject HR explicitly so rate-adjusted AF threshold works correctly
-        hr_explicit = measurements.get("heart_rate_bpm")
-        if hr_explicit is not None:
-            feats["heart_rate_bpm"] = float(hr_explicit)
+        feats["heart_rate_bpm"] = float(measurements["heart_rate_bpm"])
         # Pass QRS width so VT can be distinguished from SVT
-        qrs_wide = measurements.get("qrs_wide")
-        if qrs_wide is not None:
-            feats["qrs_wide"] = bool(qrs_wide)
+        feats["qrs_wide"] = bool(measurements["qrs_wide"])
         # VF morphology flag — bypasses the num_beats < 2 → ASYS rule
         vf_morphology = measurements.get("vf_morphology")
         if vf_morphology is not None:
             feats["vf_morphology"] = bool(vf_morphology)
 
-        label, confidence = _classical_classify(feats)
-        label_str = label.value if hasattr(label, "value") else str(label)
-        display = _ARR_DISPLAY_NAMES.get(label_str, label_str)
+        label, confidence = classical_classify(feats)
+        label_str = _label_to_str(label)
+        display = _arr_display_names.get(label_str, label_str)
         return {
             "primary_rhythm": label_str,
             "display_name": display,
@@ -124,7 +145,7 @@ def _pipeline_from_measurements(measurements: dict) -> dict | None:
         return {"error": str(exc)}
 
 
-CORRECTIONS = {
+CORRECTIONS: dict[str, SignalMeasurements] = {
     # ── Sinus rhythms ────────────────────────────────────────────────────────
     "nsr_01": make(
         hr=72, rr_list=rr_regular(72), regularity="regular",
@@ -371,12 +392,12 @@ CORRECTIONS = {
 # Main
 # ---------------------------------------------------------------------------
 
-def main():
+def main() -> None:
     root = Path(__file__).parent.parent
     out_path = root / "web" / "src" / "data" / "measurements.json"
 
     with open(out_path) as f:
-        existing = json.load(f)
+        existing = cast(dict[str, dict[str, object]], json.load(f))
 
     updated = 0
     for case_id, measurements in CORRECTIONS.items():
@@ -403,7 +424,7 @@ def main():
               f"pipeline={pc_label}")
 
     with open(out_path, "w") as f:
-        json.dump(existing, f, cls=_NumpyEncoder, indent=2)
+        json.dump(existing, f, cls=NumpyEncoder, indent=2)
 
     print(f"\nUpdated {updated} cases in {out_path}")
 

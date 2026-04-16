@@ -1,6 +1,10 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote/rsc";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 import { getTOC, getLessonsForLevel } from "@/lib/learn/toc";
 import { loadLesson } from "@/lib/learn/lesson-loader";
 import type { Level } from "@/lib/learn/toc";

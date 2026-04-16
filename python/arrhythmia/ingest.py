@@ -17,8 +17,9 @@ FileNotFoundError  if the requested record does not exist
 
 from __future__ import annotations
 
+import importlib
 from pathlib import Path
-from typing import Optional
+from typing import Any, cast
 
 import numpy as np
 
@@ -28,15 +29,15 @@ import numpy as np
 # runs if wfdb is not installed.
 # ---------------------------------------------------------------------------
 try:
-    import wfdb  # type: ignore
-    _WFDB_AVAILABLE = True
+    wfdb = importlib.import_module("wfdb")
+    _wfdb_available = True
 except ImportError:
-    wfdb = None  # type: ignore
-    _WFDB_AVAILABLE = False
+    wfdb = None
+    _wfdb_available = False
 
 
 def _require_wfdb() -> None:
-    if not _WFDB_AVAILABLE:
+    if not _wfdb_available:
         raise ImportError(
             "wfdb is required for WFDB record ingestion. "
             "Install it with: pip install wfdb"
@@ -47,7 +48,7 @@ def load_record(
     record_path: str | Path,
     channel: int = 0,
     sampfrom: int = 0,
-    sampto: Optional[int] = None,
+    sampto: int | None = None,
 ) -> tuple[np.ndarray, int, object]:
     """
     Load a WFDB record from disk.
@@ -66,21 +67,27 @@ def load_record(
     annotations  : wfdb.Annotation object or None if no annotation file exists
     """
     _require_wfdb()
+    assert wfdb is not None
+    wfdb_module = cast(Any, wfdb)
 
     record_path = Path(record_path)
-    kwargs: dict = {"sampfrom": sampfrom}
+    kwargs: dict[str, int] = {"sampfrom": sampfrom}
     if sampto is not None:
         kwargs["sampto"] = sampto
 
-    record = wfdb.rdrecord(str(record_path), channels=[channel], **kwargs)
-    signal: np.ndarray = record.p_signal[:, 0].astype(np.float64)
-    fs: int = int(record.fs)
+    record = wfdb_module.rdrecord(str(record_path), channels=[channel], **kwargs)
+    p_signal = getattr(record, "p_signal", None)
+    fs_value = getattr(record, "fs", None)
+    if p_signal is None or fs_value is None:
+        raise RuntimeError(f"WFDB record is missing signal data or sampling rate: {record_path}")
+    signal: np.ndarray = np.asarray(p_signal[:, 0], dtype=np.float64)
+    fs: int = int(fs_value)
 
-    ann = None
+    ann: object | None = None
     ann_path = record_path.parent / (record_path.name + ".atr")
     if ann_path.exists():
         try:
-            ann = wfdb.rdann(str(record_path), "atr", sampfrom=sampfrom, sampto=sampto)
+            ann = wfdb_module.rdann(str(record_path), "atr", sampfrom=sampfrom, sampto=sampto)
         except Exception:
             ann = None
 
@@ -90,8 +97,8 @@ def load_record(
 def load_numpy(
     signal: np.ndarray,
     fs: int,
-    ann_symbols: Optional[list[str]] = None,
-    ann_samples: Optional[list[int]] = None,
+    ann_symbols: list[str] | None = None,
+    ann_samples: list[int] | None = None,
 ) -> tuple[np.ndarray, int, object]:
     """
     Wrap a raw NumPy signal as a pipeline-compatible record.
@@ -135,8 +142,13 @@ def annotation_to_labels(
     if ann is None:
         return np.array([], dtype=np.int64), np.array([], dtype=str)
 
-    samples = np.asarray(ann.sample, dtype=np.int64)
-    symbols = np.asarray(ann.symbol, dtype=str)
+    sample_values = getattr(ann, "sample", None)
+    symbol_values = getattr(ann, "symbol", None)
+    if sample_values is None or symbol_values is None:
+        return np.array([], dtype=np.int64), np.array([], dtype=str)
+
+    samples = np.asarray(sample_values, dtype=np.int64)
+    symbols = np.asarray(symbol_values, dtype=str)
 
     # Clip to signal bounds
     mask = (samples >= 0) & (samples < signal_length)

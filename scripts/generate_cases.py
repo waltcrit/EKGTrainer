@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
+# pyright: basic
+
 """
 EKG Teaching Case Generator
 Generates synthetic rhythm strip PNG images + cases.json metadata
 for the EKGTrainer teaching library.
 
 Run from the repository root:
-    python3 scripts/generate_cases.py
+    python3 scripts/generate_cases.py [--render-style {house,physionet}]
 """
 
+import argparse
 import json
 import warnings
 import numpy as np
@@ -37,6 +40,22 @@ MINOR = "#FFBBBB"   # fine red grid
 MAJOR = "#EE6666"   # bold red grid
 TRACE = "#111111"
 
+# Render styles: house (traditional tan) and physionet (neutral white/gray)
+RENDER_STYLES = {
+    "house": {
+        "bg": "#FFF5E6",
+        "minor": "#FFBBBB",
+        "major": "#EE6666",
+        "trace": "#111111",
+    },
+    "physionet": {
+        "bg": "#ffffff",
+        "minor": "#e3e3e3",
+        "major": "#bdbdbd",
+        "trace": "#111111",
+    },
+}
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Waveform Primitives
@@ -46,6 +65,16 @@ def gauss(t, center, fwhm_ms, amp):
     """Gaussian bump for P/Q/R/S/T wave approximation."""
     sigma = (fwhm_ms / 1000.0) / 2.3548
     return amp * np.exp(-0.5 * ((t - center) / sigma) ** 2)
+
+
+def st_plateau(t, j_point, t_onset, amp):
+    """Smooth ST-segment plateau between J-point and T-wave onset."""
+    if t_onset <= j_point:
+        return np.zeros_like(t)
+    edge = 0.012
+    up = 0.5 * (1.0 + np.tanh((t - j_point) / edge))
+    down = 0.5 * (1.0 + np.tanh((t_onset - t) / edge))
+    return amp * up * down
 
 
 def place_normal_beat(sig, t, r_at,
@@ -72,6 +101,13 @@ def place_wide_beat(sig, t, r_at, style="ventricular", qt_ms=440, r_amp=1.0):
         sig += gauss(t, r_at + 0.040, 100,  r_amp)
         sig += gauss(t, r_at + 0.100,  40, -0.28 * r_amp)
         sig += gauss(t, r_at + (qt_ms / 1000) * 0.60, 120, -0.25 * r_amp)
+
+    elif style == "vt":
+        # Monomorphic VT: broad, regular, dominant wide complex with discordant T.
+        sig += gauss(t, r_at - 0.022, 48, -0.18 * r_amp)
+        sig += gauss(t, r_at + 0.010, 120, 1.10 * r_amp)
+        sig += gauss(t, r_at + 0.082, 68, -0.22 * r_amp)
+        sig += gauss(t, r_at + (qt_ms / 1000) * 0.56, 95, -0.18 * r_amp)
 
     elif style == "lbbb":
         sig += gauss(t, r_at,          130,  r_amp)
@@ -124,29 +160,26 @@ def with_pacs(heart_rate=70):
     sig = np.zeros(N)
     r_times = list(regular_r_times(heart_rate))
     rr = 60.0 / heart_rate
-    pac_indices = {3, 7} if len(r_times) > 8 else {3}
-    skip_next = set()
-    for i, r in enumerate(r_times):
-        if i in pac_indices:
-            pac_r = r + rr * 0.65
-            place_normal_beat(sig, T, pac_r, pr_ms=120, p_amp=0.22)
-            skip_next.add(i + 1)
-        elif i not in skip_next:
-            place_normal_beat(sig, T, r)
+    pac_indices = {2, 5, 8} if len(r_times) > 9 else {2, 5}
+    for r in r_times:
+        place_normal_beat(sig, T, r)
+    for i in sorted(idx for idx in pac_indices if idx < len(r_times) - 1):
+        pac_r = r_times[i] + rr * 0.40
+        place_normal_beat(sig, T, pac_r, pr_ms=95, p_amp=0.26, inverted_p=True,
+                          r_amp=0.82, t_amp=0.18)
     return sig
 
 
 def with_pvcs(heart_rate=70):
     sig = np.zeros(N)
     r_times = list(regular_r_times(heart_rate))
-    pvc_indices = {3, 7} if len(r_times) > 8 else {3}
-    skip_next = set()
-    for i, r in enumerate(r_times):
-        if i in pvc_indices:
-            place_wide_beat(sig, T, r, style="pvc")
-            skip_next.add(i + 1)
-        elif i not in skip_next:
-            place_normal_beat(sig, T, r)
+    rr = 60.0 / heart_rate
+    pvc_indices = {2, 5, 8} if len(r_times) > 9 else {2, 5}
+    for r in r_times:
+        place_normal_beat(sig, T, r)
+    for i in sorted(idx for idx in pvc_indices if idx < len(r_times) - 1):
+        pvc_r = r_times[i] + rr * 0.52
+        place_wide_beat(sig, T, pvc_r, style="vt", r_amp=1.18)
     return sig
 
 
@@ -265,8 +298,8 @@ def idioventricular(heart_rate=33):
 
 def ventricular_tachycardia(heart_rate=175):
     sig = np.zeros(N)
-    for r in regular_r_times(heart_rate):
-        place_wide_beat(sig, T, r, style="pvc", r_amp=1.0)
+    for r in regular_r_times(heart_rate, start=0.16):
+        place_wide_beat(sig, T, r, style="vt", r_amp=1.20)
     return sig
 
 
@@ -324,9 +357,11 @@ def lead_signal(r_times,
             sig += gauss(T, r, qrs_ms * 0.45, r_amp)
             sig += gauss(T, r + hw * 0.7, qrs_ms * 0.30, -s_frac * r_amp)
 
-        # ST offset — broad Gaussian centred in ST segment
+        # ST displacement as a plateau from J-point to early T onset.
         if abs(st_offset) > 0.005:
-            sig += gauss(T, r + 0.210, 175, st_offset * 0.72)
+            j_point = r + max(0.045, (qrs_ms / 1000.0) * 0.55)
+            t_onset = r + (qt_ms / 1000.0) * 0.50
+            sig += st_plateau(T, j_point, t_onset, st_offset)
 
         t_c = r + (qt_ms / 1000.0) * 0.63
         sig += gauss(T, t_c, 100, (-1 if t_inverted else 1) * abs(t_amp))
@@ -338,14 +373,19 @@ def lead_signal(r_times,
 # Multi-lead renderer  (stacks 2–4 leads vertically)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def _style_ax(ax, label):
-    ax.set_facecolor(BG)
+def _style_ax(ax, label, render_style="house"):
+    style = RENDER_STYLES.get(render_style, RENDER_STYLES["house"])
+    bg = style["bg"]
+    minor = style["minor"]
+    major = style["major"]
+    
+    ax.set_facecolor(bg)
     ax.set_xticks(np.arange(0, DUR + 0.04, 0.04), minor=True)
     ax.set_yticks(np.arange(-0.6, 1.7, 0.10), minor=True)
     ax.set_xticks(np.arange(0, DUR + 0.20, 0.20))
     ax.set_yticks(np.arange(-0.5, 1.6, 0.50))
-    ax.grid(True, which='minor', color=MINOR, linewidth=0.30, zorder=1)
-    ax.grid(True, which='major', color=MAJOR, linewidth=0.70, zorder=2)
+    ax.grid(True, which='minor', color=minor, linewidth=0.30, zorder=1)
+    ax.grid(True, which='major', color=major, linewidth=0.70, zorder=2)
     ax.set_xlim(0, DUR)
     ax.set_ylim(-0.5, 1.5)
     ax.tick_params(which='both', bottom=False, left=False,
@@ -356,25 +396,29 @@ def _style_ax(ax, label):
             fontsize=8, fontweight='bold', va='top', color='#222222', zorder=5)
 
 
-def render_multilead(leads, rhythm_label, out_path):
+def render_multilead(leads, rhythm_label, out_path, render_style="house"):
     """
     leads: list of (signal_array, lead_name_str)
     """
+    style = RENDER_STYLES.get(render_style, RENDER_STYLES["house"])
+    bg = style["bg"]
+    trace = style["trace"]
+    
     n = len(leads)
     fig, axes = plt.subplots(n, 1, figsize=(12, n * 1.85), dpi=150,
                               gridspec_kw={"hspace": 0.06})
-    fig.patch.set_facecolor(BG)
+    fig.patch.set_facecolor(bg)
     if n == 1:
         axes = [axes]
 
     for ax, (sig, name) in zip(axes, leads):
-        _style_ax(ax, name)
-        ax.plot(T, sig, color=TRACE, linewidth=1.2, zorder=3, antialiased=True)
+        _style_ax(ax, name, render_style=render_style)
+        ax.plot(T, sig, color=trace, linewidth=1.2, zorder=3, antialiased=True)
 
     axes[0].text(0.99, 0.96, '25 mm/s  |  10 mm/mV',
                  transform=axes[0].transAxes, fontsize=6.5,
                  ha='right', va='top', color='#888888', zorder=5)
-    plt.savefig(out_path, bbox_inches='tight', facecolor=BG)
+    plt.savefig(out_path, bbox_inches='tight', facecolor=bg)
     plt.close(fig)
     print(f"  ✓  {out_path.name}")
 
@@ -390,9 +434,10 @@ def _rr(hr, start=0.35):
 def anterior_stemi(hr=80):
     rs = _rr(hr)
     return [
-        (lead_signal(rs, st_offset=+0.38, t_amp=0.55, big_q=False),  "V2 — ST elevation"),
-        (lead_signal(rs, st_offset=+0.28, t_amp=0.45),               "V3 — ST elevation"),
-        (lead_signal(rs, st_offset=-0.15, t_inverted=True),           "aVL — reciprocal"),
+        (lead_signal(rs, st_offset=+0.74, t_amp=0.58, big_q=True, qrs_ms=96, r_amp=0.82), "V2 — tombstone ST elevation"),
+        (lead_signal(rs, st_offset=+0.66, t_amp=0.54, big_q=True, qrs_ms=94, r_amp=0.88), "V3 — tombstone ST elevation"),
+        (lead_signal(rs, st_offset=+0.46, t_amp=0.44, qrs_ms=90),                           "V4 — ST elevation"),
+        (lead_signal(rs, st_offset=-0.24, t_inverted=True, t_amp=0.20), "aVL — reciprocal depression"),
     ]
 
 
@@ -434,6 +479,19 @@ def nstemi_st_depression(hr=88):
         (lead_signal(rs, st_offset=-0.20, t_inverted=True,  t_amp=0.22),  "V4 — ST depression"),
         (lead_signal(rs, st_offset=-0.18, t_inverted=True,  t_amp=0.20),  "V5 — ST depression"),
         (lead_signal(rs, st_offset=-0.14, t_amp=0.28),                    "II — reference"),
+    ]
+
+
+def qwave_old_mi(hr=72):
+    """Prior MI pattern: persistent pathological Q waves without acute STEMI changes."""
+    rs = _rr(hr)
+    return [
+        (lead_signal(rs, big_q=True, st_offset=-0.03, t_inverted=True, t_amp=0.18),
+         "III — pathological Q wave"),
+        (lead_signal(rs, big_q=True, st_offset=-0.02, t_amp=0.20),
+         "aVF — pathological Q wave"),
+        (lead_signal(rs, big_q=True, st_offset=-0.01, t_amp=0.22),
+         "II — old inferior infarct pattern"),
     ]
 
 
@@ -560,21 +618,192 @@ def brugada_type1_strip(hr=72):
     ]
 
 
+def wpw_strip(hr=72):
+    """WPW: shortened PR (~90 ms), delta slur, wide QRS — Lead II rhythm strip."""
+    rs = _rr(hr)
+    return lead_signal(rs, pr_ms=90, qrs_ms=120, qt_ms=360,
+                       p_amp=0.14, r_amp=1.0, s_frac=0.18,
+                       st_offset=-0.08, t_inverted=True, t_amp=0.20)
+
+
+def long_qt_strip(hr=68):
+    """Long QT: markedly prolonged QT (>500 ms), normal P/QRS, sinus rhythm."""
+    rs = _rr(hr)
+    return lead_signal(rs, pr_ms=160, qrs_ms=80, qt_ms=520,
+                       p_amp=0.15, r_amp=1.0, s_frac=0.15,
+                       t_amp=0.22)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Rendering
+def hyperkalemia_strip(hr=65):
+    """Hyperkalemia: absent P waves, widened QRS (~140 ms), very tall tented T waves.
+    Models moderate-to-severe hyperkalaemia (K+ ≥ 6.5 mEq/L) in Lead II."""
+    sig = np.zeros(N)
+    for r in regular_r_times(hr):
+        # Wide QRS — no P wave; narrow tented T added separately
+        place_normal_beat(sig, T, r, no_p=True, qrs_ms=140, qt_ms=350, t_amp=0.0)
+        # Tall, narrow, symmetric ("tented") T wave
+        sig += gauss(T, r + 0.225, 62, 0.64)
+    return sig
+
+
+def pericarditis_strip(hr=90):
+    """Pericarditis: diffuse concave (saddle-shaped) STE + PR depression in Lead II."""
+    sig = np.zeros(N)
+    for r in regular_r_times(hr):
+        # PR depression — baseline dips slightly just before QRS
+        pr_seg_center = r - 0.055
+        sig += gauss(T, pr_seg_center, 22, -0.055)
+
+        # Standard beat (slightly elevated T to blend with STE)
+        place_normal_beat(sig, T, r, pr_ms=160, qrs_ms=80, qt_ms=360,
+                          p_amp=0.13, r_amp=0.95, t_amp=0.34)
+
+        # Concave (saddle-shaped) STE — gentle arch from J-point to T-wave onset
+        j_point = r + 0.043
+        t_onset = r + 0.180
+        sig += st_plateau(T, j_point, t_onset, amp=0.14)
+    return sig
+
+
+def pericarditis_12lead(hr=90):
+    """Pericarditis multi-lead: diffuse STE in II/aVF/V3–V5, PR depression, PR elevation in aVR."""
+    rs = _rr(hr)
+    return [
+        (lead_signal(rs, st_offset=+0.14, t_amp=0.34, pr_ms=160, p_amp=0.13), "II — diffuse STE + PR depression"),
+        (lead_signal(rs, st_offset=+0.12, t_amp=0.30, pr_ms=160, p_amp=0.12), "aVF — diffuse STE"),
+        (lead_signal(rs, st_offset=+0.13, t_amp=0.32, pr_ms=160, p_amp=0.11), "V4 — diffuse STE"),
+        (lead_signal(rs, st_offset=-0.06, t_inverted=True, t_amp=0.10,
+                     p_inverted=True, p_amp=0.10),                             "aVR — PR elevation (reciprocal)"),
+    ]
+
+
+def electrical_alternans_strip(hr=118):
+    """Electrical alternans: beat-to-beat QRS amplitude alternation at sinus tachycardia rate."""
+    sig = np.zeros(N)
+    r_times = list(regular_r_times(hr))
+    # Alternate high/low amplitude on each beat
+    amps = [1.05, 0.52]
+    for i, r in enumerate(r_times):
+        amp = amps[i % 2]
+        place_normal_beat(sig, T, r, pr_ms=150, qrs_ms=82, qt_ms=310,
+                          p_amp=0.11 * amp, r_amp=amp, t_amp=0.24 * amp)
+    return sig
+
+
+def electrical_alternans_12lead(hr=118):
+    """Electrical alternans multi-lead: alternating QRS height visible across precordial leads."""
+    rs = list(_rr(hr))
+    # Build an alternating signal per lead by interleaving high/low beats
+    def alt_lead(st_off=0.0, r_hi=1.05, r_lo=0.52, t_hi=0.24, t_lo=0.12):
+        sig = np.zeros(N)
+        for i, r in enumerate(rs):
+            amp = r_hi if i % 2 == 0 else r_lo
+            t = t_hi if i % 2 == 0 else t_lo
+            sig += gauss(T, r - 0.130 + 0.040, 45, 0.11)          # P wave
+            sig += gauss(T, r - 0.032, 20, -0.07 * amp)            # Q
+            sig += gauss(T, r,          36,  amp)                   # R
+            sig += gauss(T, r + 0.028, 24, -0.14 * amp)            # S
+            if abs(st_off) > 0.005:
+                sig += st_plateau(T, r + 0.045, r + 0.200, st_off)
+            sig += gauss(T, r + 0.196, 100, t)                     # T
+        return sig
+
+    return [
+        (alt_lead(r_hi=1.05, r_lo=0.52), "V3 — electrical alternans (QRS amplitude)"),
+        (alt_lead(r_hi=0.90, r_lo=0.44), "V4 — electrical alternans"),
+        (alt_lead(r_hi=0.78, r_lo=0.38), "V5 — electrical alternans"),
+        (alt_lead(r_hi=0.65, r_lo=0.31), "V6 — electrical alternans"),
+    ]
+
+
+def lae_strip(hr=70):
+    """Left Atrial Enlargement: broad notched M-shaped P waves (P mitrale), Lead II."""
+    sig = np.zeros(N)
+    for r in regular_r_times(hr):
+        p_center = r - 0.160 + 0.040   # P midpoint for PR = 160 ms
+        # M-shaped / notched P: RA component (earlier) + LA component (later)
+        sig += gauss(T, p_center - 0.027, 34, 0.12)    # right-atrial hump
+        sig += gauss(T, p_center + 0.030, 34, 0.11)    # left-atrial hump
+        place_normal_beat(sig, T, r, no_p=True, pr_ms=180)
+    return sig
+
+
+def rae_strip(hr=72):
+    """Right Atrial Enlargement: tall, peaked P waves (P pulmonale ≥ 0.25 mV), Lead II."""
+    sig = np.zeros(N)
+    for r in regular_r_times(hr):
+        p_center = r - 0.160 + 0.040
+        sig += gauss(T, p_center, 27, 0.30)     # tall narrow peaked P (RA dominant)
+        place_normal_beat(sig, T, r, no_p=True)
+    return sig
+
+
+def lafb_strip(hr=70):
+    """LAFB: rS pattern in Lead II reflecting left-axis deviation (~−60°). QRS < 120 ms."""
+    sig = np.zeros(N)
+    for r in regular_r_times(hr):
+        p_center = r - 0.160 + 0.040
+        sig += gauss(T, p_center, 40, 0.10)     # small P in Lead II with LAD
+        sig += gauss(T, r, 22, 0.24)            # small r wave
+        sig += gauss(T, r + 0.026, 26, -0.80)  # deep S wave (axis deviation)
+        sig += gauss(T, r + 0.228, 90, 0.20)   # upright T wave
+    return sig
+
+
+def bigeminy_strip(hr=72):
+    """Ventricular Bigeminy: every other beat is a PVC — sinus → PVC → pause repeats."""
+    sig = np.zeros(N)
+    rr_int = 60.0 / hr
+    r = 0.35
+    while r < DUR - 0.20:
+        place_normal_beat(sig, T, r)                    # sinus beat
+        pvc_r = r + rr_int * 0.55                       # PVC at coupling interval
+        if pvc_r < DUR - 0.20:
+            place_wide_beat(sig, T, pvc_r, style="pvc", r_amp=1.15)
+        r += rr_int * 2.0                               # compensatory pause
+    return sig
+
+
+def trigeminy_strip(hr=70):
+    """Ventricular Trigeminy: every third beat is a PVC — sinus → sinus → PVC pattern."""
+    sig = np.zeros(N)
+    rr_int = 60.0 / hr
+    r = 0.35
+    while r < DUR - 0.20:
+        place_normal_beat(sig, T, r)                    # first sinus beat
+        r2 = r + rr_int
+        if r2 < DUR - 0.20:
+            place_normal_beat(sig, T, r2)               # second sinus beat
+        pvc_r = r2 + rr_int * 0.58                      # PVC after second beat
+        if pvc_r < DUR - 0.20:
+            place_wide_beat(sig, T, pvc_r, style="pvc", r_amp=1.12)
+        r += rr_int * 3.0                               # next group at 3× RR
+    return sig
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Rendering
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def render(signal, rhythm_label, out_path, rate_label=None):
+def render(signal, rhythm_label, out_path, render_style="house"):
+    style = RENDER_STYLES.get(render_style, RENDER_STYLES["house"])
+    bg = style["bg"]
+    minor = style["minor"]
+    major = style["major"]
+    trace = style["trace"]
+    
     fig, ax = plt.subplots(figsize=(12, 2.4), dpi=150)
-    fig.patch.set_facecolor(BG)
-    ax.set_facecolor(BG)
+    fig.patch.set_facecolor(bg)
+    ax.set_facecolor(bg)
 
     ax.set_xticks(np.arange(0, DUR + 0.04, 0.04), minor=True)
     ax.set_yticks(np.arange(-0.6, 1.7, 0.1), minor=True)
     ax.set_xticks(np.arange(0, DUR + 0.2, 0.2))
     ax.set_yticks(np.arange(-0.5, 1.6, 0.5))
-    ax.grid(True, which='minor', color=MINOR, linewidth=0.3, zorder=1)
-    ax.grid(True, which='major', color=MAJOR, linewidth=0.7, zorder=2)
+    ax.grid(True, which='minor', color=minor, linewidth=0.3, zorder=1)
+    ax.grid(True, which='major', color=major, linewidth=0.7, zorder=2)
 
     ax.set_xlim(0, DUR)
     ax.set_ylim(-0.5, 1.5)
@@ -583,20 +812,14 @@ def render(signal, rhythm_label, out_path, rate_label=None):
     for s in ax.spines.values():
         s.set_visible(False)
 
-    ax.plot(T, signal, color=TRACE, linewidth=1.2, zorder=3, antialiased=True)
+    ax.plot(T, signal, color=trace, linewidth=1.2, zorder=3, antialiased=True)
 
     ax.text(0.99, 0.97, '25 mm/s  |  10 mm/mV  |  Lead II',
             transform=ax.transAxes, fontsize=6.5, ha='right',
             va='top', color='#888888')
-    if rate_label:
-        ax.text(0.01, 0.04, rate_label, transform=ax.transAxes,
-                fontsize=6.5, va='bottom', color='#555555', style='italic')
-
     plt.tight_layout(pad=0.2)
-    plt.savefig(out_path, bbox_inches='tight', facecolor=BG)
+    plt.savefig(out_path, bbox_inches='tight', facecolor=bg)
     plt.close(fig)
-    print(f"  ✓  {out_path.name}")
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Case Definitions
@@ -978,7 +1201,163 @@ CASES = [
                   "precordial lead (V1–V2 in standard position or V1–V2 one intercostal space higher). "
                   "Can be spontaneous or unmasked by fever, Na-channel blockers, or cocaine. "
                   "Treat symptomatic patients with an ICD. Screen all first-degree relatives."),
+
+    dict(id="wpw_01", rhythm="Wolff-Parkinson-White (WPW)", category="channelopathy", difficulty=3,
+         generator=lambda: wpw_strip(72),
+         rate=72, regularity="regular",
+         key_features=["Short PR interval (<120 ms)",
+                       "Delta wave (slurred upstroke on QRS)",
+                       "Wide QRS (≥120 ms) due to ventricular pre-excitation",
+                       "Secondary ST-T changes discordant to delta wave",
+                       "Risk of SVT, atrial fibrillation, and sudden death"],
+         teaching="WPW results from an accessory pathway (Bundle of Kent) bypassing the AV node. "
+                  "Pre-excitation produces the triad: short PR, delta wave, and wide QRS. "
+                  "The danger is AFib conducting rapidly down the pathway — can degenerate to VF. "
+                  "Avoid AV nodal blockers (adenosine, beta-blockers, digoxin) in AFib with WPW. "
+                  "Definitive treatment is catheter ablation of the accessory pathway."),
+
+    dict(id="lngqt_01", rhythm="Long QT Syndrome", category="channelopathy", difficulty=3,
+         generator=lambda: long_qt_strip(68),
+         rate=68, regularity="regular",
+         key_features=["QTc >500 ms (markedly prolonged)",
+                       "Normal P wave and QRS",
+                       "T wave may be broad, notched, or biphasic",
+                       "Risk of Torsades de Pointes (TdP)",
+                       "Triggered by bradycardia, hypokalemia, or QT-prolonging drugs"],
+         teaching="Long QT syndrome predisposes to Torsades de Pointes — a polymorphic VT that can "
+                  "cause syncope or degenerate to VF. The corrected QT (QTc = QT / √RR) >500 ms is "
+                  "high risk. Causes: congenital (LQTS1-3), electrolyte abnormalities (↓K, ↓Mg), "
+                  "and drugs (antiarrhythmics, antipsychotics, antibiotics). "
+                  "Treat: correct electrolytes, remove offending drugs, magnesium IV for TdP, ICD for congenital LQTS."),
 ]
+
+
+# ── Review cases (not yet in cases.json — awaiting approval) ─────────────────
+REVIEW_CASES = [
+
+    dict(id="hyperkal_01", rhythm="Hyperkalemia", category="electrolyte", difficulty=3,
+        review=True, generator=lambda: hyperkalemia_strip(65),
+        rate=65, regularity="regular",
+        key_features=["Absent P waves (flat or invisible)",
+                   "Widened QRS complex (≥120 ms)",
+                   "Very tall, narrow, symmetric ('tented') T waves",
+                   "Shortened QT interval",
+                   "Progressive sine-wave QRS pattern at severe K+ levels"],
+        teaching="Hyperkalemia produces a sequential ECG progression. Early changes: peaked tented T waves. "
+               "Moderate: P wave flattening/disappearance, widening QRS. Severe: sine-wave pattern, VF risk. "
+               "The tented T is characteristically narrow and symmetric — unlike the broad T of ischemia. "
+               "Treat urgently: IV calcium (stabilises membrane), insulin + glucose, sodium bicarb, dialysis."),
+
+    dict(id="lae_01", rhythm="Left Atrial Enlargement (LAE)", category="structural", difficulty=2,
+        review=True, generator=lambda: lae_strip(70),
+        rate=70, regularity="regular",
+        key_features=["Broad, notched (M-shaped) P wave in Lead II (P mitrale)",
+                   "P wave duration ≥ 120 ms (≥ 3 small squares)",
+                   "Biphasic P in V1 with deep wide negative terminal deflection",
+                   "Associated with mitral valve disease, hypertension",
+                   "Often co-exists with atrial fibrillation or flutter"],
+        teaching="LAE prolongs left-atrial depolarisation, producing a bifid (M-shaped) P wave in Lead II "
+               "called P mitrale (duration ≥120 ms). In V1, the terminal component is negative (wide and deep), "
+               "reflecting delayed LA depolarisation. Common causes: mitral stenosis, hypertension, "
+               "dilated cardiomyopathy. Patients with LAE are at high risk for atrial fibrillation."),
+
+    dict(id="rae_01", rhythm="Right Atrial Enlargement (RAE)", category="structural", difficulty=2,
+        review=True, generator=lambda: rae_strip(72),
+        rate=72, regularity="regular",
+        key_features=["Tall, peaked P wave ≥ 0.25 mV (2.5 mm) in II, III, aVF — P pulmonale",
+                   "P wave duration normal (< 120 ms) — amplitude is the hallmark",
+                   "Also peaked P in V1–V2",
+                   "Associated with pulmonary hypertension, COPD, pulmonary stenosis",
+                   "Often seen with right ventricular hypertrophy"],
+        teaching="RAE enlarges the right atrium, making right-atrial depolarisation dominate the P vector. "
+               "The result is a tall, narrow, peaked P wave (P pulmonale) ≥2.5 mm in II, III, aVF. "
+               "Duration is normal (<120 ms) because only amplitude is affected — unlike LAE where duration "
+               "is prolonged. Causes: cor pulmonale, COPD, pulmonary hypertension, tricuspid stenosis."),
+
+    dict(id="lafb_01", rhythm="Left Anterior Fascicular Block (LAFB)", category="conduction", difficulty=3,
+        review=True, generator=lambda: lafb_strip(70),
+        rate=70, regularity="regular",
+        key_features=["Left axis deviation (−45° to −90°) — the key criterion",
+                   "rS pattern in II, III, aVF (small r, deep S)",
+                   "qR pattern in I and aVL (small q, tall R)",
+                   "Narrow QRS (< 120 ms) — not a bundled branch block",
+                   "No other cause of LAD (inferior MI, hyperkalemia) present"],
+        teaching="LAFB blocks the anterior fascicle of the left bundle, redirecting ventricular activation "
+               "superiorly and leftward. The axis shifts to −45° to −90° (left axis deviation). "
+               "In Lead II: small initial r then deep S (rS). In Leads I and aVL: small q then tall R (qR). "
+               "QRS is narrow (<120 ms) — distinguish from LBBB. Causes: CAD, cardiomyopathy, hypertension."),
+
+    dict(id="bigu_01", rhythm="Ventricular Bigeminy", category="ventricular", difficulty=2,
+        review=True, generator=lambda: bigeminy_strip(72),
+        rate=72, regularity="regular",
+        key_features=["Every other beat is a PVC (alternating sinus-PVC pattern)",
+                   "PVC: wide, bizarre QRS > 120 ms; no preceding P wave",
+                   "Compensatory pause after each PVC",
+                   "Short coupling interval (< 70 % of RR) from sinus to PVC",
+                   "Underlying rate often appears slow due to bigeminal pauses"],
+        teaching="Bigeminy describes a pattern where every other beat is ectopic. In ventricular bigeminy, "
+               "a narrow-complex sinus beat alternates with a wide-complex PVC. The PVC couples at ~55–65 % "
+               "of the sinus RR, followed by a compensatory pause. Causes: structural heart disease, CAD, "
+               "hypokalemia, digoxin toxicity, stimulants. Treat the underlying cause; beta-blockers if symptomatic."),
+
+    dict(id="trigu_01", rhythm="Ventricular Trigeminy", category="ventricular", difficulty=2,
+        review=True, generator=lambda: trigeminy_strip(70),
+        rate=70, regularity="regular",
+        key_features=["Every third beat is a PVC (sinus-sinus-PVC pattern repeats)",
+                   "PVC: wide, bizarre QRS > 120 ms; no preceding P wave",
+                   "Compensatory pause after each PVC maintains underlying sinus rate",
+                   "Two normal narrow complexes precede each wide complex",
+                   "Effective ventricular rate lower than the underlying sinus rate"],
+        teaching="Trigeminy describes a grouping of three beats: two sinus beats followed by one PVC, "
+               "repeating throughout the tracing. The PVC fires prematurely after the second sinus beat, "
+               "followed by a compensatory pause. Same causes as bigeminy: structual disease, electrolyte "
+               "imbalance (hypokalemia, hypomagnesemia), digoxin toxicity. Treatment: address the underlying trigger."),
+
+    dict(id="qwave_01", rhythm="Pathological Q Waves (Old MI Pattern)", category="nstemi", difficulty=3,
+        review=True, generator=lambda: qwave_old_mi(72),
+        rate=72, regularity="regular",
+        key_features=["Pathological Q waves in inferior leads (II, III, aVF)",
+                   "Q-wave width ≥ 40 ms or depth ≥ 25% of following R wave",
+                   "No acute contiguous ST-segment elevation",
+                   "Residual T-wave flattening or inversion can persist",
+                   "Suggests prior transmural infarction/scar"],
+        teaching="Persistent pathological Q waves indicate electrically silent scar from a prior infarction. "
+               "In old inferior MI patterns, Q waves are most prominent in II, III, and aVF. "
+               "Unlike acute STEMI, there is no new contiguous ST elevation. Correlate with symptoms and serial troponins "
+               "to determine whether the finding is chronic or part of an acute-on-chronic process."),
+
+    dict(id="pericarditis_01", rhythm="Pericarditis", category="structural", difficulty=3,
+        review=True, generator=lambda: pericarditis_strip(90),
+        multilead=pericarditis_12lead(90),
+        rate=90, regularity="regular",
+        key_features=["Diffuse concave (saddle-shaped) ST elevation in most leads",
+                   "PR depression in leads with ST elevation",
+                   "PR elevation in aVR (reciprocal)",
+                   "No focal reciprocal ST depression (unlike STEMI)",
+                   "ST elevation spares aVR and V1"],
+        teaching="Pericarditis causes diffuse ST elevation from subepicardial irritation, not focal coronary occlusion. "
+               "The key distinguishing features from STEMI: concave (saddle-shaped) rather than convex STE, "
+               "diffuse distribution across multiple territories, PR depression in the same leads showing STE, "
+               "and absence of reciprocal ST depression. Stage I (days 1–2) is the classic presentation. "
+               "Treat with NSAIDs + colchicine; avoid corticosteroids initially."),
+
+    dict(id="tamponade_01", rhythm="Electrical Alternans", category="structural", difficulty=3,
+        review=True, generator=lambda: electrical_alternans_strip(118),
+        multilead=electrical_alternans_12lead(118),
+        rate=118, regularity="regular",
+        key_features=["Beat-to-beat alternation in QRS amplitude (electrical alternans)",
+                   "Sinus tachycardia (compensatory)",
+                   "Low voltage in limb leads",
+                   "No ST or T wave abnormalities (purely mechanical cause)",
+                   "Classic sign of cardiac tamponade"],
+        teaching="Electrical alternans occurs when a pericardial effusion is large enough that the heart swings "
+               "pendulum-like within the fluid, changing its electrical axis from the ECG's perspective on every "
+               "other beat. The result is alternating QRS height (and sometimes P and T wave height) in a perfectly "
+               "regular pattern. Sinus tachycardia is almost always present (compensatory response to reduced cardiac "
+               "output). This is a medical emergency — confirm with bedside echo and prepare for pericardiocentesis."),
+]
+
+CASES = CASES + REVIEW_CASES
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -986,6 +1365,19 @@ CASES = [
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def main():
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        '--render-style',
+        type=str,
+        default='house',
+        choices=sorted(RENDER_STYLES.keys()),
+        help='Rendering palette/style for PNG outputs (default: house)'
+    )
+    args = parser.parse_args()
+    
     np.random.seed(0)
     metadata = []
 
@@ -995,10 +1387,9 @@ def main():
         out_path = CASES_DIR / f"{case['id']}.png"
         output = case["generator"]()
         if case.get("multilead"):
-            render_multilead(output, case["rhythm"], out_path)
+            render_multilead(output, case["rhythm"], out_path, render_style=args.render_style)
         else:
-            rate_label = f"Rate: {case['rate']} bpm" if case["rate"] else None
-            render(output, case["rhythm"], out_path, rate_label)
+            render(output, case["rhythm"], out_path, render_style=args.render_style)
 
         metadata.append({
             "id":              case["id"],
@@ -1013,9 +1404,44 @@ def main():
             "teaching":        case["teaching"],
         })
 
+    live_count = 0
+    review_count = 0
+    REVIEW_DIR = CASES_DIR / "review"
+    REVIEW_DIR.mkdir(parents=True, exist_ok=True)
+
+    for case in CASES:
+        is_review = case.get("review", False)
+        out_dir = REVIEW_DIR if is_review else CASES_DIR
+        out_path = out_dir / f"{case['id']}.png"
+        output = case["generator"]()
+        if case.get("multilead"):
+            render_multilead(output, case["rhythm"], out_path, render_style=args.render_style)
+        else:
+            render(output, case["rhythm"], out_path, render_style=args.render_style)
+
+        if is_review:
+            review_count += 1
+            print(f"  ⏳  {case['id']:<28} → review/  (awaiting approval)")
+        else:
+            live_count += 1
+            metadata.append({
+                "id":              case["id"],
+                "rhythm":          case["rhythm"],
+                "category":        case["category"],
+                "difficulty":      case["difficulty"],
+                "imagePath":       f"/cases/{case['id']}.png",
+                "twelveleadPath":  f"/cases/{case['id']}_12lead.png",
+                "rate":            case["rate"],
+                "regularity":      case["regularity"],
+                "keyFeatures":     case["key_features"],
+                "teaching":        case["teaching"],
+            })
+
     out = DATA_DIR / "cases.json"
     out.write_text(json.dumps(metadata, indent=2))
-    print(f"\n✓  Wrote {len(metadata)} entries to {out}")
+    print(f"\n✓  Wrote {live_count} live entries to {out}")
+    if review_count:
+        print(f"⏳  {review_count} review strip(s) → {REVIEW_DIR}")
     print("Done.\n")
 
 

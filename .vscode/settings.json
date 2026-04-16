@@ -1,0 +1,37 @@
+{
+  "python.analysis.diagnosticMode": "openFilesOnly",
+  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.useLibraryCodeForTypes": false,
+  "python.analysis.exclude": [
+    "**/.venv/**",
+    "**/site-packages/**",
+    "**/dist-packages/**",
+    "**/.vscode/extensions/**",
+    "**/.next/**",
+    "**/node_modules/**"
+  ],
+  "problems.exclude": {
+    "**/.vscode/extensions/**": true
+  },
+  "chat.tools.terminal.autoApprove": {
+    "/Users/waltcrit/EKGTrainer/.venv/bin/python": true,
+    "printf": true,
+    "test": true,
+    "git add": true,
+    "git commit": true,
+    "npm test": true,
+    "npm run build": true,
+    "npx vitest": true,
+    "npx tsc": true,
+    "/^cd /Users/waltcrit/EKGTrainer/web ; node -e \"\nconst cases = require\\('\\./src/data/cases\\.json'\\);\nlet missing = \\[\\];\nconst fs = require\\('fs'\\);\nconst path = require\\('path'\\);\nfor \\(const c of cases\\) \\{\n  const strip = path\\.join\\('public', c\\.imagePath\\.replace\\(/\\^\\\\\\\\//, ''\\)\\);\n  const tl = path\\.join\\('public', c\\.twelveleadPath\\.replace\\(/\\^\\\\\\\\//, ''\\)\\);\n  if \\(!fs\\.existsSync\\(strip\\)\\) missing\\.push\\('STRIP MISSING: ' \\+ c\\.id \\+ ' -> ' \\+ c\\.imagePath\\);\n  if \\(!fs\\.existsSync\\(tl\\)\\) missing\\.push\\('12LEAD MISSING: ' \\+ c\\.id \\+ ' -> ' \\+ c\\.twelveleadPath\\);\n\\}\nif \\(missing\\.length === 0\\) \\{\n  console\\.log\\('All ' \\+ cases\\.length \\+ ' cases have valid image paths\\.'\\);\n\\} else \\{\n  console\\.log\\(missing\\.slice\\(0, 20\\)\\.join\\('\\\\n'\\)\\);\n  console\\.log\\('Total missing: ' \\+ missing\\.length\\);\n\\}\n\"$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "import": true,
+    "readFileSync,": true,
+    "missing.slice(0,": true,
+    "m": true,
+    "console.log(\"Total": true,
+    "EOF": true
+  }
+}

@@ -21,6 +21,9 @@ Supported methods
 
 from __future__ import annotations
 
+import importlib
+from typing import Any, cast
+
 from typing import Literal
 
 import numpy as np
@@ -36,8 +39,8 @@ DEFAULT_METHOD: DetectionMethod = "hamilton"
 def _detect_hamilton(signal: np.ndarray, fs: int) -> np.ndarray:
     """Use BioSPPy's ecg module (Hamilton-Tompkins)."""
     try:
-        from biosppy.signals import ecg as bsp_ecg  # type: ignore
-        out = bsp_ecg.ecg(signal=signal, sampling_rate=fs, show=False)
+        bsp_ecg = cast(Any, importlib.import_module("biosppy.signals.ecg"))
+        out = cast(dict[str, object], bsp_ecg.ecg(signal=signal, sampling_rate=fs, show=False))
         return np.asarray(out["rpeaks"], dtype=np.int64)
     except Exception as exc:
         raise RuntimeError(f"BioSPPy R-peak detection failed: {exc}") from exc
@@ -53,8 +56,6 @@ def _detect_pantompkins(signal: np.ndarray, fs: int) -> np.ndarray:
       3. Moving-window integration
       4. Threshold + peak search
     """
-    from scipy import signal as sp_signal
-
     sig = np.asarray(signal, dtype=np.float64)
     # Derivative
     diff = np.diff(sig, prepend=sig[0])
@@ -70,23 +71,22 @@ def _detect_pantompkins(signal: np.ndarray, fs: int) -> np.ndarray:
     # Minimum distance between peaks: 200 ms refractory
     min_dist = int(0.20 * fs)
 
-    from scipy.signal import find_peaks
-    peaks, _ = find_peaks(integrated, height=threshold, distance=min_dist)
+    scipy_signal = cast(Any, importlib.import_module("scipy.signal"))
+    peaks, _ = scipy_signal.find_peaks(integrated, height=threshold, distance=min_dist)
     return peaks.astype(np.int64)
 
 
 def _detect_wfdb(signal: np.ndarray, fs: int) -> np.ndarray:
     """Use WFDB's GQRS detector."""
     try:
-        import wfdb  # type: ignore
-        import wfdb.processing as wfdb_proc  # type: ignore
+        wfdb_proc = cast(Any, importlib.import_module("wfdb.processing"))
     except ImportError:
         raise ImportError(
             "wfdb is required for the 'wfdb' detection method. "
             "Install with: pip install wfdb"
         )
     sig = signal.astype(np.float64)
-    qrs = wfdb_proc.qrs.gqrs_detect(sig=sig, fs=fs)
+    qrs = wfdb_proc.gqrs_detect(sig=sig, fs=fs)
     return np.asarray(qrs, dtype=np.int64)
 
 

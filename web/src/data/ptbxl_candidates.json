@@ -1,0 +1,65 @@
+{
+  "bigu_01": [
+    {
+      "rank": 1,
+      "ecg_id": 4637,
+      "codes": "PVC(100), BIGU(100)",
+      "stripPath": "/cases/candidates/bigu_01/bigu_01__c1_ecg4637.png",
+      "twelveleadPath": "/cases/candidates/bigu_01/bigu_01__c1_ecg4637_12lead.png"
+    }
+  ],
+  "trigu_01": [
+    {
+      "rank": 1,
+      "ecg_id": 816,
+      "codes": "LAFB(100)",
+      "stripPath": "/cases/candidates/trigu_01/trigu_01__c1_ecg816.png",
+      "twelveleadPath": "/cases/candidates/trigu_01/trigu_01__c1_ecg816_12lead.png"
+    }
+  ],
+  "hyperkal_01": [
+    {
+      "rank": 1,
+      "ecg_id": 8959,
+      "codes": "LVH(100), NDT(100), EL(100)",
+      "stripPath": "/cases/candidates/hyperkal_01/hyperkal_01__c1_ecg8959.png",
+      "twelveleadPath": "/cases/candidates/hyperkal_01/hyperkal_01__c1_ecg8959_12lead.png"
+    }
+  ],
+  "lae_01": [
+    {
+      "rank": 1,
+      "ecg_id": 6926,
+      "codes": "LAO/LAE(100)",
+      "stripPath": "/cases/candidates/lae_01/lae_01__c1_ecg6926.png",
+      "twelveleadPath": "/cases/candidates/lae_01/lae_01__c1_ecg6926_12lead.png"
+    }
+  ],
+  "rae_01": [
+    {
+      "rank": 1,
+      "ecg_id": 10765,
+      "codes": "RAO/RAE(100), LPFB(100)",
+      "stripPath": "/cases/candidates/rae_01/rae_01__c1_ecg10765.png",
+      "twelveleadPath": "/cases/candidates/rae_01/rae_01__c1_ecg10765_12lead.png"
+    }
+  ],
+  "lafb_01": [
+    {
+      "rank": 1,
+      "ecg_id": 41,
+      "codes": "LAFB(100)",
+      "stripPath": "/cases/candidates/lafb_01/lafb_01__c1_ecg41.png",
+      "twelveleadPath": "/cases/candidates/lafb_01/lafb_01__c1_ecg41_12lead.png"
+    }
+  ],
+  "qwave_01": [
+    {
+      "rank": 1,
+      "ecg_id": 266,
+      "codes": "ALMI(100), LAFB(100), PVC(100), IMI(80), ANEUR(50)",
+      "stripPath": "/cases/candidates/qwave_01/qwave_01__c1_ecg266.png",
+      "twelveleadPath": "/cases/candidates/qwave_01/qwave_01__c1_ecg266_12lead.png"
+    }
+  ]
+}

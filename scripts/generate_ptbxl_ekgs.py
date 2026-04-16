@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# pyright: basic
+
 """
 PTB-XL EKG Extractor for EKGTrainer
 =====================================
@@ -32,9 +34,11 @@ Usage
 
 import argparse
 import ast
+import json
 import sys
 import warnings
 from pathlib import Path
+from typing import Any, cast
 
 import numpy as np  # type: ignore[import-untyped]
 import matplotlib  # type: ignore[import-untyped]
@@ -86,6 +90,29 @@ LAYOUT = [
     [("III",0), ("aVF",1), ("V3",2), ("V6",3)],
 ]
 COL_W = 2.5  # seconds per column in 12-lead grid
+SEGMENT_PAD = 0.012  # keep trace slightly off the boundary to avoid false continuity
+
+RENDER_STYLES: dict[str, dict[str, float | str]] = {
+    "house": {
+        "bg": BG,
+        "minor": MINOR,
+        "major": MAJOR,
+        "trace": TRACE,
+        "label": "#1a1a1a",
+        "calib": "#888888",
+        "segment_pad": SEGMENT_PAD,
+    },
+    # PhysioNet-like neutral paper/grid tones for easier visual comparison.
+    "physionet": {
+        "bg": "#ffffff",
+        "minor": "#e3e3e3",
+        "major": "#bdbdbd",
+        "trace": "#111111",
+        "label": "#111111",
+        "calib": "#666666",
+        "segment_pad": 0.0,
+    },
+}
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -97,7 +124,10 @@ def bandpass(sig: np.ndarray, low=0.5, high=40.0) -> np.ndarray:
     if not _SCIPY:
         return sig
     nyq = FS / 2
-    b, a = butter(3, [low / nyq, high / nyq], btype='band')
+    ba = butter(3, [low / nyq, high / nyq], btype='band', output='ba')
+    if ba is None:
+        return sig
+    b, a = cast(tuple[np.ndarray, np.ndarray], ba)
     return filtfilt(b, a, sig, axis=0)
 
 
@@ -111,6 +141,13 @@ def lead_ylim(arr: np.ndarray, pad=0.12) -> tuple:
     lo = min(-0.5, p1 - pad)
     hi = max(1.4, p99 + pad)
     return lo, hi
+
+
+def shared_ylim(sig: np.ndarray, pad=0.15) -> tuple:
+    """Shared zero-centered limits for continuous 12-lead rows."""
+    q = np.percentile(np.abs(sig), 99.5)
+    amp = float(np.clip(q + pad, 1.2, 3.0))
+    return -amp, amp
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -130,7 +167,17 @@ def load_df(data_dir: Path) -> "pd.DataFrame":
     return df
 
 
+def load_df_remote() -> "pd.DataFrame":
+    """Load PTB-XL metadata directly from PhysioNet without local download."""
+    csv_url = "https://physionet.org/files/ptb-xl/1.0.3/ptbxl_database.csv?download"
+    df = pd.read_csv(csv_url, index_col="ecg_id")
+    df["scp_codes"] = df["scp_codes"].apply(ast.literal_eval)
+    return df
+
+
 def has_any(scp: dict, codes: list, min_conf: float = 50.0) -> bool:
+    if min_conf <= 0.0:
+        return any(c in scp for c in codes)
     return any(scp.get(c, 0.0) >= min_conf for c in codes)
 
 
@@ -140,10 +187,18 @@ def max_conf(scp: dict, codes: list) -> float:
 
 def quality_score(row) -> float:
     """Higher = better quality record."""
+    def _num(v: object, default: float = 0.0) -> float:
+        try:
+            if v is None:
+                return default
+            return float(pd.to_numeric(v, errors="coerce"))
+        except Exception:
+            return default
+
     s = float(bool(row.get("validated_by_human", False))) * 8.0
     for field in ("baseline_drift", "static_noise", "burst_noise", "electrodes_problems"):
-        v = row.get(field, 0) or 0
-        s += max(0.0, (3.0 - float(v)) * 1.5)  # 0=clean → +4.5; 3=bad → 0
+        v = _num(row.get(field, 0), default=0.0)
+        s += max(0.0, (3.0 - v) * 1.5)  # 0=clean → +4.5; 3=bad → 0
     return s
 
 
@@ -174,6 +229,7 @@ QUERIES: dict = {
     "sarr_01":         (["SARRH"],                  []),
     "pac_01":          (["SVPB"],                   ["AFIB"]),
     "pvc_01":          (["VPB"],                    ["AFIB","BIGU"]),
+    "pvc_01":          (["VPB", "PVC"],              ["AFIB","BIGU"]),
     "svt_01":          (["SVTACH","PSVT"],          ["AFIB","AFLT"]),
     "afib_01":         (["AFIB"],                   ["PACE","3AVB"]),
     "afib_02":         (["AFIB"],                   ["PACE","3AVB"]),
@@ -203,10 +259,25 @@ QUERIES: dict = {
     "lv_strain_01":    (["LVH"],                    []),
     "rv_strain_01":    (["RVH"],                    []),
     "brugada_01":         (["BRGADA"],                 []),
+    "wpw_01":             (["WPW"],                    []),
+    "lngqt_01":           (["LNGQT"],                  []),
     "pace_atrial_01":     (["PACE"],                   []),
     "pace_ventricular_01":(["PACE"],                   []),
     "pace_av_01":         (["PACE"],                   []),
 }
+
+# Review queries — matched to REVIEW_CASES above; real PTB-XL candidates written
+# to web/public/cases/candidates/{case_id}/.  Not yet live in the app.
+REVIEW_QUERIES: dict = {
+    "hyperkal_01": (["EL"],             []),           # 96 records
+    "lae_01":      (["LAO/LAE"],        []),           # 426 records
+    "rae_01":      (["RAO/RAE"],        []),           # 99 records
+    "lafb_01":     (["LAFB"],           ["LBBB"]),     # 1,623 records (exclude LBBB)
+    "bigu_01":     (["BIGU"],           ["AFIB"]),     # 82 records
+    "trigu_01":    (["TRIGU"],          ["AFIB"]),     # 20 records
+    "qwave_01":    (["QWAVE"],          ["INJANT", "INJIN", "INJLA", "INJIL", "STE_"]),
+}
+QUERIES.update(REVIEW_QUERIES)
 
 # Keywords used to differentiate Mobitz I from II via report text
 _WENCKEBACH = ["wenckebach","mobitz i","mobitz 1","type i","type 1","periodically"]
@@ -226,6 +297,18 @@ DEDUP_GROUPS = [
 ]
 
 
+def primary_conf_threshold(case_id: str) -> float:
+    """Primary-code confidence cutoff by case.
+
+    PTB-XL stores some labels (e.g., TRIGU, QWAVE) with 0 confidence; treat
+    key presence as a match for those selections while keeping the default 50
+    threshold elsewhere.
+    """
+    if case_id in {"trigu_01", "qwave_01"}:
+        return 0.0
+    return 50.0
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # Record selection
 # ══════════════════════════════════════════════════════════════════════════════
@@ -235,15 +318,17 @@ def find_record(
     case_id: str,
     used_ids: set,
     data_dir: Path,
+    remote: bool = False,
 ) -> tuple:
     """
     Return (ecg_id, signal_ndarray_5000x12) for the best matching PTB-XL record,
     or (None, None) if no suitable record found.
     """
     primary, exclude = QUERIES[case_id]
+    primary_min_conf = primary_conf_threshold(case_id)
 
     # Primary code match
-    mask = df["scp_codes"].apply(lambda d: has_any(d, primary, 50.0))
+    mask = df["scp_codes"].apply(lambda d: has_any(d, primary, primary_min_conf))
     # Exclude unwanted codes
     if exclude:
         mask &= ~df["scp_codes"].apply(lambda d: has_any(d, exclude, 70.0))
@@ -278,31 +363,109 @@ def find_record(
     for ecg_id, row in candidates.iterrows():
         try:
             fname = str(row["filename_hr"]).lstrip("./")
-            record = wfdb.rdrecord(str(data_dir / fname))
-            sig = record.p_signal  # (5000, 12) mV
+            if remote:
+                fpath = Path(fname)
+                record = wfdb.rdrecord(
+                    fpath.name,
+                    pn_dir=f"ptb-xl/1.0.3/{fpath.parent.as_posix()}",
+                )
+            else:
+                record = wfdb.rdrecord(str(data_dir / fname))
+            sig = getattr(record, "p_signal", None)  # (5000, 12) mV
             if sig is None or sig.shape != (N, 12):
                 continue
             if np.any(np.isnan(sig)) or np.any(np.isinf(sig)):
                 continue
-            return int(ecg_id), sig
+            return int(cast(Any, ecg_id)), sig
         except Exception:
             continue
 
     return None, None
 
 
+def rank_candidates(
+    df: "pd.DataFrame",
+    case_id: str,
+    used_ids: set,
+) -> "pd.DataFrame":
+    """Return ranked candidate rows for a case before signal loading."""
+    primary, exclude = QUERIES[case_id]
+    primary_min_conf = primary_conf_threshold(case_id)
+
+    mask = df["scp_codes"].apply(lambda d: has_any(d, primary, primary_min_conf))
+    if exclude:
+        mask &= ~df["scp_codes"].apply(lambda d: has_any(d, exclude, 70.0))
+    mask &= ~df.index.isin(used_ids)
+
+    candidates = df[mask].copy()
+    if candidates.empty:
+        return candidates
+
+    if "report" in candidates.columns:
+        if case_id == "avb2m1_01":
+            w = candidates["report"].fillna("").str.lower().apply(
+                lambda r: any(k in r for k in _WENCKEBACH)
+            )
+            if w.any():
+                candidates = candidates[w]
+        elif case_id == "avb2m2_01":
+            m = candidates["report"].fillna("").str.lower().apply(
+                lambda r: any(k in r for k in _MOBITZ2)
+            )
+            if m.any():
+                candidates = candidates[m]
+
+    candidates = candidates.copy()
+    candidates["_conf"] = candidates["scp_codes"].apply(lambda d: max_conf(d, primary))
+    candidates["_qual"] = candidates.apply(quality_score, axis=1)
+    candidates["_total"] = candidates["_conf"] + candidates["_qual"]
+    return candidates.sort_values("_total", ascending=False)
+
+
+def load_candidate_signal(row: "pd.Series", data_dir: Path, remote: bool) -> np.ndarray | None:
+    """Load and validate one candidate ECG signal."""
+    try:
+        fname = str(row["filename_hr"]).lstrip("./")
+        if remote:
+            fpath = Path(fname)
+            record = wfdb.rdrecord(
+                fpath.name,
+                pn_dir=f"ptb-xl/1.0.3/{fpath.parent.as_posix()}",
+            )
+        else:
+            record = wfdb.rdrecord(str(data_dir / fname))
+        sig = getattr(record, "p_signal", None)
+        if sig is None or sig.shape != (N, 12):
+            return None
+        if np.any(np.isnan(sig)) or np.any(np.isinf(sig)):
+            return None
+        return sig
+    except Exception:
+        return None
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # Renderers — identical style to the synthetic generators
 # ══════════════════════════════════════════════════════════════════════════════
 
-def _style_ax(ax, label: str, xlim: tuple, ylim: tuple):
-    ax.set_facecolor(BG)
-    ax.set_xticks(np.arange(0, xlim[1] + 0.04, 0.04), minor=True)
-    ax.set_yticks(np.arange(ylim[0], ylim[1] + 0.10, 0.10), minor=True)
-    ax.set_xticks(np.arange(0, xlim[1] + 0.20, 0.20))
-    ax.set_yticks(np.arange(ylim[0], ylim[1] + 0.50, 0.50))
-    ax.grid(True, which='minor', color=MINOR, linewidth=0.28, zorder=1)
-    ax.grid(True, which='major', color=MAJOR, linewidth=0.65, zorder=2)
+def _style_ax(ax, label: str, xlim: tuple, ylim: tuple, *,
+              bg: str = BG,
+              minor: str = MINOR,
+              major: str = MAJOR,
+              label_color: str = '#1a1a1a'):
+    ax.set_facecolor(bg)
+    major_x = np.arange(0, xlim[1] + 1e-9, 0.20)
+    minor_x = np.arange(0, xlim[1] + 1e-9, 0.04)
+    minor_x = minor_x[np.abs((minor_x / 0.20) - np.round(minor_x / 0.20)) > 1e-9]
+    major_y = np.arange(ylim[0], ylim[1] + 1e-9, 0.50)
+    minor_y = np.arange(ylim[0], ylim[1] + 1e-9, 0.10)
+    minor_y = minor_y[np.abs((minor_y / 0.50) - np.round(minor_y / 0.50)) > 1e-9]
+    ax.set_xticks(minor_x, minor=True)
+    ax.set_yticks(minor_y, minor=True)
+    ax.set_xticks(major_x)
+    ax.set_yticks(major_y)
+    ax.grid(True, which='minor', color=minor, linewidth=0.28, zorder=1)
+    ax.grid(True, which='major', color=major, linewidth=0.65, zorder=2)
     ax.set_xlim(*xlim)
     ax.set_ylim(*ylim)
     ax.tick_params(which='both', bottom=False, left=False,
@@ -310,59 +473,94 @@ def _style_ax(ax, label: str, xlim: tuple, ylim: tuple):
     for sp in ax.spines.values():
         sp.set_visible(False)
     ax.text(0.02, 0.96, label, transform=ax.transAxes,
-            fontsize=7.5, fontweight='bold', va='top', color='#1a1a1a', zorder=5)
+            fontsize=7.5, fontweight='bold', va='top', color=label_color, zorder=5)
 
 
-def render_strip(sig: np.ndarray, out_path: Path):
+def _get_style(style_name: str) -> dict[str, float | str]:
+    style = RENDER_STYLES.get(style_name)
+    if style is None:
+        raise ValueError(
+            f"Unknown render style '{style_name}'. "
+            f"Choose one of: {', '.join(sorted(RENDER_STYLES))}."
+        )
+    return style
+
+
+def render_strip(sig: np.ndarray, out_path: Path, render_style: str = "house"):
     """Lead II rhythm strip — matches generate_cases.py render() style."""
+    style = _get_style(render_style)
     lead_ii = get_lead(sig, "II")
     lo, hi = lead_ylim(lead_ii)
 
     fig, ax = plt.subplots(figsize=(12, 2.4), dpi=150)
-    fig.patch.set_facecolor(BG)  # type: ignore[attr-defined]
-    _style_ax(ax, "II", xlim=(0, DUR), ylim=(lo, hi))
-    ax.plot(T, lead_ii, color=TRACE, linewidth=1.2, zorder=3, antialiased=True)
+    fig.patch.set_facecolor(str(style["bg"]))
+    _style_ax(ax, "II", xlim=(0, DUR), ylim=(lo, hi),
+              bg=str(style["bg"]),
+              minor=str(style["minor"]),
+              major=str(style["major"]),
+              label_color=str(style["label"]))
+    ax.plot(T, lead_ii, color=str(style["trace"]), linewidth=1.2, zorder=3, antialiased=True)
     ax.text(0.99, 0.97, '25 mm/s  |  10 mm/mV  |  Lead II',
-            transform=ax.transAxes, fontsize=6.5, ha='right', va='top', color='#888888')
+            transform=ax.transAxes, fontsize=6.5, ha='right', va='top', color=str(style["calib"]))
 
     plt.tight_layout(pad=0.2)
-    plt.savefig(out_path, bbox_inches='tight', facecolor=BG)
+    plt.savefig(out_path, bbox_inches='tight', facecolor=str(style["bg"]))
     plt.close(fig)
 
 
-def render_12lead(sig: np.ndarray, out_path: Path):
-    """Standard 4×3+strip 12-lead — anonymised (no rhythm title in image)."""
+def render_12lead(sig: np.ndarray, out_path: Path, render_style: str = "house"):
+    """Standard 4×3+strip 12-lead on continuous row grids."""
+    style = _get_style(render_style)
+    segment_pad = float(style["segment_pad"])
+
     fig = plt.figure(figsize=(11, 8.5), dpi=150)
-    fig.patch.set_facecolor(BG)  # type: ignore[attr-defined]
+    fig.patch.set_facecolor(str(style["bg"]))
 
     gs = fig.add_gridspec(
-        4, 4,
+        4, 1,
         height_ratios=[1, 1, 1, 0.75],
-        hspace=0.06, wspace=0.04,
+        hspace=0.05,
         left=0.02, right=0.98, top=0.96, bottom=0.03,
     )
 
+    ylim = shared_ylim(sig)
+
     for row_i, row in enumerate(LAYOUT):
+        ax = fig.add_subplot(gs[row_i, 0])
+        _style_ax(ax, "", xlim=(0, DUR), ylim=ylim,
+                  bg=str(style["bg"]),
+                  minor=str(style["minor"]),
+                  major=str(style["major"]),
+                  label_color=str(style["label"]))
+
         for col_i, (lead, _) in enumerate(row):
-            ax  = fig.add_subplot(gs[row_i, col_i])
             n0  = int(col_i * COL_W * FS)
             n1  = int((col_i + 1) * COL_W * FS)
-            arr = get_lead(sig, lead)[n0:n1]
-            t_w = T[n0:n1] - col_i * COL_W
-            _style_ax(ax, lead, xlim=(0, COL_W), ylim=lead_ylim(arr))
-            ax.plot(t_w, arr, color=TRACE, lw=1.05, zorder=3, antialiased=True)
+            pad_n = int(segment_pad * FS)
+            seg_n0 = min(n1, n0 + pad_n)
+            seg_n1 = max(seg_n0, n1 - pad_n)
+            arr = get_lead(sig, lead)[seg_n0:seg_n1]
+            t_w = T[seg_n0:seg_n1]
+            ax.plot(t_w, arr, color=str(style["trace"]), lw=1.05, zorder=3, antialiased=True)
+            ax.text(col_i * COL_W + 0.04, ylim[1] - 0.08, lead,
+                    fontsize=7.5, fontweight='bold', va='top',
+                    color=str(style["label"]), zorder=5)
 
     # Rhythm strip — Lead II full width
-    ax_strip = fig.add_subplot(gs[3, :])
+    ax_strip = fig.add_subplot(gs[3, 0])
     lead_ii  = get_lead(sig, "II")
-    _style_ax(ax_strip, "II (rhythm strip)", xlim=(0, DUR), ylim=lead_ylim(lead_ii))
-    ax_strip.plot(T, lead_ii, color=TRACE, lw=1.05, zorder=3, antialiased=True)
+    _style_ax(ax_strip, "II (rhythm strip)", xlim=(0, DUR), ylim=ylim,
+              bg=str(style["bg"]),
+              minor=str(style["minor"]),
+              major=str(style["major"]),
+              label_color=str(style["label"]))
+    ax_strip.plot(T, lead_ii, color=str(style["trace"]), lw=1.05, zorder=3, antialiased=True)
 
     # Calibration only (anonymised — no diagnosis title)
     fig.text(0.985, 0.985, '25 mm/s  ·  10 mm/mV', fontsize=6.5,
-             ha='right', va='top', color='#888888')
+             ha='right', va='top', color=str(style["calib"]))
 
-    plt.savefig(out_path, dpi=150, bbox_inches='tight', facecolor=BG)
+    plt.savefig(out_path, dpi=150, bbox_inches='tight', facecolor=str(style["bg"]))
     plt.close(fig)
 
 
@@ -391,15 +589,29 @@ def main():
                         help='Force re-download even if data already exists')
     parser.add_argument('--list-codes', action='store_true',
                         help='Print all SCP codes present in the dataset and exit')
+    parser.add_argument('--cases', type=str, default='',
+                        help='Comma-separated case IDs to process (default: all)')
+    parser.add_argument('--remote', action='store_true',
+                        help='Read PTB-XL directly from PhysioNet (no local download)')
+    parser.add_argument('--max-candidates', type=int, default=1,
+                        help='Generate up to N ranked candidates per case (default: 1)')
+    parser.add_argument('--render-style', type=str, default='house',
+                        choices=sorted(RENDER_STYLES.keys()),
+                        help='Rendering palette/style for PNG outputs (default: house)')
     args = parser.parse_args()
     data_dir = args.data_dir
 
-    # Download if needed
-    if args.download or not (data_dir / "ptbxl_database.csv").exists():
-        download_ptbxl(data_dir)
-
-    print(f"\nLoading PTB-XL metadata from {data_dir}...")
-    df = load_df(data_dir)
+    if args.remote:
+        print("\nLoading PTB-XL metadata from PhysioNet (remote mode)...")
+        print("  Note: remote mode is convenient but slower for repeated searches.")
+        print("  For faster future runs, keep a local PTB-XL copy and omit --remote.")
+        df = load_df_remote()
+    else:
+        # Download if needed
+        if args.download or not (data_dir / "ptbxl_database.csv").exists():
+            download_ptbxl(data_dir)
+        print(f"\nLoading PTB-XL metadata from {data_dir}...")
+        df = load_df(data_dir)
     print(f"  {len(df):,} records loaded.")
 
     if args.list_codes:
@@ -416,35 +628,97 @@ def main():
     # Build dedup sets so paired cases get distinct records
     # Cases in the same group are processed together, each taking the next-best record
     processed_order = list(QUERIES.keys())
+    if args.cases.strip():
+        requested = [c.strip() for c in args.cases.split(',') if c.strip()]
+        unknown = [c for c in requested if c not in QUERIES]
+        if unknown:
+            sys.exit(f"Unknown case IDs: {', '.join(unknown)}")
+        processed_order = requested
 
     used_ids: set = set()
     successes: list = []
     failures:  list = []
+    max_candidates = max(1, min(4, args.max_candidates))
+    candidates_root = OUT_DIR / "candidates"
+    candidates_root.mkdir(parents=True, exist_ok=True)
+    manifest: dict[str, list[dict[str, Any]]] = {}
+    candidate_render_style = "physionet"
+
+    print(
+        f"\nRender styles: main={args.render_style}, "
+        f"candidates={candidate_render_style}"
+    )
 
     print(f"\nProcessing {len(processed_order)} cases → {OUT_DIR}\n")
 
     for case_id in processed_order:
-        ecg_id, raw_sig = find_record(df, case_id, used_ids, data_dir)
-
-        if ecg_id is None:
+        ranked = rank_candidates(df, case_id, used_ids)
+        if ranked.empty:
             print(f"  ✗  {case_id:<24}  no PTB-XL match — synthetic PNG unchanged")
             failures.append(case_id)
             continue
 
-        used_ids.add(ecg_id)
-        sig = bandpass(raw_sig)
+        chosen_ecg_id: int | None = None
+        chosen_sig: np.ndarray | None = None
+        case_manifest: list[dict[str, Any]] = []
 
-        render_strip( sig, OUT_DIR / f"{case_id}.png")
-        render_12lead(sig, OUT_DIR / f"{case_id}_12lead.png")
+        for ecg_id, row in ranked.head(300).iterrows():
+            raw_sig = load_candidate_signal(row, data_dir, args.remote)
+            if raw_sig is None:
+                continue
+            sig = bandpass(raw_sig)
+            scp_codes = row["scp_codes"] if isinstance(row.get("scp_codes"), dict) else {}
+            scp_items = scp_codes.items() if isinstance(scp_codes, dict) else []
+            codes_str = ", ".join(
+                f"{k}({v:.0f})"
+                for k, v in sorted(scp_items, key=lambda x: -x[1])
+                if v >= 50
+            )
 
-        scp_dict: dict = df.loc[ecg_id, "scp_codes"]
-        codes_str = ", ".join(
-            f"{k}({v:.0f})"
-            for k, v in sorted(scp_dict.items(), key=lambda x: -x[1])
-            if v >= 50
+            if chosen_ecg_id is None:
+                chosen_ecg_id = int(cast(Any, ecg_id))
+                chosen_sig = sig
+
+            if len(case_manifest) < max_candidates:
+                idx = len(case_manifest) + 1
+                case_dir = candidates_root / case_id
+                case_dir.mkdir(parents=True, exist_ok=True)
+                strip_name = f"{case_id}__c{idx}_ecg{int(cast(Any, ecg_id))}.png"
+                lead_name = f"{case_id}__c{idx}_ecg{int(cast(Any, ecg_id))}_12lead.png"
+                strip_path = case_dir / strip_name
+                lead_path = case_dir / lead_name
+                render_strip(sig, strip_path, candidate_render_style)
+                render_12lead(sig, lead_path, candidate_render_style)
+                case_manifest.append({
+                    "rank": idx,
+                    "ecg_id": int(cast(Any, ecg_id)),
+                    "codes": codes_str,
+                    "stripPath": f"/cases/candidates/{case_id}/{strip_name}",
+                    "twelveleadPath": f"/cases/candidates/{case_id}/{lead_name}",
+                })
+
+            if len(case_manifest) >= max_candidates and chosen_ecg_id is not None:
+                break
+
+        if chosen_ecg_id is None or chosen_sig is None:
+            print(f"  ✗  {case_id:<24}  no PTB-XL match — synthetic PNG unchanged")
+            failures.append(case_id)
+            continue
+
+        used_ids.add(chosen_ecg_id)
+        render_strip(chosen_sig, OUT_DIR / f"{case_id}.png", args.render_style)
+        render_12lead(chosen_sig, OUT_DIR / f"{case_id}_12lead.png", args.render_style)
+        manifest[case_id] = case_manifest
+
+        top_codes = case_manifest[0]["codes"] if case_manifest else ""
+        print(
+            f"  ✓  {case_id:<24}  ECG {chosen_ecg_id:6d}  [{top_codes}]"
+            f"  candidates={len(case_manifest)}"
         )
-        print(f"  ✓  {case_id:<24}  ECG {ecg_id:6d}  [{codes_str}]")
         successes.append(case_id)
+
+    manifest_path = ROOT / "web" / "src" / "data" / "ptbxl_candidates.json"
+    manifest_path.write_text(json.dumps(manifest, indent=2))
 
     print(f"\n{'─'*65}")
     print(f"Done: {len(successes)} replaced with PTB-XL real data, "
@@ -452,8 +726,9 @@ def main():
     if failures:
         print(f"\nNo PTB-XL match for: {', '.join(failures)}")
         print("(Those cases retain their synthesized PNGs as fallback.)")
-    print("\nAttribution reminder: derived PNG images use PTB-XL data")
-    print("(CC BY 4.0). Ensure the app includes the required citation.")
+    print(f"\nAttribution reminder: derived PNG images use PTB-XL data")
+    print(f"(CC BY 4.0). Ensure the app includes the required citation.")
+    print(f"Candidate manifest written: {manifest_path}")
 
 
 if __name__ == "__main__":

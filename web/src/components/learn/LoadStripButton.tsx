@@ -53,7 +53,7 @@ export default function LoadStripButton({
           clipRule="evenodd"
         />
       </svg>
-      {label ?? `Open strip in Trainer`}
+      {label ?? `Open strip in Home`}
     </button>
   );
 }

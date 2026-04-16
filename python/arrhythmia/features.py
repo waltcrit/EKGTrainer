@@ -29,17 +29,20 @@ extract_strip_features(rhythm_window, r_peaks_in_window, fs)
 
 from __future__ import annotations
 
+import importlib
+from typing import Any, cast
+
 import numpy as np
 
 # ---------------------------------------------------------------------------
 # Wavelet availability
 # ---------------------------------------------------------------------------
 try:
-    import pywt  # type: ignore
-    _PYWT_AVAILABLE = True
+    pywt = importlib.import_module("pywt")
+    _pywt_available = True
 except ImportError:
-    pywt = None  # type: ignore
-    _PYWT_AVAILABLE = False
+    pywt = None
+    _pywt_available = False
 
 
 # ---------------------------------------------------------------------------
@@ -200,14 +203,15 @@ def extract_wavelet_features(
     ------
     ImportError if PyWavelets is not installed
     """
-    if not _PYWT_AVAILABLE:
+    if not _pywt_available:
         raise ImportError(
             "PyWavelets is required for wavelet features. "
             "Install with: pip install PyWavelets"
         )
+    assert pywt is not None
 
     w = np.asarray(beat_window, dtype=np.float64)
-    coeffs = pywt.wavedec(w, wavelet=wavelet, level=level)
+    coeffs = cast(list[np.ndarray], cast(Any, pywt).wavedec(w, wavelet=wavelet, level=level))
     # coeffs = [cA_n, cD_n, cD_{n-1}, ..., cD_1]
     out: dict[str, float] = {}
 
@@ -220,7 +224,6 @@ def extract_wavelet_features(
         out[f"dwt_energy_cD{level + 1 - i}"] = e
         detail_energies.append(e)
 
-    total_detail = sum(detail_energies)
     out["dwt_ratio_cD1_cA"] = (
         detail_energies[-1] / approx_energy if approx_energy > 0 else 0.0
     )
@@ -256,7 +259,7 @@ def extract_beat_features(
     feats: dict[str, float] = {}
     feats.update(extract_rr_features(rr_ms))
     feats.update(extract_morphology_features(beat_window, fs))
-    if include_wavelet and _PYWT_AVAILABLE:
+    if include_wavelet and _pywt_available:
         feats.update(extract_wavelet_features(beat_window))
     return feats
 

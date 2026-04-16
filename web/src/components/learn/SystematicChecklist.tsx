@@ -105,6 +105,18 @@ export default function SystematicChecklist({ stripId, compact = false }: Props)
   const completedCount = checked.size;
   const totalCount = SYSTEMATIC_STEPS.length;
   const allDone = completedCount === totalCount;
+  const progressClass =
+    !mounted || totalCount === 0
+      ? "w-0"
+      : completedCount >= totalCount
+        ? "w-full"
+        : completedCount >= totalCount * 0.75
+          ? "w-3/4"
+          : completedCount >= totalCount * 0.5
+            ? "w-1/2"
+            : completedCount >= totalCount * 0.25
+              ? "w-1/4"
+              : "w-0";
 
   return (
     <div
@@ -174,7 +186,6 @@ export default function SystematicChecklist({ stripId, compact = false }: Props)
                     ? "bg-emerald-50 hover:bg-emerald-100"
                     : "hover:bg-slate-50"
                 }`}
-                aria-pressed={isChecked}
               >
                 {/* Checkbox */}
                 <span
@@ -232,7 +243,7 @@ export default function SystematicChecklist({ stripId, compact = false }: Props)
       {ready && allDone && (
         <div className="mt-3 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-center">
           <p className="text-sm font-semibold text-emerald-700">
-            All steps complete — great systematic read!
+            All steps complete - great systematic read!
           </p>
         </div>
       )}

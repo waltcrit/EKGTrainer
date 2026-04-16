@@ -7,15 +7,46 @@ interface RhythmReportProps {
   result: EKGAnalysisResult;
 }
 
+const WIDTH_CLASSES = [
+  "w-0",
+  "w-[5%]",
+  "w-[10%]",
+  "w-[15%]",
+  "w-[20%]",
+  "w-[25%]",
+  "w-[30%]",
+  "w-[35%]",
+  "w-[40%]",
+  "w-[45%]",
+  "w-[50%]",
+  "w-[55%]",
+  "w-[60%]",
+  "w-[65%]",
+  "w-[70%]",
+  "w-[75%]",
+  "w-[80%]",
+  "w-[85%]",
+  "w-[90%]",
+  "w-[95%]",
+  "w-full",
+] as const;
+
+function widthClassFromConfidence(value: number): (typeof WIDTH_CLASSES)[number] {
+  const pct = Math.round(Math.max(0, Math.min(1, value)) * 100);
+  const step = Math.round(pct / 5);
+  return WIDTH_CLASSES[step] ?? "w-0";
+}
+
 function ConfidenceBar({ value }: { value: number }) {
   const pct = Math.round(value * 100);
   const fill =
     pct >= 80 ? "bg-emerald-500" :
     pct >= 60 ? "bg-amber-400"  : "bg-red-400";
+  const widthClass = widthClassFromConfidence(value);
   return (
     <div className="flex items-center gap-2 shrink-0">
       <div className="w-14 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${fill}`} style={{ width: `${pct}%` }} />
+        <div className={`${widthClass} h-full rounded-full ${fill}`} />
       </div>
       <span className="text-[10px] text-slate-400 w-7 text-right">{pct}%</span>
     </div>
@@ -40,6 +71,7 @@ function PipelineClassificationBadge({ pc }: { pc: PipelineClassification }) {
   if (pc.error) return null;
   const style = getStyle(pc.primary_rhythm);
   const pct = Math.round(pc.confidence * 100);
+  const widthClass = widthClassFromConfidence(pc.confidence);
   const barFill =
     pct >= 80 ? "bg-emerald-500" :
     pct >= 60 ? "bg-amber-400"  : "bg-red-400";
@@ -56,10 +88,7 @@ function PipelineClassificationBadge({ pc }: { pc: PipelineClassification }) {
           Signal Pipeline
         </p>
         <div className="flex items-center gap-2 flex-wrap">
-          <span
-            className="text-xs font-semibold px-1.5 py-0.5 rounded"
-            style={{ color: style.hex, backgroundColor: style.bgHex }}
-          >
+          <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${style.textClass} ${style.bgClass}`}>
             {getDisplayName(pc.primary_rhythm)}
           </span>
           {pc.used_deep_learning && (
@@ -74,7 +103,7 @@ function PipelineClassificationBadge({ pc }: { pc: PipelineClassification }) {
       </div>
       <div className="shrink-0 flex items-center gap-1.5">
         <div className="w-10 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-          <div className={`h-full rounded-full ${barFill}`} style={{ width: `${pct}%` }} />
+          <div className={`${widthClass} h-full rounded-full ${barFill}`} />
         </div>
         <span className="text-[10px] text-slate-400 w-6 text-right">{pct}%</span>
       </div>
@@ -99,6 +128,14 @@ export default function RhythmReport({ result }: RhythmReportProps) {
 
   return (
     <div className="flex flex-col gap-3">
+
+      {/* ── Analysis mode ─────────────────────────────────────────────── */}
+      <div className="academy-panel rounded-xl border border-teal-200 bg-teal-50/80 px-4 py-3 flex items-center gap-2.5">
+        <span className="w-2.5 h-2.5 rounded-full bg-teal-500" aria-hidden />
+        <p className="text-sm text-teal-900">
+          <span className="font-semibold">PhysioNet Mode Active.</span> This interpretation is generated from signal-first pipeline output.
+        </p>
+      </div>
 
       {/* ── Primary rhythm ────────────────────────────────────────────── */}
       <div className={`rounded-xl border px-5 py-4 flex items-start justify-between gap-4 ${ringBg}`}>
@@ -138,18 +175,18 @@ export default function RhythmReport({ result }: RhythmReportProps) {
           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
             Systematic Analysis
           </p>
-          <span className="text-[10px] text-slate-300 font-medium">9-step framework</span>
+          <span className="text-[10px] text-slate-300 font-medium">10-step signal-first framework</span>
         </div>
         <div className="px-4 divide-y divide-slate-50">
-          <Row label="Rate"
+          <Row label="1. Rate"
             value={`${result.rate.bpm} bpm — ${result.rate.category}${result.rate.rr_intervals_ms?.length ? ` (RR: ${result.rate.rr_intervals_ms.join(", ")} ms)` : ""}`}
             confidence={result.rate.confidence}
           />
-          <Row label="Rhythm"
+          <Row label="2. Rhythm"
             value={result.rhythm.regularity.replace(/_/g, " ")}
             confidence={result.rhythm.confidence}
           />
-          <Row label="P Waves"
+          <Row label="3. P Waves"
             value={
               result.p_waves.present
                 ? `Present${result.p_waves.ratio ? ` (${result.p_waves.ratio})` : ""}${result.p_waves.morphology ? ` — ${result.p_waves.morphology}` : ""}`
@@ -157,7 +194,7 @@ export default function RhythmReport({ result }: RhythmReportProps) {
             }
             confidence={result.p_waves.confidence}
           />
-          <Row label="PR Interval"
+          <Row label="4. PR Interval"
             value={
               result.pr_interval.ms !== null
                 ? `${result.pr_interval.ms} ms — ${result.pr_interval.normal ? "normal" : "abnormal"}, ${result.pr_interval.fixed ? "fixed" : "variable"}${result.pr_interval.measured_beats?.length ? ` (${result.pr_interval.measured_beats.join(", ")} ms)` : ""}`
@@ -165,7 +202,7 @@ export default function RhythmReport({ result }: RhythmReportProps) {
             }
             confidence={result.pr_interval.confidence}
           />
-          <Row label="QRS"
+          <Row label="5-6. QRS"
             value={
               result.qrs.duration_ms !== null
                 ? `${result.qrs.duration_ms} ms — ${result.qrs.wide ? "wide" : "narrow"}${result.qrs.morphology ? ` (${result.qrs.morphology})` : ""}${result.qrs.measured_beats_ms?.length ? ` [${result.qrs.measured_beats_ms.join(", ")} ms]` : ""}`
@@ -173,7 +210,7 @@ export default function RhythmReport({ result }: RhythmReportProps) {
             }
             confidence={result.qrs.confidence}
           />
-          <Row label="ST Segment"
+          <Row label="7. ST Segment"
             value={
               result.st_segment.elevation
                 ? `Elevation${result.st_segment.details ? ` — ${result.st_segment.details}` : ""}`
@@ -183,17 +220,21 @@ export default function RhythmReport({ result }: RhythmReportProps) {
             }
             confidence={result.st_segment.confidence}
           />
-          <Row label="T Waves"
+          <Row label="8. T Waves"
             value={result.t_waves.morphology}
             confidence={result.t_waves.confidence}
           />
-          <Row label="QTc"
+          <Row label="9. QTc"
             value={
               result.qtc.ms !== null
                 ? `${result.qtc.ms} ms${result.qtc.prolonged !== null ? ` — ${result.qtc.prolonged ? "prolonged" : "normal"}` : ""}${result.qtc.measured_qt_ms?.length ? ` (QT: ${result.qtc.measured_qt_ms.join(", ")} ms)` : ""}`
                 : null
             }
             confidence={result.qtc.confidence}
+          />
+          <Row label="10. Impression"
+            value={result.primary_rhythm}
+            confidence={result.overall_confidence}
           />
         </div>
       </div>

@@ -16,7 +16,6 @@ export default function MarkCompleteButton({ level, slug }: Props) {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setComplete(isLessonComplete(level, slug));
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, [level, slug]);
 
