@@ -352,12 +352,22 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      <Header onLogoClick={() => setLanded(false)} />
 
       {/* Main content */}
       <main className="flex-1">
-        <div className="hero-banner">
-          <img src="/ekg-academy-banner.png" alt="EKG Academy Banner" />
+        {/* Tab Navigation */}
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-1 border-b border-[var(--academy-line)]">
+          {TABS.map(({ id, label }) => (
+            <button
+              key={id}
+              onClick={() => setTab(id)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-150
+                ${tab === id ? "academy-pill-active" : "academy-pill"}`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         {tab === "practice" && (

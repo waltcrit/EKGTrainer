@@ -102,6 +102,26 @@
     animation-delay: 270ms;
   }
 
+  .hero-banner {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .hero-banner img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .navbar-logo {
+    object-fit: contain;
+  }
+
+  .footer-icon {
+    object-fit: contain;
+  }
+
   @keyframes academy-fade-up {
     from {
       opacity: 0;
