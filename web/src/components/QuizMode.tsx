@@ -345,7 +345,7 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
               })}
               <button
                 onClick={resetToAll}
-                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap academy-pill"
+                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap academy-pill transition-all"
               >
                 Select all
               </button>
@@ -370,7 +370,8 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
                      hover:bg-slate-700 active:bg-slate-800 transition-colors duration-150
                      disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Begin</button>
+          Begin
+        </button>
       </div>
     );
   }
