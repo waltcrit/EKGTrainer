@@ -108,7 +108,7 @@ export default function CaseLibrary({ cases, onPractice, onAnalyze }: CaseLibrar
                   <div className={`h-0.5 w-full ${acc.bar}`} />
 
                   {/* 12-lead EKG */}
-                  <div className="bg-[#fff5e6]">
+                  <div className="ekg-paper">
                     <Image
                       src={c.twelveleadPath}
                       alt={`${c.rhythm} — 12-lead EKG`}
@@ -117,7 +117,7 @@ export default function CaseLibrary({ cases, onPractice, onAnalyze }: CaseLibrar
                       sizes="100vw"
                       className="w-full h-auto object-contain"
                     />
-                    <div className="px-3 py-1 border-t border-[#ffe4b8]">
+                    <div className="px-3 py-1 border-t ekg-paper-border">
                       <span className="text-[10px] font-semibold uppercase tracking-widest text-amber-700/50">
                         12-Lead EKG
                       </span>

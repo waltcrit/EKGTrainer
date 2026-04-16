@@ -79,7 +79,7 @@ export default function EKGUploader({ onFile, onError, disabled }: EKGUploaderPr
         />
 
         {preview ? (
-          <div className="bg-[#fff5e6]">
+          <div className="ekg-paper">
             <Image
               src={preview}
               alt="EKG preview"
@@ -89,7 +89,7 @@ export default function EKGUploader({ onFile, onError, disabled }: EKGUploaderPr
               unoptimized
               className="w-full max-h-72 h-auto object-contain"
             />
-            <div className="px-3 py-1 border-t border-[#ffe4b8]">
+            <div className="px-3 py-1 border-t ekg-paper-border">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-amber-700/50">
                 EKG Image Preview
               </span>

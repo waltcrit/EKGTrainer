@@ -17,9 +17,9 @@ export default function AboutPage() {
             residents, nurses, and paramedics — not for clinical diagnosis.
           </p>
           <p className="text-sm text-[var(--academy-ink)] leading-relaxed">
-            The systematic framework used throughout follows the standard 9-step approach: rate,
-            rhythm, P waves, PR interval, QRS complex, ST segment, T waves, QTc, and clinical
-            interpretation.
+            The systematic framework used throughout follows the standard 10-step approach: confirm
+            basics, rate, rhythm, P waves, PR interval, QRS complex, ST segments and T waves, QT
+            interval, compare with prior, and synthesize.
           </p>
           <p className="text-sm text-[var(--academy-ink)] leading-relaxed">
             ECG analysis uses a signal processing pipeline: uploaded images are digitized to

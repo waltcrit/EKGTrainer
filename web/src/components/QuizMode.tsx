@@ -303,8 +303,8 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
               }}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                 diagnosisScope === "all"
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                  : "bg-white border-slate-200 text-slate-500 hover:text-slate-700"
+                  ? "academy-pill-active"
+                  : "academy-pill"
               }`}
             >
               All diagnoses
@@ -316,8 +316,8 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
               }}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                 diagnosisScope === "selected"
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                  : "bg-white border-slate-200 text-slate-500 hover:text-slate-700"
+                  ? "academy-pill-active"
+                  : "academy-pill"
               }`}
             >
               Selected diagnoses
@@ -335,8 +335,8 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
                     onClick={() => toggleCategory(cat)}
                     className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border transition-all ${
                       isActive
-                        ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                        : "bg-white border-slate-200 text-slate-500 hover:text-slate-700"
+                        ? "academy-pill-active"
+                        : "academy-pill"
                     }`}
                   >
                     {CATEGORY_LABELS[cat]} · {count}
@@ -345,7 +345,7 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
               })}
               <button
                 onClick={resetToAll}
-                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border border-slate-200 text-slate-500 hover:text-slate-700"
+                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap academy-pill"
               >
                 Select all
               </button>
@@ -370,8 +370,7 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
                      hover:bg-slate-700 active:bg-slate-800 transition-colors duration-150
                      disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          BEGIN
-        </button>
+          Begin</button>
       </div>
     );
   }
@@ -411,8 +410,8 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
             onClick={resetToAll}
             className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
               isAllSelected
-                ? "bg-slate-900 text-white shadow-sm"
-                : "bg-white border border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-800"
+                ? "academy-pill-active"
+                : "academy-pill"
             }`}
           >
             All · {meta.totalCases}
@@ -426,8 +425,8 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
                 onClick={() => toggleCategory(cat)}
                 className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
                   isActive
-                    ? "bg-slate-900 text-white shadow-sm"
-                    : "bg-white border border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-800"
+                    ? "academy-pill-active"
+                    : "academy-pill"
                 }`}
               >
                 {CATEGORY_LABELS[cat]} · {count}
@@ -450,7 +449,7 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
         </div>
       </div>
 
-      <div className="rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-[#fff5e6]">
+      <div className="rounded-xl overflow-hidden border border-slate-200 shadow-sm ekg-paper">
         <Image
           key={showingTwelveLead ? current.twelveLeadUrl : current.imageUrl}
           src={showingTwelveLead ? current.twelveLeadUrl : current.imageUrl}
@@ -460,7 +459,7 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
           sizes="100vw"
           className="w-full h-auto object-contain"
         />
-        <div className="px-3 py-1.5 flex items-center justify-between bg-[#fff5e6] border-t border-[#ffe4b8]">
+        <div className="px-3 py-1.5 flex items-center justify-between ekg-paper border-t ekg-paper-border">
           <span className="text-[10px] font-semibold uppercase tracking-widest text-amber-700/60">
             {showingTwelveLead ? "12-Lead EKG" : "Rhythm Strip - Lead II"}
           </span>
@@ -658,7 +657,7 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
                   d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.347.347a3.75 3.75 0 01-5.303 0l-.347-.347z"
                 />
               </svg>
-              Get AI 9-step analysis
+              Get AI 10-step analysis
             </button>
           )}
 

@@ -16,7 +16,7 @@ const LEVEL_CONFIG: Record<
   },
   intermediate: {
     label: "Intermediate",
-    color: "text-teal-800",
+    color: "text-sky-700",
     borderColor: "border-sky-200 hover:border-sky-400",
     icon: "◆",
     description:

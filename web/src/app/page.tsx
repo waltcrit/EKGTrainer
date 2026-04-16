@@ -138,7 +138,7 @@ function LandingPage({ onEnter, caseCount }: { onEnter: (tab: Tab) => void; case
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-[var(--academy-ink)] text-sm">AI Analysis</p>
               <p className="text-xs text-[var(--academy-muted)] mt-0.5">
-                Upload any EKG · Claude applies the 9-step framework
+                Upload any EKG · Claude applies the 10-step framework
               </p>
             </div>
             <svg className="w-4 h-4 text-[var(--academy-muted)] group-hover:text-teal-400 transition-colors shrink-0"
@@ -163,7 +163,7 @@ function LandingPage({ onEnter, caseCount }: { onEnter: (tab: Tab) => void; case
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-slate-900 text-sm">EKG Academy</p>
               <p className="text-xs text-slate-500 mt-0.5">
-                Guided lessons · Master the 9-step systematic approach
+                Guided lessons · Master the 10-step systematic approach
               </p>
             </div>
             <svg className="w-4 h-4 text-slate-300 group-hover:text-sky-400 transition-colors shrink-0"
@@ -438,14 +438,6 @@ export default function Home() {
 
         {tab === "analyze" && (
           <div className="flex flex-col gap-5 max-w-2xl mx-auto">
-            {/* Analysis mode indicator */}
-            <div className="academy-panel rounded-xl border border-teal-200 bg-teal-50/80 px-4 py-3 flex items-center gap-2.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-teal-500" aria-hidden />
-              <p className="text-sm text-teal-900">
-                <span className="font-semibold">PhysioNet Mode Active.</span> Signal-first analysis is driving the 10-step interpretation.
-              </p>
-            </div>
-
             {/* Disclaimer */}
             <div className="academy-panel flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50/85 px-4 py-3">
               <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -459,7 +451,7 @@ export default function Home() {
 
             {/* Image preview — shown for both library cases and user uploads */}
             {analyzePreview && analyzeState !== "idle" && (
-              <div className="academy-panel bg-[#fff5e6] rounded-xl overflow-hidden border border-[#ffe4b8]">
+              <div className="academy-panel ekg-paper rounded-xl overflow-hidden border ekg-paper-border">
                 <Image
                   src={analyzePreview}
                   alt="EKG being analyzed"
@@ -469,7 +461,7 @@ export default function Home() {
                   unoptimized
                   className="w-full h-auto object-contain"
                 />
-                <div className="px-3 py-1 border-t border-[#ffe4b8]">
+                <div className="px-3 py-1 border-t ekg-paper-border">
                   <span className="text-[10px] font-semibold uppercase tracking-widest text-amber-700/50">
                     EKG Image
                   </span>
@@ -497,7 +489,7 @@ export default function Home() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
                 </div>
-                <p className="text-sm text-[var(--academy-muted)] font-medium">Applying 9-step framework…</p>
+                <p className="text-sm text-[var(--academy-muted)] font-medium">Applying 10-step framework…</p>
               </div>
             )}
 
