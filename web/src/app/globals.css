@@ -122,6 +122,15 @@
     object-fit: contain;
   }
 
+  /* EKG paper — warm cream background used on all EKG image containers */
+  .ekg-paper {
+    background: #fff5e6;
+  }
+
+  .ekg-paper-border {
+    border-color: #ffe4b8;
+  }
+
   @keyframes academy-fade-up {
     from {
       opacity: 0;

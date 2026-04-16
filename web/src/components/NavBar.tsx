@@ -1,1 +1,0 @@
-        <img src="/ekg-academy-logo.png" alt="EKG Academy Logo" className="navbar-logo" />

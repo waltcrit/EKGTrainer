@@ -24,8 +24,8 @@ const LEVEL_CONFIG: Record<
   },
   advanced: {
     label: "Advanced",
-    color: "text-purple-700",
-    accentBg: "bg-purple-50 border-purple-200",
+    color: "text-amber-700",
+    accentBg: "bg-amber-50 border-amber-200",
     description:
       "Life-threatening rhythms, STEMI localization, electrolyte patterns, and challenging ECG patterns.",
   },
