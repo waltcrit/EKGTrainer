@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { EKGCase, RhythmCategory } from "@/types/cases";
+import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import type { RhythmCategory } from "@/types/cases";
 import { CATEGORY_LABELS } from "@/types/cases";
 import type { EKGAnalysisResult as AnalysisResult } from "@/types/analysis";
 import RhythmReport from "./RhythmReport";
@@ -105,30 +106,60 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
   // the initialCase effect resets the filter.
   const skipNextCategoryEffect = useRef(false);
 
+  const [meta, setMeta] = useState<QuizMeta | null>(null);
+  const [current, setCurrent] = useState<QuizQuestion | null>(null);
+  const [reveal, setReveal] = useState<QuizReveal | null>(null);
+  const [seenOpaqueIds, setSeenOpaqueIds] = useState<string[]>([]);
+
+  useEffect(() => { setMounted(true); }, []);
+
+  useEffect(() => {
+    fetch("/api/quiz/meta")
+      .then((r) => r.json())
+      .then((d: QuizMeta & { success: boolean }) => { if (d.success) setMeta(d); })
+      .catch(() => {});
+  }, []);
+
+  async function fetchNextQuestion(caseId?: string | null) {
+    const res = await fetch("/api/quiz/question", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        selectedCategories: selectedCategories.size === ALL_CATEGORIES.size
+          ? undefined
+          : Array.from(selectedCategories),
+        excludeOpaqueIds: seenOpaqueIds,
+        ...(caseId ? { initialCaseId: caseId } : {}),
+      }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error ?? "No question available");
+    setCurrent(data.question as QuizQuestion);
+    setSeenOpaqueIds((prev) => [...prev, data.question.opaqueId]);
+  }
 
   useEffect(() => {
     if (skipNextCategoryEffect.current) {
       skipNextCategoryEffect.current = false;
       return;
     }
-    const active = selectedCategories.size === ALL_CATEGORIES.size
-      ? cases
-      : cases.filter((c) => selectedCategories.has(c.category));
-    if (active.length === 0) return;
-    setQueue(shuffle(active));
-    setIndex(0);
+    if (!sessionStarted) return;
+    setSeenOpaqueIds([]);
     setState("question");
     setSelected(null);
     setReveal(null);
     setAiResult(null);
     setAiError(null);
     setShowTwelveLead(false);
+    fetchNextQuestion().catch((err) => {
+      setAiError(err instanceof Error ? err.message : "Unable to load next case");
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategories]);
 
   // Jump to a specific case when launched from the Academy or Library
   useEffect(() => {
-    if (!initialCase) return;
-    // Mark the upcoming selectedCategories effect (triggered by setSelectedCategories
-    // below) so it does not reshuffle and overwrite this queue.
+    if (!initialCaseId) return;
     skipNextCategoryEffect.current = true;
     setSelectedCategories(new Set(ALL_CATEGORIES));
     setDiagnosisScope("all");
@@ -139,7 +170,6 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
     setAiResult(null);
     setAiError(null);
     setShowTwelveLead(false);
-    }, [selectedCategories, cases]);
     fetchNextQuestion(initialCaseId).catch((err) => {
       setAiError(err instanceof Error ? err.message : "Unable to load requested case");
     });
@@ -154,6 +184,13 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
   const accuracyPct =
     stats.attempted > 0 ? Math.round((stats.correct / stats.attempted) * 100) : null;
   const isAllSelected = selectedCategories.size === ALL_CATEGORIES.size;
+  const categoryCounts = meta?.categoryCounts ?? {};
+  const activeCaseCount = isAllSelected
+    ? (meta?.totalCases ?? 0)
+    : Array.from(selectedCategories).reduce((sum, cat) => sum + (categoryCounts[cat] ?? 0), 0);
+  const noDiagnosisSelected = selectedCategories.size === 0;
+  const tooFewCases = activeCaseCount < 4;
+  const beginDisabled = noDiagnosisSelected || tooFewCases;
 
   const handleSelect = async (choice: string) => {
     if (state !== "question" || !current) return;

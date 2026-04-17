@@ -106,7 +106,7 @@ export default function SystematicChecklist({ stripId, compact = false }: Props)
   const totalCount = SYSTEMATIC_STEPS.length;
   const allDone = completedCount === totalCount;
   const progressClass =
-    !mounted || totalCount === 0
+    !ready || totalCount === 0
       ? "w-0"
       : completedCount >= totalCount
         ? "w-full"
