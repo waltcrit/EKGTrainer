@@ -9,6 +9,7 @@
     --academy-muted: #60716d;
     --academy-brand: #0f766e;
     --academy-brand-soft: #ccfbf1;
+    --academy-brand-hover: #8acdc4;
     --academy-line: #d7e2de;
     --academy-shadow: 0 12px 28px -18px rgb(15 118 110 / 45%);
   }
@@ -51,7 +52,7 @@
   }
 
   .academy-pill:hover {
-    border-color: #8acdc4;
+    border-color: var(--academy-brand-hover);
     color: var(--academy-ink);
   }
 
@@ -188,11 +189,11 @@
     vertical-align: top;
     text-align: left;
     padding: 0.6rem 0.75rem;
-    border-bottom: 1px solid rgb(226 232 240);
+    border-bottom: 1px solid var(--academy-line);
   }
 
   .prose th {
     font-weight: 600;
-    background: rgb(248 250 252);
+    background: color-mix(in oklab, var(--academy-bg) 60%, white);
   }
 }
