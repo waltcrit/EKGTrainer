@@ -20,6 +20,7 @@ import QTIntervalDrag from "@/components/learn/QTIntervalDrag";
 import PQRSTDiagram from "@/components/learn/PQRSTDiagram";
 import ScrollRestorer from "@/components/learn/ScrollRestorer";
 import MarkCompleteButton from "./MarkCompleteButton";
+import LeadPlacementDiagram from "@/components/learn/LeadPlacementDiagram";
 
 const VALID_LEVELS: Level[] = ["beginner", "intermediate", "advanced"];
 
@@ -37,6 +38,7 @@ const MDX_COMPONENTS = {
   PQRSTDiagram,
   Table,
   table: MdxTableOverride,
+  LeadPlacementDiagram,
 };
 
 // Remark plugins for the MDX pipeline (Layer 2 of the collapsed-table fix).
@@ -46,7 +48,8 @@ const MDX_COMPONENTS = {
 // remarkPlugins to be a mutable Pluggable[], not a readonly tuple.
 const MDX_OPTIONS: MDXRemoteProps["options"] = {
   mdxOptions: {
-    remarkPlugins: [remarkGfm, remarkFixCollapsedTables],
+    remarkPlugins: [remarkGfm, remarkFixCollapsedTables, remarkMath],
+    rehypePlugins: [rehypeKatex],
   },
 };
 

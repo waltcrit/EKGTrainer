@@ -104,7 +104,7 @@ export function Table({ data, caption }: TableProps) {
 // <MdxTableOverride> — drop-in MDX <table> override
 // ---------------------------------------------------------------------------
 
-type AnyProps = { children?: React.ReactNode };
+type AnyProps = { children?: React.ReactNode; className?: string };
 type AnyElement = React.ReactElement<AnyProps>;
 
 interface MdxTableOverrideProps {
