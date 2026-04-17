@@ -228,7 +228,6 @@ QUERIES: dict = {
     "tachy_02":        (["STACH"],                  ["AFIB","AFLT","SVTACH"]),
     "sarr_01":         (["SARRH"],                  []),
     "pac_01":          (["SVPB"],                   ["AFIB"]),
-    "pvc_01":          (["VPB"],                    ["AFIB","BIGU"]),
     "pvc_01":          (["VPB", "PVC"],              ["AFIB","BIGU"]),
     "svt_01":          (["SVTACH","PSVT"],          ["AFIB","AFLT"]),
     "afib_01":         (["AFIB"],                   ["PACE","3AVB"]),
