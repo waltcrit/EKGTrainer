@@ -105,9 +105,6 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
   // the initialCase effect resets the filter.
   const skipNextCategoryEffect = useRef(false);
 
-    setCurrent(data.question as QuizQuestion);
-    setSeenOpaqueIds((prev) => [...prev, data.question.opaqueId]);
-  }
 
   useEffect(() => {
     if (skipNextCategoryEffect.current) {
@@ -142,6 +139,7 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
     setAiResult(null);
     setAiError(null);
     setShowTwelveLead(false);
+    }, [selectedCategories, cases]);
     fetchNextQuestion(initialCaseId).catch((err) => {
       setAiError(err instanceof Error ? err.message : "Unable to load requested case");
     });
