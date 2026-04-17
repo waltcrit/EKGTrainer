@@ -22,7 +22,7 @@ const Header = ({ onLogoClick }: HeaderProps) => (
       <nav className="flex items-center gap-0.5">
         <Link
           href="/learn"
-          className="academy-pill px-4 py-1.5 rounded-full text-sm font-medium text-teal-700 hover:bg-teal-50 transition-all duration-150"
+          className="academy-pill px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-150"
         >
           Academy
         </Link>
