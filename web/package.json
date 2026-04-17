@@ -14,7 +14,7 @@
     "@anthropic-ai/sdk": "^0.39.0",
     "gray-matter": "^4.0.3",
     "katex": "^0.16.45",
-    "next": "15.5.14",
+    "next": "^15.5.15",
     "next-mdx-remote": "^6.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
