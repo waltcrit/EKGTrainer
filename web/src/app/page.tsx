@@ -10,6 +10,8 @@ import QuizMode from "@/components/QuizMode";
 import AboutPage from "@/components/AboutPage";
 import SystematicChecklist from "@/components/learn/SystematicChecklist";
 import ReturnToAcademy from "@/components/learn/ReturnToAcademy";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import type { EKGAnalysisResult } from "@/types/analysis";
 import type { EKGCase } from "@/types/cases";
 
