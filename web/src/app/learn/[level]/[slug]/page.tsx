@@ -15,7 +15,6 @@ import MeasureInterval from "@/components/learn/MeasureInterval";
 import SystematicChecklist from "@/components/learn/SystematicChecklist";
 import { Table, MdxTableOverride } from "@/components/learn/Table";
 import { remarkFixCollapsedTables } from "@/lib/mdx/remark-fix-tables";
-import remarkGfm from "remark-gfm";
 import type { MDXRemoteProps } from "next-mdx-remote/rsc";
 import QTIntervalDrag from "@/components/learn/QTIntervalDrag";
 import PQRSTDiagram from "@/components/learn/PQRSTDiagram";
