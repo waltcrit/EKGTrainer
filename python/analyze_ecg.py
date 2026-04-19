@@ -13,6 +13,7 @@ Exit code 0 = success, 1 = failure.
 import argparse
 import importlib
 import json
+import logging
 import sys
 import traceback
 from pathlib import Path
@@ -21,6 +22,8 @@ from typing import Any, NotRequired, Protocol, TypeAlias, TypedDict, cast
 import numpy as np
 import json as _json_module
 from numpy.typing import NDArray
+
+logger = logging.getLogger(__name__)
 
 
 SignalArray: TypeAlias = NDArray[np.float64]
@@ -86,10 +89,38 @@ try:
     from arrhythmia.inference import classify_ecg
     from arrhythmia.constants import DISPLAY_NAMES as _arr_display_names
     _pipeline_available = True
-except Exception:
+except ImportError:
     classify_ecg = None
     _arr_display_names: dict[str, str] = {}
     _pipeline_available = False
+    logger.debug("Arrhythmia pipeline not available; classification will be skipped")
+
+# ---------------------------------------------------------------------------
+# Hoisted lazy imports — avoid per-call module lookup overhead
+# ---------------------------------------------------------------------------
+try:
+    import cv2
+    _cv2_available = True
+except ImportError:
+    _cv2_available = False
+
+try:
+    import scipy.ndimage as scipy_ndimage
+    _scipy_ndimage_available = True
+except ImportError:
+    _scipy_ndimage_available = False
+
+try:
+    import biosppy.signals.ecg as bsp_ecg_module
+    _biosppy_available = True
+except ImportError:
+    _biosppy_available = False
+
+try:
+    from ecg_digitiser.digitiser import ECGDigitiser
+    _ecg_digitiser_available = True
+except ImportError:
+    _ecg_digitiser_available = False
 
 
 class _NumpyEncoder(_json_module.JSONEncoder):
@@ -117,33 +148,32 @@ def _dumps(obj: object) -> str:
 # Step 1 — Image digitization
 # ---------------------------------------------------------------------------
 
-def digitize_image(image_path: str) -> DigitizedResult:
+def digitize_image(image_path: str | None = None, image_bytes: bytes | None = None) -> DigitizedResult:
     """
-    Convert an ECG image to a digital signal using ECG-Digitiser.
+    Convert an ECG image to a digital signal using ECG-Digitiser or OpenCV fallback.
+    Accepts either a file path or raw image bytes.
     Returns a dict with keys: signals (dict of lead->np.ndarray), sampling_rate (int).
-
-    Falls back to a simpler OpenCV-based approach if ECG-Digitiser is not installed.
     """
-    try:
-        digitiser_module = importlib.import_module("ecg_digitiser.digitiser")
-        ECGDigitiser = digitiser_module.ECGDigitiser
-        digitiser = ECGDigitiser()
-        result = digitiser.digitise(image_path)
-        # ECG-Digitiser returns a dict of lead name -> signal array and a sampling rate
-        signals = {
-            str(lead): np.asarray(values, dtype=np.float64)
-            for lead, values in cast(dict[object, object], result.signals).items()
-        }
-        return {
-            "signals": signals,
-            "sampling_rate": int(result.sampling_rate),
-            "method": "ecg-digitiser",
-        }
-    except ImportError:
-        pass
+    if image_path is None and image_bytes is None:
+        raise ValueError("Either image_path or image_bytes must be provided")
 
-    # Fallback: basic image tracing for single rhythm strip (Lead II assumed)
-    return _fallback_digitize(image_path)
+    if _ecg_digitiser_available and image_path is not None:
+        try:
+            digitiser = ECGDigitiser()
+            result = digitiser.digitise(image_path)
+            signals = {
+                str(lead): np.asarray(values, dtype=np.float64)
+                for lead, values in cast(dict[object, object], result.signals).items()
+            }
+            return {
+                "signals": signals,
+                "sampling_rate": int(result.sampling_rate),
+                "method": "ecg-digitiser",
+            }
+        except Exception as e:
+            logger.warning(f"ECG-Digitiser failed: {type(e).__name__}: {e}; falling back to OpenCV")
+
+    return _fallback_digitize(image_path, image_bytes)
 
 
 def _detect_grid_calibration(gray: NDArray[np.uint8]) -> dict[str, float] | None:
@@ -194,23 +224,29 @@ def _detect_grid_calibration(gray: NDArray[np.uint8]) -> dict[str, float] | None
     }
 
 
-def _fallback_digitize(image_path: str) -> DigitizedResult:
+def _fallback_digitize(image_path: str | None = None, image_bytes: bytes | None = None) -> DigitizedResult:
     """
     Grid-calibrated OpenCV digitizer.
 
+    Accepts either image_path or image_bytes.
     Detects the ECG paper grid via FFT to determine the true sampling rate,
     then traces the waveform and normalizes the signal for BioSPPy.
     """
-    try:
-        import cv2
-    except ImportError:
+    if not _cv2_available:
         raise RuntimeError(
             "opencv-python is not installed. Cannot digitize ECG image."
         )
 
-    img_bgr = cast(NDArray[np.uint8] | None, cv2.imread(image_path))
-    if img_bgr is None:
-        raise RuntimeError(f"Could not read image: {image_path}")
+    if image_bytes is not None:
+        img_bgr = cast(NDArray[np.uint8] | None, cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR))
+        if img_bgr is None:
+            raise RuntimeError("Could not decode image bytes")
+    elif image_path is not None:
+        img_bgr = cast(NDArray[np.uint8] | None, cv2.imread(image_path))
+        if img_bgr is None:
+            raise RuntimeError(f"Could not read image: {image_path}")
+    else:
+        raise ValueError("Either image_path or image_bytes must be provided")
 
     gray = cast(NDArray[np.uint8], cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY))
     h, w = gray.shape
@@ -249,8 +285,9 @@ def _fallback_digitize(image_path: str) -> DigitizedResult:
 
     # Smooth out single-pixel jumps caused by ECG grid-line crossings.
     # A 3-sample median preserves sharp R-peaks while eliminating 1-pixel spikes.
-    scipy_ndimage_pre = importlib.import_module("scipy.ndimage")
-    trace_row = scipy_ndimage_pre.median_filter(trace_row, size=3).astype(float)
+    if not _scipy_ndimage_available:
+        raise RuntimeError("scipy is not installed. Cannot digitize ECG image.")
+    trace_row = scipy_ndimage.median_filter(trace_row, size=3).astype(float)
 
     # Flip: row 0 is top of image; upward deflections → smaller row index.
     signal = (h - 1) - trace_row
@@ -258,7 +295,6 @@ def _fallback_digitize(image_path: str) -> DigitizedResult:
     # ── Step 3: baseline-correct and normalize ────────────────────────────
     # Remove slow baseline wander with a wide median filter, then scale to
     # a physiologically plausible mV range so BioSPPy's thresholds work.
-    scipy_ndimage = importlib.import_module("scipy.ndimage")
     median_filter_fn = scipy_ndimage.median_filter
     bl_window = max(3, int(sampling_rate * 0.6) | 1)  # must be odd
     baseline = cast(SignalArray, median_filter_fn(signal, size=bl_window, mode="nearest"))
@@ -272,7 +308,7 @@ def _fallback_digitize(image_path: str) -> DigitizedResult:
     # after tracing they become isolated extreme values that confuse R-peak detectors.
     spike_thr = float(np.percentile(np.abs(signal), 99.5)) * 2.0
     spike_mask = np.abs(signal) > spike_thr
-    labeled_spikes, n_spikes = scipy_ndimage_pre.label(spike_mask)
+    labeled_spikes, n_spikes = scipy_ndimage.label(spike_mask)
     for spike_id in range(1, n_spikes + 1):
         spike_idx = np.where(labeled_spikes == spike_id)[0]
         if len(spike_idx) <= 3:   # narrow spike = pacing artifact
@@ -301,7 +337,10 @@ def analyze_signal(signals: SignalMap, sampling_rate: int) -> SignalMeasurements
     Processes Lead II (or the first available lead) for rhythm metrics,
     and runs per-lead ST/T analysis when multiple leads are present.
     """
-    bsp_ecg_module = cast(Any, importlib.import_module("biosppy.signals.ecg"))
+    if not _biosppy_available:
+        raise RuntimeError(
+            "biosppy is not installed. Cannot analyze ECG signal."
+        )
 
     # Prefer Lead II for rhythm analysis; fall back to first available
     rhythm_lead_name = "II" if "II" in signals else next(iter(signals))
@@ -326,9 +365,8 @@ def analyze_signal(signals: SignalMap, sampling_rate: int) -> SignalMeasurements
             templates_raw = out["templates"]
         except KeyError:
             templates_raw = None
-    except Exception:
-        # BioSPPy can fail on wide QRS, pacing spikes, or very short signals.
-        # Fall back to scipy peak detection with physiologically-guided settings.
+    except (ValueError, RuntimeError, TypeError) as e:
+        logger.warning(f"BioSPPy ECG detection failed ({type(e).__name__}); falling back to scipy")
         from scipy.signal import find_peaks as _sp_find_peaks  # type: ignore
         min_dist = max(1, int(sampling_rate * 0.25))   # >= 250 ms between beats
         thresh   = float(np.percentile(rhythm_signal, 65))
@@ -337,6 +375,8 @@ def analyze_signal(signals: SignalMap, sampling_rate: int) -> SignalMeasurements
         )
         r_peaks = np.asarray(peak_idx, dtype=np.int64)
         templates_raw = None
+
+    r_peaks = _clean_r_peaks(r_peaks, rhythm_signal, sampling_rate)
 
     rr_intervals_ms = _rr_intervals(r_peaks, sampling_rate)
     heart_rate_bpm = _mean_hr(rr_intervals_ms)
@@ -360,6 +400,7 @@ def analyze_signal(signals: SignalMap, sampling_rate: int) -> SignalMeasurements
             _cv_hr = _mean_hr(_cv_rr)
             if 20 < _cv_hr < 280 and len(_cv_peaks) >= 2:
                 r_peaks = np.asarray(_cv_peaks, dtype=np.int64)
+                r_peaks = _clean_r_peaks(r_peaks, rhythm_signal, sampling_rate)
                 rr_intervals_ms = _cv_rr
                 heart_rate_bpm = _cv_hr
                 regularity = _regularity(_cv_rr)
@@ -367,13 +408,17 @@ def analyze_signal(signals: SignalMap, sampling_rate: int) -> SignalMeasurements
 
     # QRS width: measure each template (BioSPPy supplies beat templates)
     templates = np.asarray(templates_raw, dtype=np.float64) if templates_raw is not None else None
-    qrs_ms, qrs_wide = _qrs_width(templates, sampling_rate)
+
+    # Cache median template to avoid computing it three times
+    median_template = np.median(templates, axis=0) if templates is not None and len(templates) > 0 else None
+
+    qrs_ms, qrs_wide = _qrs_width(median_template, sampling_rate)
 
     # P-wave / PR interval: simple heuristic from template shape
-    pr_ms, p_present = _pr_interval(templates, sampling_rate)
+    pr_ms, p_present = _pr_interval(median_template, sampling_rate)
 
     # QT/QTc
-    qt_ms, qtc_ms, qtc_prolonged = _qtc(templates, rr_intervals_ms, sampling_rate)
+    qt_ms, qtc_ms, qtc_prolonged = _qtc(median_template, rr_intervals_ms, sampling_rate)
 
     # ST segment (per lead if available)
     st_results = _st_analysis(signals, r_peaks, sampling_rate)
@@ -481,12 +526,11 @@ def _regularity(rr_ms: list[float]) -> str:
     return "irregularly_irregular"
 
 
-def _qrs_width(templates: NDArray[np.float64] | None, fs: int) -> tuple[float | None, bool]:
-    """Estimate QRS duration from beat templates."""
-    if templates is None or len(templates) == 0:
+def _qrs_width(median_template: NDArray[np.float64] | None, fs: int) -> tuple[float | None, bool]:
+    """Estimate QRS duration from median beat template."""
+    if median_template is None or len(median_template) == 0:
         return None, False
-    # Use median template
-    tmpl = np.median(templates, axis=0)
+    tmpl = median_template
     # Find energy envelope; QRS is the central high-energy region
     energy = tmpl ** 2
     threshold = energy.max() * 0.1
@@ -498,16 +542,16 @@ def _qrs_width(templates: NDArray[np.float64] | None, fs: int) -> tuple[float | 
     return width_ms, width_ms >= 120
 
 
-def _pr_interval(templates: NDArray[np.float64] | None, fs: int) -> tuple[float | None, bool]:
+def _pr_interval(median_template: NDArray[np.float64] | None, fs: int) -> tuple[float | None, bool]:
     """
-    Estimate PR interval and P-wave presence from the BioSPPy template.
+    Estimate PR interval and P-wave presence from the median beat template.
     BioSPPy centres templates on the R peak; P wave typically appears
     ~100–200 ms before the R peak (= earlier samples in the template).
     """
-    if templates is None or len(templates) == 0:
+    if median_template is None or len(median_template) == 0:
         return None, False
 
-    tmpl = np.median(templates, axis=0)
+    tmpl = median_template
     mid = len(tmpl) // 2  # approximate R-peak position in template
 
     # Look for P-wave deflection in the 50–250 ms window before R peak
@@ -534,15 +578,15 @@ def _pr_interval(templates: NDArray[np.float64] | None, fs: int) -> tuple[float 
 
 
 def _qtc(
-    templates: NDArray[np.float64] | None,
+    median_template: NDArray[np.float64] | None,
     rr_ms: list[float],
     fs: int,
 ) -> tuple[float | None, float | None, bool | None]:
-    """Estimate QT interval and Bazett-corrected QTc."""
-    if templates is None or len(templates) == 0 or not rr_ms:
+    """Estimate QT interval and Bazett-corrected QTc from median beat template."""
+    if median_template is None or len(median_template) == 0 or not rr_ms:
         return None, None, None
 
-    tmpl = np.median(templates, axis=0)
+    tmpl = median_template
     mid = len(tmpl) // 2
     # T-wave end: look for return to baseline after the T wave
     post_start = mid + int(0.05 * fs)
@@ -645,7 +689,8 @@ def run_pipeline_classification(
             "used_deep_learning": result.used_deep_learning,
             "notes":           result.notes,
         }
-    except Exception as exc:
+    except (ValueError, RuntimeError, TypeError) as exc:
+        logger.warning(f"Arrhythmia pipeline classification failed ({type(exc).__name__}): {exc}")
         return {"error": str(exc)}
 
 

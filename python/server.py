@@ -12,15 +12,20 @@ Deploy:
 
 import base64
 import json
+import logging
 import os
 import tempfile
 import traceback
 from pathlib import Path
 from typing import cast
 
+import numpy as np
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 from analyze_ecg import (
     NumpyEncoder,
@@ -54,21 +59,16 @@ def health() -> dict[str, str]:
 
 @app.post("/analyze")
 def analyze(req: AnalyzeRequest) -> dict[str, object]:
-    # Decode base64 → temp file
-    ext = req.media_type.split("/")[-1].replace("jpeg", "jpg")
-    tmp_path = None
+    request_id = id(req)
     try:
         image_bytes = base64.b64decode(req.image_base64)
-    except Exception:
+    except Exception as e:
+        logger.warning(f"[{request_id}] Invalid base64: {type(e).__name__}")
         raise HTTPException(status_code=400, detail="image_base64 is not valid base64")
 
     try:
-        with tempfile.NamedTemporaryFile(suffix=f".{ext}", delete=False) as f:
-            f.write(image_bytes)
-            tmp_path = f.name
-
-        # Step 1: digitize
-        digitized = digitize_image(tmp_path)
+        # Step 1: digitize (pass bytes directly, avoiding temp file I/O)
+        digitized = digitize_image(image_bytes=image_bytes)
 
         # Step 2: measure
         measurements = analyze_signal(digitized["signals"], digitized["sampling_rate"])
@@ -95,10 +95,11 @@ def analyze(req: AnalyzeRequest) -> dict[str, object]:
         # Use NumpyEncoder to serialize any remaining numpy scalars
         return cast(dict[str, object], json.loads(json.dumps(result, cls=NumpyEncoder)))
 
+    except HTTPException:
+        raise
     except Exception as e:
-        tb = traceback.format_exc()
-        raise HTTPException(status_code=500, detail={"error": str(e), "traceback": tb})
-
-    finally:
-        if tmp_path and Path(tmp_path).exists():
-            Path(tmp_path).unlink(missing_ok=True)
+        logger.error(f"[{request_id}] Analysis failed: {type(e).__name__}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error. Check logs for details."
+        )
