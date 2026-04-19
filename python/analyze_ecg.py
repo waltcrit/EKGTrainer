@@ -34,6 +34,7 @@ class DigitizedResult(TypedDict):
     signals: SignalMap
     sampling_rate: int
     method: str
+    calibrated: bool          # True when pixels_per_mv was used for true-mV scaling
 
 
 class STLeadResult(TypedDict):
@@ -62,15 +63,20 @@ class SignalMeasurements(TypedDict):
     heart_rate_bpm: float
     regularity: str
     p_waves_present: bool
+    p_wave_morphology: NotRequired[str | None]   # "upright"|"inverted"|"biphasic"|None
     pr_interval_ms: float | None
     qrs_duration_ms: float | None
     qrs_wide: bool
     qt_ms: float | None
-    qtc_ms: float | None
+    qtc_ms: float | None                         # Bazett
+    qtcf_ms: NotRequired[float | None]           # Fridericia
+    qtc_method: NotRequired[str]                 # which formula was used for prolonged flag
     qtc_prolonged: bool | None
     st: STResults
     num_beats: int
     rhythm_lead: str
+    amplitude_calibrated: NotRequired[bool]      # True when signal is in true mV
+    afib_hint: NotRequired[bool]                 # irregularly irregular + no P-waves
     vf_morphology: NotRequired[bool]
 
 
@@ -169,6 +175,7 @@ def digitize_image(image_path: str | None = None, image_bytes: bytes | None = No
                 "signals": signals,
                 "sampling_rate": int(result.sampling_rate),
                 "method": "ecg-digitiser",
+                "calibrated": True,  # ECG-Digitiser outputs calibrated mV
             }
         except Exception as e:
             logger.warning(f"ECG-Digitiser failed: {type(e).__name__}: {e}; falling back to OpenCV")
@@ -251,14 +258,18 @@ def _fallback_digitize(image_path: str | None = None, image_bytes: bytes | None 
     gray = cast(NDArray[np.uint8], cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY))
     h, w = gray.shape
 
-    # ── Step 1: calibrate sampling rate from grid ─────────────────────────
+    # ── Step 1: calibrate sampling rate and amplitude from grid ──────────
     cal = _detect_grid_calibration(gray)
     if cal:
         sampling_rate = int(round(cal["sampling_rate_hz"]))
+        pixels_per_mv = cal["pixels_per_mv"]
         method = f"fallback-opencv-calibrated({sampling_rate}Hz)"
+        calibrated = True
     else:
         sampling_rate = 179   # observed default across our image set
+        pixels_per_mv = None
         method = "fallback-opencv-uncalibrated"
+        calibrated = False
 
     # Cap to a physically plausible digitised-image range.
     # Very high rates (>600 Hz) cause BioSPPy to build impractically long
@@ -292,26 +303,32 @@ def _fallback_digitize(image_path: str | None = None, image_bytes: bytes | None 
     # Flip: row 0 is top of image; upward deflections → smaller row index.
     signal = (h - 1) - trace_row
 
-    # ── Step 3: baseline-correct and normalize ────────────────────────────
-    # Remove slow baseline wander with a wide median filter, then scale to
-    # a physiologically plausible mV range so BioSPPy's thresholds work.
+    # ── Step 3: baseline-correct and scale to mV ─────────────────────────
+    # Remove slow baseline wander with a wide median filter.
     median_filter_fn = scipy_ndimage.median_filter
     bl_window = max(3, int(sampling_rate * 0.6) | 1)  # must be odd
     baseline = cast(SignalArray, median_filter_fn(signal, size=bl_window, mode="nearest"))
     signal = signal - baseline
 
-    if signal.std() > 0:
-        signal = signal / signal.std() * 0.5   # normalize to ≈ ±0.5 mV std
+    if calibrated and pixels_per_mv is not None and pixels_per_mv > 0:
+        # Scale to true mV using grid-detected calibration so downstream
+        # ST thresholds and amplitude measurements are clinically meaningful.
+        signal = signal / pixels_per_mv
+    elif signal.std() > 0:
+        # Fallback normalization when grid calibration is unavailable.
+        # Amplitude is no longer clinically meaningful; caveats apply to ST.
+        signal = signal / signal.std() * 0.5
 
-    # Suppress pacing artifacts: very narrow high-amplitude spikes (≤3 samples).
-    # Pacing stimuli appear as 1-2 pixel-wide vertical lines in the image;
-    # after tracing they become isolated extreme values that confuse R-peak detectors.
+    # ── Step 4: pacing-artifact suppression ───────────────────────────────
+    # Interpolate over very narrow, isolated extreme-amplitude spikes.
+    # Width guard: ≤2 samples only (12 ms at 150 Hz) — avoids erasing narrow
+    # QRS complexes, notches, or J-waves in legitimate beats.
     spike_thr = float(np.percentile(np.abs(signal), 99.5)) * 2.0
     spike_mask = np.abs(signal) > spike_thr
     labeled_spikes, n_spikes = scipy_ndimage.label(spike_mask)
     for spike_id in range(1, n_spikes + 1):
         spike_idx = np.where(labeled_spikes == spike_id)[0]
-        if len(spike_idx) <= 3:   # narrow spike = pacing artifact
+        if len(spike_idx) <= 2:   # ≤2-sample spike = pacing artifact
             lo_i = max(0, spike_idx[0] - 1)
             hi_i = min(len(signal) - 1, spike_idx[-1] + 1)
             signal[spike_idx] = np.interp(
@@ -321,9 +338,10 @@ def _fallback_digitize(image_path: str | None = None, image_bytes: bytes | None 
             )
 
     return {
-        "signals":       {"II": signal},
+        "signals":    {"II": signal},
         "sampling_rate": sampling_rate,
-        "method":        method,
+        "method":     method,
+        "calibrated": calibrated,
     }
 
 
@@ -331,10 +349,14 @@ def _fallback_digitize(image_path: str | None = None, image_bytes: bytes | None 
 # Step 2 — Signal processing with BioSPPy
 # ---------------------------------------------------------------------------
 
-def analyze_signal(signals: SignalMap, sampling_rate: int) -> SignalMeasurements:
+def analyze_signal(
+    signals: SignalMap,
+    sampling_rate: int,
+    calibrated: bool = False,
+) -> SignalMeasurements:
     """
     Run BioSPPy ECG analysis on the digitized signals.
-    Processes Lead II (or the first available lead) for rhythm metrics,
+    Picks the lead with the highest mean R-peak amplitude for rhythm metrics,
     and runs per-lead ST/T analysis when multiple leads are present.
     """
     if not _biosppy_available:
@@ -342,8 +364,15 @@ def analyze_signal(signals: SignalMap, sampling_rate: int) -> SignalMeasurements
             "biosppy is not installed. Cannot analyze ECG signal."
         )
 
-    # Prefer Lead II for rhythm analysis; fall back to first available
-    rhythm_lead_name = "II" if "II" in signals else next(iter(signals))
+    # Pick rhythm lead by highest RMS amplitude — more diagnostic than hardcoding Lead II.
+    # Lead II is still preferred when it ties, as it gives the clearest P-waves clinically.
+    def _lead_rms(sig: SignalArray) -> float:
+        return float(np.sqrt(np.mean(sig ** 2)))
+
+    rhythm_lead_name = max(
+        signals,
+        key=lambda lead: _lead_rms(signals[lead]) * (1.05 if lead == "II" else 1.0),
+    )
     rhythm_signal = signals[rhythm_lead_name]
 
     # BioSPPy needs at least a few seconds of signal
@@ -409,19 +438,28 @@ def analyze_signal(signals: SignalMap, sampling_rate: int) -> SignalMeasurements
     # QRS width: measure each template (BioSPPy supplies beat templates)
     templates = np.asarray(templates_raw, dtype=np.float64) if templates_raw is not None else None
 
-    # Cache median template to avoid computing it three times
+    # Cache median template once and reuse in all downstream helpers
     median_template = np.median(templates, axis=0) if templates is not None and len(templates) > 0 else None
 
     qrs_ms, qrs_wide = _qrs_width(median_template, sampling_rate)
 
-    # P-wave / PR interval: simple heuristic from template shape
-    pr_ms, p_present = _pr_interval(median_template, sampling_rate)
+    # J-point offset from R-peak (used for accurate ST measurement)
+    j_offset = _detect_j_point(median_template, sampling_rate)
 
-    # QT/QTc
-    qt_ms, qtc_ms, qtc_prolonged = _qtc(median_template, rr_intervals_ms, sampling_rate)
+    # P-wave / PR interval with polarity detection
+    pr_ms, p_present, p_morphology = _pr_interval(median_template, sampling_rate, calibrated)
 
-    # ST segment (per lead if available)
-    st_results = _st_analysis(signals, r_peaks, sampling_rate)
+    # QT/QTc with derivative Q-onset and dual Bazett/Fridericia
+    qt_ms, qtc_ms, qtcf_ms, qtc_prolonged, qtc_method = _qtc(
+        median_template, rr_intervals_ms, sampling_rate, heart_rate_bpm
+    )
+
+    # ST segment (per lead, J-point aware, lead-specific thresholds)
+    st_results = _st_analysis(signals, r_peaks, sampling_rate, j_offset)
+
+    # AFib hint: irregularly irregular rhythm with absent P-waves
+    # Supports the arrhythmia pipeline when unavailable and guides Claude prompt.
+    afib_hint = (regularity == "irregularly_irregular") and not p_present
 
     return {
         "r_peaks": r_peaks.tolist(),
@@ -429,15 +467,20 @@ def analyze_signal(signals: SignalMap, sampling_rate: int) -> SignalMeasurements
         "heart_rate_bpm": round(heart_rate_bpm, 1),
         "regularity": regularity,
         "p_waves_present": p_present,
+        "p_wave_morphology": p_morphology,
         "pr_interval_ms": round(pr_ms, 1) if pr_ms is not None else None,
         "qrs_duration_ms": round(qrs_ms, 1) if qrs_ms is not None else None,
         "qrs_wide": qrs_wide,
         "qt_ms": round(qt_ms, 1) if qt_ms is not None else None,
         "qtc_ms": round(qtc_ms, 1) if qtc_ms is not None else None,
+        "qtcf_ms": round(qtcf_ms, 1) if qtcf_ms is not None else None,
+        "qtc_method": qtc_method,
         "qtc_prolonged": qtc_prolonged,
         "st": st_results,
         "num_beats": len(r_peaks),
         "rhythm_lead": rhythm_lead_name,
+        "amplitude_calibrated": calibrated,
+        "afib_hint": afib_hint,
     }
 
 
@@ -526,14 +569,59 @@ def _regularity(rr_ms: list[float]) -> str:
     return "irregularly_irregular"
 
 
+def _detect_j_point(median_template: NDArray[np.float64] | None, fs: int) -> int:
+    """
+    Estimate J-point offset (in samples) relative to R-peak in the median template.
+    The J-point is the end of the QRS complex where ST segment begins.
+    Returns a safe default of 40 ms if detection fails.
+    """
+    default = max(1, int(0.04 * fs))  # 40 ms fallback
+    if median_template is None or len(median_template) == 0:
+        return default
+
+    mid = len(median_template) // 2
+    # Search 10–120 ms after R-peak for where QRS energy drops below 15% of R-peak energy
+    search_end = min(len(median_template), mid + int(0.12 * fs))
+    post_r = median_template[mid:search_end]
+
+    if len(post_r) == 0:
+        return default
+
+    r_energy = float(median_template[mid] ** 2)
+    if r_energy == 0:
+        return default
+
+    energy = post_r ** 2
+    # Walk forward from R until energy drops below 15% of R energy — that is J-point
+    below = np.where(energy < r_energy * 0.15)[0]
+    if len(below) == 0:
+        return default
+
+    j_offset = int(below[0])
+    # Clamp to physiologically plausible 20–100 ms range
+    return max(int(0.02 * fs), min(j_offset, int(0.10 * fs)))
+
+
 def _qrs_width(median_template: NDArray[np.float64] | None, fs: int) -> tuple[float | None, bool]:
-    """Estimate QRS duration from median beat template."""
+    """
+    Estimate QRS duration from median beat template.
+    Searches only within a ±80 ms window around R-peak to avoid
+    including T-wave energy that inflates the measurement.
+    """
     if median_template is None or len(median_template) == 0:
         return None, False
-    tmpl = median_template
-    # Find energy envelope; QRS is the central high-energy region
-    energy = tmpl ** 2
-    threshold = energy.max() * 0.1
+    mid = len(median_template) // 2
+    # Constrain to ±80 ms QRS window to exclude P and T waves
+    qrs_start = max(0, mid - int(0.08 * fs))
+    qrs_end = min(len(median_template), mid + int(0.08 * fs))
+    qrs_region = median_template[qrs_start:qrs_end]
+
+    energy = qrs_region ** 2
+    peak_energy = float(energy.max())
+    if peak_energy == 0:
+        return None, False
+
+    threshold = peak_energy * 0.1
     above = np.where(energy > threshold)[0]
     if len(above) < 2:
         return None, False
@@ -542,101 +630,192 @@ def _qrs_width(median_template: NDArray[np.float64] | None, fs: int) -> tuple[fl
     return width_ms, width_ms >= 120
 
 
-def _pr_interval(median_template: NDArray[np.float64] | None, fs: int) -> tuple[float | None, bool]:
+def _pr_interval(
+    median_template: NDArray[np.float64] | None,
+    fs: int,
+    calibrated: bool = False,
+) -> tuple[float | None, bool, str | None]:
     """
-    Estimate PR interval and P-wave presence from the median beat template.
-    BioSPPy centres templates on the R peak; P wave typically appears
-    ~100–200 ms before the R peak (= earlier samples in the template).
+    Estimate PR interval and P-wave presence/morphology from median beat template.
+    BioSPPy centres templates on the R peak; P wave appears ~100–200 ms before.
+
+    Returns (pr_ms, p_present, morphology) where morphology is one of:
+      "upright" | "inverted" | "biphasic" | None
     """
     if median_template is None or len(median_template) == 0:
-        return None, False
+        return None, False, None
 
     tmpl = median_template
-    mid = len(tmpl) // 2  # approximate R-peak position in template
+    mid = len(tmpl) // 2
 
-    # Look for P-wave deflection in the 50–250 ms window before R peak
+    # Look in the 50–250 ms window before R-peak for a P deflection
     pre_start = max(0, mid - int(0.25 * fs))
     pre_end = max(0, mid - int(0.05 * fs))
     pre_region = tmpl[pre_start:pre_end]
 
     if len(pre_region) == 0:
-        return None, False
+        return None, False, None
 
-    # P-wave present if there is a meaningful positive deflection before R
-    peak_amp = np.max(np.abs(pre_region))
-    r_amp = np.max(np.abs(tmpl[mid - 5:mid + 5])) if mid >= 5 else np.max(np.abs(tmpl))
-    p_present = peak_amp > r_amp * 0.08  # P > 8% of R amplitude
+    # Amplitude thresholds: absolute 0.1 mV when calibrated; 10% of R when not.
+    r_amp = float(np.max(np.abs(tmpl[max(0, mid - 5):mid + 5]))) if mid >= 5 else float(np.max(np.abs(tmpl)))
+    threshold = 0.10 if (calibrated and r_amp > 0.10) else r_amp * 0.10
 
-    if not p_present:
-        return None, False
+    pos_peak = float(np.max(pre_region))
+    neg_peak = float(np.min(pre_region))
 
-    # PR = distance from P-peak to R-peak
-    p_peak_idx = pre_start + np.argmax(np.abs(pre_region))
+    has_pos = pos_peak > threshold
+    has_neg = abs(neg_peak) > threshold
+
+    if not has_pos and not has_neg:
+        return None, False, None
+
+    # Classify polarity
+    if has_pos and has_neg:
+        morphology = "biphasic"
+        # Use absolute deflection to find dominant peak for PR distance
+        p_peak_idx = pre_start + int(np.argmax(np.abs(pre_region)))
+    elif has_pos:
+        morphology = "upright"
+        p_peak_idx = pre_start + int(np.argmax(pre_region))
+    else:
+        morphology = "inverted"
+        p_peak_idx = pre_start + int(np.argmin(pre_region))
+
     pr_samples = mid - p_peak_idx
     pr_ms = pr_samples / fs * 1000
-    return pr_ms, True
+    return pr_ms, True, morphology
 
 
 def _qtc(
     median_template: NDArray[np.float64] | None,
     rr_ms: list[float],
     fs: int,
-) -> tuple[float | None, float | None, bool | None]:
-    """Estimate QT interval and Bazett-corrected QTc from median beat template."""
+    heart_rate_bpm: float = 75.0,
+) -> tuple[float | None, float | None, float | None, bool | None, str]:
+    """
+    Estimate QT interval and rate-corrected QTc from the median beat template.
+
+    Q-onset is derived from the first energy rise before R-peak (not a fixed 40 ms).
+    Reports both Bazett (QT/√RR) and Fridericia (QT/∛RR) formulae.
+    Selects the appropriate formula for the prolonged flag:
+      - Bazett for 60–100 bpm (most validated range)
+      - Fridericia for HR > 100 or < 60 (Bazett over/under-corrects at extremes)
+
+    Returns (qt_ms, qtc_bazett_ms, qtc_fridericia_ms, prolonged, method_used).
+    """
     if median_template is None or len(median_template) == 0 or not rr_ms:
-        return None, None, None
+        return None, None, None, None, "bazett"
 
     tmpl = median_template
     mid = len(tmpl) // 2
-    # T-wave end: look for return to baseline after the T wave
+
+    # ── Q-onset: energy-based, not fixed 40 ms ───────────────────────────
+    pre_r_start = max(0, mid - int(0.10 * fs))  # look up to 100 ms before R
+    pre_r = tmpl[pre_r_start:mid]
+    if len(pre_r) > 0:
+        pre_energy = pre_r ** 2
+        peak_pre = float(pre_energy.max())
+        if peak_pre > 0:
+            above_pre = np.where(pre_energy > peak_pre * 0.10)[0]
+            q_onset_in_window = int(above_pre[0]) if len(above_pre) > 0 else len(pre_r) - int(0.04 * fs)
+            q_onset_idx = pre_r_start + q_onset_in_window
+        else:
+            q_onset_idx = mid - int(0.04 * fs)
+    else:
+        q_onset_idx = mid - int(0.04 * fs)
+
+    # ── T-wave end: last sample above 10% of T-peak ───────────────────────
     post_start = mid + int(0.05 * fs)
-    post_end = min(len(tmpl), mid + int(0.50 * fs))
+    post_end = min(len(tmpl), mid + int(0.55 * fs))
     post_region = tmpl[post_start:post_end]
 
     if len(post_region) == 0:
-        return None, None, None
+        return None, None, None, None, "bazett"
 
-    # T-wave offset: last sample > 10% of T-peak amplitude
-    t_peak = np.max(np.abs(post_region))
+    t_peak = float(np.max(np.abs(post_region)))
     above = np.where(np.abs(post_region) > t_peak * 0.10)[0]
     if len(above) == 0:
-        return None, None, None
+        return None, None, None, None, "bazett"
 
-    t_end_idx = post_start + above[-1]
-    qt_samples = t_end_idx - (mid - int(0.04 * fs))  # from Q onset (approx)
+    t_end_idx = post_start + int(above[-1])
+    qt_samples = t_end_idx - q_onset_idx
     qt_ms = qt_samples / fs * 1000
 
-    # Bazett: QTc = QT / sqrt(RR in seconds)
-    rr_sec = np.mean(rr_ms) / 1000.0
-    qtc_ms = qt_ms / np.sqrt(rr_sec) if rr_sec > 0 else None
-    prolonged = qtc_ms > 450 if qtc_ms is not None else None
+    # ── Rate correction ────────────────────────────────────────────────────
+    rr_sec = float(np.mean(rr_ms)) / 1000.0
+    if rr_sec <= 0:
+        return qt_ms, None, None, None, "bazett"
 
-    return qt_ms, qtc_ms, prolonged
+    qtc_bazett = qt_ms / (rr_sec ** 0.5)
+    qtc_fridericia = qt_ms / (rr_sec ** (1.0 / 3.0))
+
+    # Choose the more accurate formula for the prolonged flag based on rate
+    if heart_rate_bpm > 100 or heart_rate_bpm < 60:
+        qtc_primary = qtc_fridericia
+        method = "fridericia"
+    else:
+        qtc_primary = qtc_bazett
+        method = "bazett"
+
+    prolonged = qtc_primary > 450
+
+    return qt_ms, qtc_bazett, qtc_fridericia, prolonged, method
 
 
-def _st_analysis(signals: SignalMap, r_peaks: np.ndarray, fs: int) -> STResults:
+# AHA-aligned ST elevation thresholds (mV) by lead.
+# V2/V3 have higher thresholds due to normal early repolarization variants.
+# All other leads default to 0.1 mV. (AHA/ACC 2013 STEMI guidelines)
+_ST_ELEVATION_THRESHOLDS: dict[str, float] = {
+    "V2": 0.20,
+    "V3": 0.20,
+}
+_ST_ELEVATION_DEFAULT = 0.10
+_ST_DEPRESSION_THRESHOLD = 0.05  # uniform 0.5 mm across all leads
+
+
+def _st_analysis(
+    signals: SignalMap,
+    r_peaks: np.ndarray,
+    fs: int,
+    j_offset_samples: int = 0,
+) -> STResults:
     """
-    Simple ST segment analysis: measure amplitude ~80 ms after R peak
-    across all available leads.
+    ST segment analysis across all available leads.
+
+    Measures at J-point + 80 ms (the clinical standard).
+    Subtracts the PR-segment isoelectric baseline (50–20 ms before R-peak)
+    to neutralize baseline drift from digitization.
+    Uses AHA-aligned lead-specific elevation thresholds.
     """
-    offset_samples = int(0.08 * fs)  # J+80 ms
+    st_offset = j_offset_samples + int(0.08 * fs)  # J + 80 ms
+    pr_start = int(0.05 * fs)   # 50 ms before R
+    pr_end = int(0.02 * fs)     # 20 ms before R
     results: STResults = {}
 
     for lead, sig in signals.items():
         if len(r_peaks) == 0:
             results[lead] = {"elevation": False, "depression": False, "mean_mv": 0.0}
             continue
-        measurements: list[float] = []
+
+        st_vals: list[float] = []
         for rp in r_peaks:
-            idx = rp + offset_samples
-            if idx < len(sig):
-                measurements.append(float(sig[idx]))
-        if not measurements:
+            st_idx = rp + st_offset
+            if st_idx >= len(sig):
+                continue
+            # PR-segment baseline reference for this beat
+            bl_start = max(0, rp - pr_start)
+            bl_end = max(0, rp - pr_end)
+            baseline = float(np.mean(sig[bl_start:bl_end])) if bl_end > bl_start else 0.0
+            st_vals.append(float(sig[st_idx]) - baseline)
+
+        if not st_vals:
             continue
-        mean_st = float(np.mean(measurements))
+
+        mean_st = float(np.mean(st_vals))
+        elev_thresh = _ST_ELEVATION_THRESHOLDS.get(lead, _ST_ELEVATION_DEFAULT)
         results[lead] = {
-            "elevation": mean_st > 0.1,      # >1 mm above baseline
-            "depression": mean_st < -0.05,   # >0.5 mm below baseline
+            "elevation": mean_st > elev_thresh,
+            "depression": mean_st < -_ST_DEPRESSION_THRESHOLD,
             "mean_mv": round(mean_st, 3),
         }
 
@@ -734,19 +913,40 @@ def build_claude_prompt(
     else:
         pipeline_hint = ""
 
-    return f"""You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform — treat them as accurate. Do NOT re-estimate these values visually.{pipeline_hint}
+    # Build calibration caveat if amplitudes are uncalibrated
+    amp_calibrated = measurements.get("amplitude_calibrated", False)
+    calibration_note = "" if amp_calibrated else "\nNOTE: Amplitude calibration unavailable (grid not detected). ST mV values are relative, not absolute."
+
+    # Build AFib hint if detected
+    afib_note = ""
+    if measurements.get("afib_hint"):
+        afib_note = "\nSIGNAL HINT: Irregularly irregular rhythm with absent P-waves — strongly consider atrial fibrillation."
+
+    # P-wave morphology line
+    p_morph = measurements.get("p_wave_morphology")
+    p_morph_str = f" ({p_morph})" if p_morph else ""
+
+    # QTc lines — report both formulae when available
+    qtcf = measurements.get("qtcf_ms")
+    qtc_method = measurements.get("qtc_method", "bazett")
+    qtc_line = f"{measurements['qtc_ms']:.0f} ms (Bazett)" if measurements['qtc_ms'] else "not measurable"
+    if qtcf is not None:
+        qtc_line += f"  |  {qtcf:.0f} ms (Fridericia)"
+    qtc_line += f"  [primary: {qtc_method}]"
+
+    return f"""You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform — treat them as accurate. Do NOT re-estimate these values visually.{calibration_note}{afib_note}{pipeline_hint}
 
 MEASURED SIGNAL DATA (from {digitizer_method}):
 - Heart rate: {measurements['heart_rate_bpm']:.0f} bpm
 - RR intervals (ms): {rr_str}
 - Rhythm regularity: {measurements['regularity']}
 - Beats detected: {measurements['num_beats']}
-- P waves present: {measurements['p_waves_present']}
+- P waves present: {measurements['p_waves_present']}{p_morph_str}
 - PR interval: {f"{measurements['pr_interval_ms']:.0f} ms" if measurements['pr_interval_ms'] else "not measurable"}
 - QRS duration: {f"{measurements['qrs_duration_ms']:.0f} ms" if measurements['qrs_duration_ms'] else "not measurable"}
 - QRS wide (≥120ms): {measurements['qrs_wide']}
 - QT interval: {f"{measurements['qt_ms']:.0f} ms" if measurements['qt_ms'] else "not measurable"}
-- QTc (Bazett): {f"{measurements['qtc_ms']:.0f} ms" if measurements['qtc_ms'] else "not measurable"}
+- QTc: {qtc_line}
 - QTc prolonged: {measurements['qtc_prolonged']}
 
 ST SEGMENT (per lead):
@@ -768,6 +968,7 @@ Using these measurements and the ECG image for morphology context (P-wave axis, 
   }},
   "p_waves": {{
     "present": <true|false>,
+    "signal_morphology": "{measurements.get('p_wave_morphology') or 'null'}",
     "morphology": "<description or null>",
     "ratio": "<e.g. '1:1' or null>",
     "confidence": <0.0-1.0>
@@ -798,8 +999,10 @@ Using these measurements and the ECG image for morphology context (P-wave axis, 
   }},
   "qtc": {{
     "ms": {measurements['qtc_ms'] if measurements['qtc_ms'] else 'null'},
+    "fridericia_ms": {measurements.get('qtcf_ms') if measurements.get('qtcf_ms') else 'null'},
     "measured_qt_ms": [{measurements['qt_ms'] if measurements['qt_ms'] else 'null'}],
     "prolonged": {str(measurements['qtc_prolonged']).lower() if measurements['qtc_prolonged'] is not None else 'null'},
+    "method": "{measurements.get('qtc_method', 'bazett')}",
     "confidence": <0.0-1.0>
   }},
   "primary_rhythm": "<rhythm name>",
@@ -830,7 +1033,11 @@ def main() -> None:
         digitized = digitize_image(image_path)
 
         # Step 2: Analyze signal
-        measurements = analyze_signal(digitized["signals"], digitized["sampling_rate"])
+        measurements = analyze_signal(
+            digitized["signals"],
+            digitized["sampling_rate"],
+            calibrated=digitized.get("calibrated", False),
+        )
 
         # Step 3a: PhysioNet pipeline pre-classification
         pipeline_classification = run_pipeline_classification(

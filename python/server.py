@@ -71,7 +71,11 @@ def analyze(req: AnalyzeRequest) -> dict[str, object]:
         digitized = digitize_image(image_bytes=image_bytes)
 
         # Step 2: measure
-        measurements = analyze_signal(digitized["signals"], digitized["sampling_rate"])
+        measurements = analyze_signal(
+            digitized["signals"],
+            digitized["sampling_rate"],
+            calibrated=digitized.get("calibrated", False),
+        )
 
         # Step 3a: PhysioNet pipeline pre-classification
         pipeline_classification = run_pipeline_classification(
