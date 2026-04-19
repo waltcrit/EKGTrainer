@@ -73,24 +73,55 @@ function confidenceBase(pc: PipelineClassification | null | undefined): number {
   return Math.max(0.45, Math.min(0.96, pc.confidence));
 }
 
-function inferDifferentials(primaryCode: string, hr: number, regularity: RhythmRegularity): string[] {
+function inferDifferentials(
+  primaryCode: string,
+  hr: number,
+  regularity: RhythmRegularity,
+  elevated: string[],
+  depressed: string[],
+): string[] {
   const d: string[] = [];
-  if (primaryCode === "AF") d.push("Atrial flutter with variable block", "Multifocal atrial tachycardia");
-  if (primaryCode === "AFL") d.push("Atrial fibrillation", "SVT");
-  if (primaryCode === "SVT") d.push("Atrial flutter with 2:1 block", "Sinus tachycardia");
-  if (primaryCode === "VT") d.push("SVT with aberrancy", "Accelerated idioventricular rhythm");
-  if (primaryCode === "VF") d.push("Artifact", "Polymorphic VT");
-  if (primaryCode === "ASYS") d.push("Fine VF", "Lead disconnection/artifact");
-  if (primaryCode === "NSR" && hr > 100) d.push("Sinus tachycardia", "Atrial tachycardia");
-  if (primaryCode === "NSR" && hr < 60) d.push("Sinus bradycardia", "Junctional rhythm");
-  if (primaryCode === "NSR" && regularity !== "regular") d.push("Atrial fibrillation", "Frequent ectopy");
+
+  // ST-based differentials take priority when present
+  if (elevated.length > 0) {
+    d.push("Early repolarization variant", "Pericarditis / myocarditis");
+  } else if (depressed.length > 0) {
+    d.push("NSTEMI / unstable angina", "Rate-related ST depression");
+  } else {
+    if (primaryCode === "AF") d.push("Atrial flutter with variable block", "Multifocal atrial tachycardia");
+    if (primaryCode === "AFL") d.push("Atrial fibrillation", "SVT");
+    if (primaryCode === "SVT") d.push("Atrial flutter with 2:1 block", "Sinus tachycardia");
+    if (primaryCode === "VT") d.push("SVT with aberrancy", "Accelerated idioventricular rhythm");
+    if (primaryCode === "VF") d.push("Artifact", "Polymorphic VT");
+    if (primaryCode === "ASYS") d.push("Fine VF", "Lead disconnection/artifact");
+    if (primaryCode === "NSR" && hr > 100) d.push("Sinus tachycardia", "Atrial tachycardia");
+    if (primaryCode === "NSR" && hr < 60) d.push("Sinus bradycardia", "Junctional rhythm");
+    if (primaryCode === "NSR" && regularity !== "regular") d.push("Atrial fibrillation", "Frequent ectopy");
+  }
   return d.slice(0, 2);
+}
+
+/** Derive clinical impression from rhythm + ST findings. */
+function deriveClinicalImpression(
+  rhythmDisplay: string,
+  elevated: string[],
+  depressed: string[],
+): string {
+  if (elevated.length > 0) {
+    const leadStr = elevated.join(", ");
+    return `STEMI — ${rhythmDisplay} (elevation in ${leadStr})`;
+  }
+  if (depressed.length > 0) {
+    const leadStr = depressed.join(", ");
+    return `Ischemia / NSTEMI — ${rhythmDisplay} (depression in ${leadStr})`;
+  }
+  return rhythmDisplay;
 }
 
 function buildTenStepExplanation(
   m: SignalMeasurements,
   pc: PipelineClassification | null,
-  displayRhythm: string,
+  clinicalImpression: string,
   regularity: RhythmRegularity,
 ): string {
   const hr = Math.round(toNumber(m.heart_rate_bpm));
@@ -105,9 +136,9 @@ function buildTenStepExplanation(
 
   const step7 =
     elevated.length > 0
-      ? `ST elevation noted in ${elevated.join(", ")}.`
+      ? `ST elevation noted in ${elevated.join(", ")} — consider STEMI until proven otherwise.`
       : depressed.length > 0
-        ? `ST depression noted in ${depressed.join(", ")}.`
+        ? `ST depression noted in ${depressed.join(", ")} — consider ischemia / NSTEMI.`
         : "No significant ST shift detected.";
 
   const mode = pc?.used_deep_learning ? "deep-learning-assisted" : "signal-rule-based";
@@ -121,7 +152,7 @@ function buildTenStepExplanation(
     `7) ST segment: ${step7}`,
     "8) T waves: no definitive morphology classification from this signal-only pass.",
     `9) QTc: ${qtc !== null ? `${Math.round(qtc)} ms` : "not reliably measurable"}.`,
-    `10) Impression: ${displayRhythm} based on ${mode} PhysioNet-compatible pipeline output.`,
+    `10) Impression: ${clinicalImpression} (${mode} pipeline).`,
   ].join(" ");
 }
 
@@ -149,14 +180,18 @@ function toTenStepResult(data: PipelineData): EKGAnalysisResult {
   const baseConf = confidenceBase(pc);
 
   const st = m.st ?? {};
-  const elevated = Object.entries(st).filter(([, s]) => s?.elevation);
-  const depressed = Object.entries(st).filter(([, s]) => s?.depression);
+  const elevatedEntries = Object.entries(st).filter(([, s]) => s?.elevation);
+  const depressedEntries = Object.entries(st).filter(([, s]) => s?.depression);
+  const elevatedLeads = elevatedEntries.map(([lead]) => lead);
+  const depressedLeads = depressedEntries.map(([lead]) => lead);
   const stDetails =
-    elevated.length > 0
-      ? `Elevation in ${elevated.map(([lead, v]) => `${lead}${typeof v?.mean_mv === "number" ? ` (${v.mean_mv.toFixed(2)} mV)` : ""}`).join(", ")}`
-      : depressed.length > 0
-        ? `Depression in ${depressed.map(([lead, v]) => `${lead}${typeof v?.mean_mv === "number" ? ` (${v.mean_mv.toFixed(2)} mV)` : ""}`).join(", ")}`
+    elevatedEntries.length > 0
+      ? `Elevation in ${elevatedEntries.map(([lead, v]) => `${lead}${typeof v?.mean_mv === "number" ? ` (${v.mean_mv.toFixed(2)} mV)` : ""}`).join(", ")}`
+      : depressedEntries.length > 0
+        ? `Depression in ${depressedEntries.map(([lead, v]) => `${lead}${typeof v?.mean_mv === "number" ? ` (${v.mean_mv.toFixed(2)} mV)` : ""}`).join(", ")}`
         : null;
+
+  const clinicalImpression = deriveClinicalImpression(rhythmDisplay, elevatedLeads, depressedLeads);
 
   const imageQuality = data.digitizer_method.includes("uncalibrated") ? "fair" : "good";
   const caveatBits: string[] = [
@@ -198,8 +233,8 @@ function toTenStepResult(data: PipelineData): EKGAnalysisResult {
       confidence: Math.max(0.55, baseConf - 0.06),
     },
     st_segment: {
-      elevation: elevated.length > 0,
-      depression: depressed.length > 0,
+      elevation: elevatedLeads.length > 0,
+      depression: depressedLeads.length > 0,
       details: stDetails,
       confidence: Math.max(0.5, baseConf - 0.12),
     },
@@ -214,9 +249,10 @@ function toTenStepResult(data: PipelineData): EKGAnalysisResult {
       confidence: Math.max(0.5, baseConf - 0.12),
     },
     primary_rhythm: rhythmDisplay,
+    clinical_impression: clinicalImpression,
     overall_confidence: Math.min(0.96, Math.max(0.45, baseConf)),
-    differentials: inferDifferentials(rhythmCode, bpm, regularity),
-    explanation: buildTenStepExplanation(m, pc, rhythmDisplay, regularity),
+    differentials: inferDifferentials(rhythmCode, bpm, regularity, elevatedLeads, depressedLeads),
+    explanation: buildTenStepExplanation(m, pc, clinicalImpression, regularity),
     image_quality: imageQuality,
     caveats: `${caveatBits.join(". ")}.`,
     pipeline_classification: data.pipeline_classification ?? null,

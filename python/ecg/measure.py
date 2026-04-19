@@ -106,7 +106,8 @@ def analyze_signal(
     qt_ms, qtc_ms, qtcf_ms, qtc_prolonged, qtc_method = _qtc(
         median_template, rr_intervals_ms, sampling_rate, heart_rate_bpm
     )
-    st_results = _st_analysis(signals, r_peaks, sampling_rate, j_offset)
+    r_amp = float(median_template[len(median_template) // 2]) if median_template is not None else None
+    st_results = _st_analysis(signals, r_peaks, sampling_rate, j_offset, calibrated=calibrated, r_amplitude=r_amp)
 
     afib_hint = (regularity == "irregularly_irregular") and not p_present
 
@@ -395,11 +396,15 @@ def _st_analysis(
     r_peaks: np.ndarray,
     fs: int,
     j_offset_samples: int = 0,
+    calibrated: bool = False,
+    r_amplitude: float | None = None,
 ) -> STResults:
     """
     ST segment analysis across all leads.
     Measures at J-point + 80 ms using PR-segment baseline (50–20 ms before R).
-    Applies AHA lead-specific elevation thresholds.
+    Applies AHA lead-specific elevation thresholds when calibrated.
+    Falls back to relative thresholds (10% / 5% of R amplitude) when uncalibrated,
+    since normalization removes the absolute mV scale.
     """
     st_offset = j_offset_samples + int(0.08 * fs)
     pr_start = int(0.05 * fs)
@@ -411,6 +416,7 @@ def _st_analysis(
             results[lead] = {"elevation": False, "depression": False, "mean_mv": 0.0}
             continue
 
+        r_amps: list[float] = []
         st_vals: list[float] = []
         for rp in r_peaks:
             st_idx = rp + st_offset
@@ -420,15 +426,26 @@ def _st_analysis(
             bl_end = max(0, rp - pr_end)
             baseline = float(np.mean(sig[bl_start:bl_end])) if bl_end > bl_start else 0.0
             st_vals.append(float(sig[st_idx]) - baseline)
+            r_amps.append(abs(float(sig[rp])))
 
         if not st_vals:
             continue
 
         mean_st = float(np.mean(st_vals))
-        elev_thresh = _ST_ELEVATION_THRESHOLDS.get(lead, _ST_ELEVATION_DEFAULT)
+
+        if calibrated:
+            elev_thresh = _ST_ELEVATION_THRESHOLDS.get(lead, _ST_ELEVATION_DEFAULT)
+            dep_thresh = _ST_DEPRESSION_THRESHOLD
+        else:
+            # Relative thresholds: 10% of R for elevation, 5% for depression.
+            # Uses per-beat R amplitudes when available, else the passed r_amplitude.
+            ref_amp = float(np.mean(r_amps)) if r_amps else (r_amplitude or 1.0)
+            elev_thresh = ref_amp * 0.10
+            dep_thresh = ref_amp * 0.05
+
         results[lead] = {
             "elevation": mean_st > elev_thresh,
-            "depression": mean_st < -_ST_DEPRESSION_THRESHOLD,
+            "depression": mean_st < -dep_thresh,
             "mean_mv": round(mean_st, 3),
         }
 

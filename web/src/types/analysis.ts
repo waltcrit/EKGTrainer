@@ -85,7 +85,10 @@ export interface EKGAnalysisResult {
   st_segment: STSegmentAnalysis;
   t_waves: TWaveAnalysis;
   qtc: QTcAnalysis;
+  /** Underlying cardiac rhythm (e.g. "Normal Sinus Rhythm") */
   primary_rhythm: string;
+  /** Full clinical impression, incorporates ST findings (e.g. "STEMI — Normal Sinus Rhythm") */
+  clinical_impression: string;
   overall_confidence: number;
   differentials: string[];
   explanation: string;
