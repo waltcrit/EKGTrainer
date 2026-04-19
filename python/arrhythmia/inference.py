@@ -171,6 +171,8 @@ def classify_ecg(
     beat_window_post_ms: float = 400.0,
     rhythm_window_s: float = 10.0,
     smooth_window: int = 5,
+    precomputed_rpeaks: list[int] | IntArray | None = None,
+    precomputed_fs: int | None = None,
 ) -> InferenceResult:
     """
     Full inference pipeline from raw ECG signal to arrhythmia classification.
@@ -188,6 +190,10 @@ def classify_ecg(
     beat_window_post_ms : post-R window for beat segmentation (ms)
     rhythm_window_s     : rhythm strip duration (seconds)
     smooth_window       : smoothing window size for post-processing
+    precomputed_rpeaks  : optional R-peak sample indices from an upstream detector;
+                          skips internal detection when provided (avoids double work)
+    precomputed_fs      : sampling rate of precomputed_rpeaks; required when
+                          precomputed_rpeaks is given and differs from target_fs
 
     Returns
     -------
@@ -202,9 +208,22 @@ def classify_ecg(
     processed, eff_fs = preprocess(signal, fs, target_fs=target_fs)
 
     # ------------------------------------------------------------------
-    # Step 2 — R-peak detection
+    # Step 2 — R-peak detection (skip if caller supplied peaks)
     # ------------------------------------------------------------------
-    r_peaks, rr_ms = detect_and_compute(processed, eff_fs, method=rpeak_method)
+    if precomputed_rpeaks is not None and len(precomputed_rpeaks) > 0:
+        src_fs = precomputed_fs if precomputed_fs is not None else fs
+        if src_fs != eff_fs:
+            # Scale peak indices from source sampling rate to the resampled rate
+            scale = eff_fs / src_fs
+            r_peaks = np.round(np.asarray(precomputed_rpeaks, dtype=np.float64) * scale).astype(np.int64)
+        else:
+            r_peaks = np.asarray(precomputed_rpeaks, dtype=np.int64)
+        # Clamp to valid signal range
+        r_peaks = r_peaks[(r_peaks >= 0) & (r_peaks < len(processed))]
+        rr_ms = np.diff(r_peaks) / eff_fs * 1000.0 if len(r_peaks) > 1 else np.array([], dtype=np.float64)
+        notes.append("R-peaks from upstream detector (skipped internal detection)")
+    else:
+        r_peaks, rr_ms = detect_and_compute(processed, eff_fs, method=rpeak_method)
     result.r_peaks = r_peaks
     result.rr_ms = rr_ms
 

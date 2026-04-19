@@ -829,14 +829,15 @@ def _st_analysis(
 def run_pipeline_classification(
     signals: SignalMap,
     sampling_rate: int,
+    precomputed_rpeaks: list[int] | None = None,
+    precomputed_fs: int | None = None,
 ) -> PipelineClassification | None:
     """
     Run the arrhythmia.inference pipeline on the Lead II signal and return
     a structured result dict, or None if the pipeline is unavailable.
 
-    The result is included in the server response and used as a hint inside
-    the Claude prompt so the LLM can confirm or override the signal-derived
-    classification.
+    Pass precomputed_rpeaks (from analyze_signal) to skip redundant R-peak
+    detection inside the arrhythmia pipeline.
     """
     if not _pipeline_available:
         return None
@@ -855,6 +856,8 @@ def run_pipeline_classification(
             fs=sampling_rate,
             target_fs=250,
             rpeak_method="hamilton",
+            precomputed_rpeaks=precomputed_rpeaks,
+            precomputed_fs=precomputed_fs if precomputed_fs is not None else sampling_rate,
         ))
         primary = _label_to_str(result.primary_rhythm)
         strip = _label_to_str(result.strip_label)
