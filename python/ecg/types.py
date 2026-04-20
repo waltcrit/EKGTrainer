@@ -58,6 +58,8 @@ class SignalMeasurements(TypedDict):
     amplitude_calibrated: NotRequired[bool]
     afib_hint: NotRequired[bool]
     vf_morphology: NotRequired[bool]
+    p_peaks: NotRequired[list[int]]
+    pp_intervals_ms: NotRequired[list[float]]
 
 
 class InferenceResultLike(Protocol):

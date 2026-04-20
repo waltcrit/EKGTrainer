@@ -47,6 +47,8 @@ interface SignalMeasurements {
   st?: Record<string, { elevation?: boolean; depression?: boolean; mean_mv?: number }>;
   num_beats?: number;
   rhythm_lead?: string;
+  p_peaks?: number[];
+  pp_intervals_ms?: number[];
 }
 
 function toNumber(v: unknown, fallback = 0): number {
@@ -79,14 +81,21 @@ function inferDifferentials(
   regularity: RhythmRegularity,
   elevated: string[],
   depressed: string[],
+  qrsWide: boolean,
 ): string[] {
   const d: string[] = [];
 
-  // ST-based differentials take priority when present
   if (elevated.length > 0) {
     d.push("Early repolarization variant", "Pericarditis / myocarditis");
   } else if (depressed.length > 0) {
     d.push("NSTEMI / unstable angina", "Rate-related ST depression");
+  } else if (qrsWide && (primaryCode === "NSR" || primaryCode === "SB" || primaryCode === "ST")) {
+    // Wide QRS with sinus rhythm — the rhythm classifier missed the conduction abnormality
+    d.push("LBBB or RBBB", "Aberrant conduction / Wolff-Parkinson-White");
+  } else if (hr < 50 && (primaryCode === "SB" || primaryCode === "NSR") && !qrsWide) {
+    d.push("High-degree AV block (2nd or 3rd degree)", "Junctional bradycardia");
+  } else if (hr < 50 && (primaryCode === "SB" || primaryCode === "NSR") && qrsWide) {
+    d.push("Complete (3rd degree) AV block with ventricular escape", "Accelerated idioventricular rhythm");
   } else {
     if (primaryCode === "AF") d.push("Atrial flutter with variable block", "Multifocal atrial tachycardia");
     if (primaryCode === "AFL") d.push("Atrial fibrillation", "SVT");
@@ -101,21 +110,107 @@ function inferDifferentials(
   return d.slice(0, 2);
 }
 
-/** Derive clinical impression from rhythm + ST findings. */
+/**
+ * Build a list of morphological findings from signal measurements.
+ * These are findings that the rhythm classifier cannot express (e.g. LBBB, AV block).
+ */
+function morphologicalFindings(m: SignalMeasurements, rhythmCode: string): string[] {
+  const findings: string[] = [];
+  const hr = Math.round(toNumber(m.heart_rate_bpm));
+  const pr = toNullableNumber(m.pr_interval_ms);
+  const qrs = toNullableNumber(m.qrs_duration_ms);
+  const qtcMs = toNullableNumber(m.qtc_ms);
+  const qrsWide = toBool(m.qrs_wide, qrs !== null ? qrs >= 120 : false);
+  const pPresent = toBool(m.p_waves_present, true);
+
+  // Wide QRS — can't distinguish LBBB/RBBB/aberrancy without 12-lead morphology
+  if (qrsWide) {
+    findings.push("Wide QRS (≥120 ms) — consider LBBB, RBBB, or aberrant conduction");
+  }
+
+  // 1st degree AV block
+  if (pr !== null && pr > 200) {
+    findings.push(`Prolonged PR (${Math.round(pr)} ms) — consider 1st degree AV block`);
+  }
+
+  // AV block detection using P-P vs R-R rate comparison
+  const ppIntervals = Array.isArray(m.pp_intervals_ms)
+    ? (m.pp_intervals_ms as number[]).filter((v) => typeof v === "number" && v > 0)
+    : [];
+  const rrIntervals = Array.isArray(m.rr_intervals_ms)
+    ? (m.rr_intervals_ms as number[]).filter((v) => typeof v === "number" && v > 0)
+    : [];
+
+  if (ppIntervals.length >= 2 && rrIntervals.length >= 2) {
+    const meanPP = ppIntervals.reduce((a, b) => a + b, 0) / ppIntervals.length;
+    const meanRR = rrIntervals.reduce((a, b) => a + b, 0) / rrIntervals.length;
+    const atrialRate = Math.round(60000 / meanPP);
+    const ventricularRate = Math.round(60000 / meanRR);
+
+    // P-P regularity: CV of PP intervals
+    const ppCV = Math.sqrt(
+      ppIntervals.reduce((sum, v) => sum + (v - meanPP) ** 2, 0) / ppIntervals.length
+    ) / meanPP;
+
+    if (
+      atrialRate > ventricularRate * 1.3 &&
+      ventricularRate < 65 &&
+      ppCV < 0.15  // P-P is regular (not AF/MAT)
+    ) {
+      // Atrial rate materially faster than ventricular with regular P-P → AV dissociation
+      const escapeType = qrsWide ? "ventricular escape" : "junctional escape";
+      findings.push(
+        `Atrial rate ${atrialRate} bpm vs ventricular rate ${ventricularRate} bpm — ` +
+        `P-QRS dissociation pattern; consider complete (3rd degree) AV block with ${escapeType}`
+      );
+    } else if (
+      ventricularRate < 55 &&
+      pPresent &&
+      (rhythmCode === "SB" || rhythmCode === "NSR") &&
+      atrialRate > ventricularRate
+    ) {
+      // Softer signal: slower-than-expected rate with P waves and some PP/RR discordance
+      findings.push(`Bradycardia (ventricular ${ventricularRate} bpm, atrial ~${atrialRate} bpm) — consider high-degree AV block`);
+    }
+  } else if (hr < 50 && pPresent && (rhythmCode === "SB" || rhythmCode === "NSR")) {
+    // Fallback when PP data unavailable
+    findings.push("Marked bradycardia with P waves present — consider high-degree AV block");
+  }
+
+  // Absent P waves not already captured by AF/AFL/VT etc.
+  if (!pPresent && rhythmCode === "NSR") {
+    findings.push("P waves not detected — consider junctional rhythm or accelerated idioventricular rhythm");
+  }
+
+  // QTc prolongation
+  if (qtcMs !== null && qtcMs >= 500) {
+    findings.push(`Markedly prolonged QTc (${Math.round(qtcMs)} ms) — consider Long QT syndrome, drug effect`);
+  } else if (qtcMs !== null && qtcMs >= 460) {
+    findings.push(`Prolonged QTc (${Math.round(qtcMs)} ms)`);
+  }
+
+  return findings;
+}
+
+/** Derive clinical impression from rhythm + ST findings + morphological flags. */
 function deriveClinicalImpression(
   rhythmDisplay: string,
   elevated: string[],
   depressed: string[],
+  extraFindings: string[],
 ): string {
+  const parts: string[] = [];
+
   if (elevated.length > 0) {
-    const leadStr = elevated.join(", ");
-    return `STEMI — ${rhythmDisplay} (elevation in ${leadStr})`;
+    parts.push(`STEMI — ${rhythmDisplay} (elevation in ${elevated.join(", ")})`);
+  } else if (depressed.length > 0) {
+    parts.push(`Ischemia / NSTEMI — ${rhythmDisplay} (depression in ${depressed.join(", ")})`);
+  } else {
+    parts.push(rhythmDisplay);
   }
-  if (depressed.length > 0) {
-    const leadStr = depressed.join(", ");
-    return `Ischemia / NSTEMI — ${rhythmDisplay} (depression in ${leadStr})`;
-  }
-  return rhythmDisplay;
+
+  parts.push(...extraFindings);
+  return parts.join("; ");
 }
 
 function buildTenStepExplanation(
@@ -129,10 +224,14 @@ function buildTenStepExplanation(
   const qrs = toNullableNumber(m.qrs_duration_ms);
   const qtc = toNullableNumber(m.qtc_ms);
   const pPresent = toBool(m.p_waves_present, true);
-  const qrsWide = toBool(m.qrs_wide, false);
+  const qrsWide = toBool(m.qrs_wide, qrs !== null ? qrs >= 120 : false);
   const st = m.st ?? {};
   const elevated = Object.entries(st).filter(([, s]) => s?.elevation).map(([lead]) => lead);
   const depressed = Object.entries(st).filter(([, s]) => s?.depression).map(([lead]) => lead);
+
+  const step6 = qrsWide
+    ? `Wide-complex pattern (${qrs !== null ? `${Math.round(qrs)} ms` : "≥120 ms"}) — consider LBBB, RBBB, or aberrant conduction. Morphology differentiation requires 12-lead.`
+    : "Narrow QRS — no bundle branch block pattern detected.";
 
   const step7 =
     elevated.length > 0
@@ -146,12 +245,12 @@ function buildTenStepExplanation(
     `1) Rate: approximately ${hr} bpm from detected R-R intervals.`,
     `2) Rhythm: ${regularity.replace(/_/g, " ")}.`,
     `3) P waves: ${pPresent ? "present" : "not clearly present"}.`,
-    `4) PR interval: ${pr !== null ? `${Math.round(pr)} ms` : "not reliably measurable"}.`,
-    `5) QRS duration: ${qrs !== null ? `${Math.round(qrs)} ms` : "not reliably measurable"}${qrsWide ? " (wide)" : " (not wide)"}.`,
-    `6) QRS morphology: ${qrsWide ? "wide-complex pattern" : "no clear wide-complex pattern"}.`,
+    `4) PR interval: ${pr !== null ? `${Math.round(pr)} ms${pr > 200 ? " — prolonged, consider 1st degree AV block" : ""}` : "not reliably measurable"}.`,
+    `5) QRS duration: ${qrs !== null ? `${Math.round(qrs)} ms` : "not reliably measurable"}${qrsWide ? " (wide)" : " (narrow)"}.`,
+    `6) QRS morphology: ${step6}`,
     `7) ST segment: ${step7}`,
     "8) T waves: no definitive morphology classification from this signal-only pass.",
-    `9) QTc: ${qtc !== null ? `${Math.round(qtc)} ms` : "not reliably measurable"}.`,
+    `9) QTc: ${qtc !== null ? `${Math.round(qtc)} ms${qtc >= 460 ? " — prolonged" : ""}` : "not reliably measurable"}.`,
     `10) Impression: ${clinicalImpression} (${mode} pipeline).`,
   ].join(" ");
 }
@@ -191,7 +290,8 @@ function toTenStepResult(data: PipelineData): EKGAnalysisResult {
         ? `Depression in ${depressedEntries.map(([lead, v]) => `${lead}${typeof v?.mean_mv === "number" ? ` (${v.mean_mv.toFixed(2)} mV)` : ""}`).join(", ")}`
         : null;
 
-  const clinicalImpression = deriveClinicalImpression(rhythmDisplay, elevatedLeads, depressedLeads);
+  const extraFindings = morphologicalFindings(m, rhythmCode);
+  const clinicalImpression = deriveClinicalImpression(rhythmDisplay, elevatedLeads, depressedLeads, extraFindings);
 
   const imageQuality = data.digitizer_method.includes("uncalibrated") ? "fair" : "good";
   const caveatBits: string[] = [
@@ -229,7 +329,7 @@ function toTenStepResult(data: PipelineData): EKGAnalysisResult {
       duration_ms: qrsMs !== null ? Math.round(qrsMs) : null,
       measured_beats_ms: qrsMs !== null ? [Math.round(qrsMs)] : [],
       wide: toBool(m.qrs_wide, qrsMs !== null ? qrsMs >= 120 : false),
-      morphology: toBool(m.qrs_wide, false) ? "Wide-complex" : "No clear wide-complex morphology",
+      morphology: toBool(m.qrs_wide, qrsMs !== null ? qrsMs >= 120 : false) ? "Wide-complex — consider LBBB, RBBB, or aberrant conduction" : "Narrow — no bundle branch block pattern detected",
       confidence: Math.max(0.55, baseConf - 0.06),
     },
     st_segment: {
@@ -251,7 +351,7 @@ function toTenStepResult(data: PipelineData): EKGAnalysisResult {
     primary_rhythm: rhythmDisplay,
     clinical_impression: clinicalImpression,
     overall_confidence: Math.min(0.96, Math.max(0.45, baseConf)),
-    differentials: inferDifferentials(rhythmCode, bpm, regularity, elevatedLeads, depressedLeads),
+    differentials: inferDifferentials(rhythmCode, bpm, regularity, elevatedLeads, depressedLeads, toBool(m.qrs_wide, qrsMs !== null ? qrsMs >= 120 : false)),
     explanation: buildTenStepExplanation(m, pc, clinicalImpression, regularity),
     image_quality: imageQuality,
     caveats: `${caveatBits.join(". ")}.`,

@@ -103,6 +103,7 @@ def analyze_signal(
     qrs_ms, qrs_wide = _qrs_width(median_template, sampling_rate)
     j_offset = _detect_j_point(median_template, sampling_rate)
     pr_ms, p_present, p_morphology = _pr_interval(median_template, sampling_rate, calibrated)
+    p_peaks, pp_intervals_ms = _detect_p_peaks(rhythm_signal, r_peaks, median_template, sampling_rate)
     qt_ms, qtc_ms, qtcf_ms, qtc_prolonged, qtc_method = _qtc(
         median_template, rr_intervals_ms, sampling_rate, heart_rate_bpm
     )
@@ -127,6 +128,8 @@ def analyze_signal(
         "qtc_method": qtc_method,
         "qtc_prolonged": qtc_prolonged,
         "st": st_results,
+        "p_peaks": [int(p) for p in p_peaks],
+        "pp_intervals_ms": pp_intervals_ms,
         "num_beats": len(r_peaks),
         "rhythm_lead": rhythm_lead_name,
         "amplitude_calibrated": calibrated,
@@ -315,6 +318,111 @@ def _pr_interval(
     pr_samples = mid - p_peak_idx
     pr_ms = pr_samples / fs * 1000
     return pr_ms, True, morphology
+
+
+def _p_polarity(
+    median_template: NDArray[np.float64] | None,
+    fs: int,
+) -> str:
+    """
+    Return "upright" or "inverted" P-wave polarity from the median template.
+    Falls back to "upright" when no P-wave is detectable.
+    """
+    if median_template is None or len(median_template) == 0:
+        return "upright"
+    mid = len(median_template) // 2
+    pre_start = max(0, mid - int(0.25 * fs))
+    pre_end = max(0, mid - int(0.05 * fs))
+    pre_region = median_template[pre_start:pre_end]
+    if len(pre_region) == 0:
+        return "upright"
+    r_amp = float(np.max(np.abs(median_template[max(0, mid - 5):mid + 5]))) if mid >= 5 else 1.0
+    threshold = r_amp * 0.08
+    pos_peak = float(np.max(pre_region))
+    neg_peak = float(np.min(pre_region))
+    if abs(neg_peak) > pos_peak and abs(neg_peak) > threshold:
+        return "inverted"
+    return "upright"
+
+
+def _detect_p_peaks(
+    signal: NDArray[np.float64],
+    r_peaks: np.ndarray,
+    median_template: NDArray[np.float64] | None,
+    fs: int,
+) -> tuple[list[int], list[float]]:
+    """
+    Detect P-wave peak positions in the raw signal and compute P-P intervals.
+
+    Two-pass approach:
+      1. Anchored: search the PR window before each R-peak (one P per QRS).
+      2. Mid-RR: for long R-R intervals (>700 ms) search the post-T / pre-P
+         segment for dissociated P-waves — the signature of high-degree AV block.
+
+    Returns:
+        p_peaks:         sorted absolute sample indices of detected P-peaks
+        pp_intervals_ms: successive P-P intervals in ms
+    """
+    if len(r_peaks) < 2:
+        return [], []
+
+    polarity = _p_polarity(median_template, fs)
+    r_amp = float(np.median(np.abs(signal[r_peaks]))) if len(r_peaks) > 0 else 1.0
+    min_amp = r_amp * 0.07  # 7% of median R amplitude
+
+    def _peak_in_window(win: NDArray[np.float64]) -> tuple[int, float]:
+        if polarity == "inverted":
+            idx = int(np.argmin(win))
+            return idx, abs(float(win[idx]))
+        idx = int(np.argmax(win))
+        return idx, float(win[idx])
+
+    # Pass 1 — anchored to each R-peak
+    anchored: list[int] = []
+    pre_start_samples = int(0.26 * fs)
+    pre_end_samples = int(0.05 * fs)
+    for rp in r_peaks:
+        ws = max(0, rp - pre_start_samples)
+        we = max(0, rp - pre_end_samples)
+        if we <= ws:
+            continue
+        window = signal[ws:we]
+        idx, amp = _peak_in_window(window)
+        if amp >= min_amp:
+            anchored.append(ws + idx)
+
+    # Pass 2 — mid-RR search for dissociated P-waves (>700 ms R-R gap)
+    extra: list[int] = []
+    rr_samples = np.diff(r_peaks)
+    for i, rr in enumerate(rr_samples):
+        rr_ms = rr / fs * 1000
+        if rr_ms < 700:
+            continue
+        # Blank past the T-wave (~250 ms after R) and stop 150 ms before next R
+        seg_start = r_peaks[i] + int(0.25 * fs)
+        seg_end = r_peaks[i + 1] - int(0.15 * fs)
+        if seg_end <= seg_start or seg_start < 0 or seg_end > len(signal):
+            continue
+        segment = signal[seg_start:seg_end]
+        if len(segment) < int(0.05 * fs):
+            continue
+        idx, amp = _peak_in_window(segment)
+        if amp >= min_amp:
+            extra.append(seg_start + idx)
+
+    # Merge, sort, deduplicate (min 150 ms separation)
+    all_peaks = sorted(set(anchored + extra))
+    min_sep = int(0.15 * fs)
+    deduped: list[int] = []
+    for pk in all_peaks:
+        if not deduped or pk - deduped[-1] >= min_sep:
+            deduped.append(pk)
+
+    pp_intervals: list[float] = [
+        round((deduped[j + 1] - deduped[j]) / fs * 1000, 1)
+        for j in range(len(deduped) - 1)
+    ]
+    return deduped, pp_intervals
 
 
 def _qtc(
