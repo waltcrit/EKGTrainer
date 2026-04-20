@@ -9,8 +9,6 @@ __pycache__/
 web/.next/
 web/node_modules/
 web/.env*.local
-node_modules/
-package-lock.json
 
 # OS
 .DS_Store
