@@ -1,6 +1,7 @@
 import path from "node:path";
 import casesData from "@/data/cases.json";
 import type { EKGCase, RhythmCategory } from "@/types/cases";
+import { getRhythmCriteria, type RhythmCriteria } from "@/lib/rhythmCriteria";
 
 export interface QuizQuestionPayload {
   opaqueId: string;
@@ -127,6 +128,7 @@ export function checkQuizAnswer(opaqueId: string, choice: string): {
   teaching: string;
   rate: number | null;
   regularity: EKGCase["regularity"];
+  ahaccCriteria: RhythmCriteria | null;
 } | null {
   const current = byOpaque.get(opaqueId);
   if (!current) return null;
@@ -138,6 +140,7 @@ export function checkQuizAnswer(opaqueId: string, choice: string): {
     teaching: current.teaching,
     rate: current.rate,
     regularity: current.regularity,
+    ahaccCriteria: getRhythmCriteria(current.rhythm),
   };
 }
 

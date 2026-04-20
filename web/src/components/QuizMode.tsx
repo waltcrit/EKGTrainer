@@ -6,6 +6,7 @@ import type { RhythmCategory } from "@/types/cases";
 import { CATEGORY_LABELS } from "@/types/cases";
 import type { EKGAnalysisResult as AnalysisResult } from "@/types/analysis";
 import RhythmReport from "./RhythmReport";
+import type { RhythmCriteria } from "@/lib/rhythmCriteria";
 
 interface QuizModeProps {
   initialCaseId?: string | null;
@@ -38,6 +39,7 @@ interface QuizReveal {
   teaching: string;
   rate: number | null;
   regularity: "regular" | "regularly_irregular" | "irregularly_irregular" | "chaotic" | "none";
+  ahaccCriteria: RhythmCriteria | null;
 }
 
 interface QuizMeta {
@@ -110,6 +112,7 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
   const [current, setCurrent] = useState<QuizQuestion | null>(null);
   const [reveal, setReveal] = useState<QuizReveal | null>(null);
   const [seenOpaqueIds, setSeenOpaqueIds] = useState<string[]>([]);
+  const [criteriaOpen, setCriteriaOpen] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -151,6 +154,7 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
     setAiResult(null);
     setAiError(null);
     setShowTwelveLead(false);
+    setCriteriaOpen(false);
     fetchNextQuestion().catch((err) => {
       setAiError(err instanceof Error ? err.message : "Unable to load next case");
     });
@@ -215,6 +219,7 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
       teaching: data.teaching,
       rate: data.rate,
       regularity: data.regularity,
+      ahaccCriteria: data.ahaccCriteria ?? null,
     };
     setReveal(nextReveal);
     setState("revealed");
@@ -270,6 +275,7 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
     setAiResult(null);
     setAiError(null);
     setShowTwelveLead(false);
+    setCriteriaOpen(false);
     try {
       await fetchNextQuestion();
     } catch (err) {
@@ -284,6 +290,7 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
     setAiResult(null);
     setAiError(null);
     setShowTwelveLead(false);
+    setCriteriaOpen(false);
     try {
       await fetchNextQuestion();
     } catch (err) {
@@ -676,6 +683,57 @@ export default function QuizMode({ initialCaseId }: QuizModeProps) {
               </span>
             </div>
           </div>
+
+          {reveal.ahaccCriteria && (
+            <div className="rounded-xl border border-indigo-200 bg-white overflow-hidden shadow-sm">
+              <button
+                onClick={() => setCriteriaOpen((o) => !o)}
+                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-indigo-50 transition-colors duration-150"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-600">
+                    AHA/ACC Diagnostic Criteria
+                  </span>
+                </div>
+                <svg
+                  className={`w-4 h-4 text-indigo-400 transition-transform duration-200 ${criteriaOpen ? "rotate-180" : ""}`}
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {criteriaOpen && (
+                <div className="border-t border-indigo-100 px-4 py-3.5 flex flex-col gap-3">
+                  <p className="text-xs text-slate-600 leading-relaxed italic">
+                    {reveal.ahaccCriteria.definition}
+                  </p>
+                  <ul className="flex flex-col gap-1.5">
+                    {reveal.ahaccCriteria.diagnosticCriteria.map((criterion, i) => (
+                      <li key={i} className="flex items-start gap-2.5 text-sm text-slate-700">
+                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0 mt-2" />
+                        {criterion}
+                      </li>
+                    ))}
+                  </ul>
+                  {reveal.ahaccCriteria.clinicalNotes && (
+                    <div className="rounded-lg bg-indigo-50 border border-indigo-100 px-3 py-2.5">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-600 mb-1">
+                        Clinical Notes
+                      </p>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        {reveal.ahaccCriteria.clinicalNotes}
+                      </p>
+                    </div>
+                  )}
+                  <p className="text-[10px] text-slate-400">
+                    Source: {reveal.ahaccCriteria.source}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           {!aiResult && !aiError && state !== "analyzing" && (
             <button

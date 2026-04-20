@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import type { EKGCase, RhythmCategory } from "@/types/cases";
 import { CATEGORY_LABELS, DIFFICULTY_LABELS } from "@/types/cases";
+import { getRhythmCriteria } from "@/lib/rhythmCriteria";
 
 interface CaseLibraryProps {
   cases: EKGCase[];
@@ -21,6 +22,15 @@ const DIFF_ACCENT: Record<number, { bar: string; badge: string; dot: string }> =
 export default function CaseLibrary({ cases, onPractice, onAnalyze }: CaseLibraryProps) {
   const [activeCategory, setActiveCategory] = useState<RhythmCategory | "all">("all");
   const [expanded, setExpanded]             = useState<string | null>(null);
+  const [criteriaOpen, setCriteriaOpen]     = useState<Set<string>>(new Set());
+
+  function toggleCriteria(id: string) {
+    setCriteriaOpen((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
 
   const categories = Array.from(new Set(cases.map((c) => c.category))) as RhythmCategory[];
   const visible    = activeCategory === "all" ? cases : cases.filter((c) => c.category === activeCategory);
@@ -69,7 +79,14 @@ export default function CaseLibrary({ cases, onPractice, onAnalyze }: CaseLibrar
               {/* ── Card header ── */}
               <button
                 className="w-full flex items-center gap-3 px-4 py-3.5 text-left"
-                onClick={() => setExpanded(isOpen ? null : c.id)}
+                onClick={() => {
+                  if (isOpen) {
+                    setExpanded(null);
+                    setCriteriaOpen((prev) => { const next = new Set(prev); next.delete(c.id); return next; });
+                  } else {
+                    setExpanded(c.id);
+                  }
+                }}
               >
                 {/* Difficulty dot */}
                 <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${acc.dot}`} />
@@ -150,6 +167,62 @@ export default function CaseLibrary({ cases, onPractice, onAnalyze }: CaseLibrar
                       </p>
                       <p className="text-sm text-[var(--academy-ink)] leading-relaxed">{c.teaching}</p>
                     </div>
+
+                    {/* AHA/ACC Criteria */}
+                    {(() => {
+                      const criteria = getRhythmCriteria(c.rhythm);
+                      const isOpen = criteriaOpen.has(c.id);
+                      if (!criteria) return null;
+                      return (
+                        <div className="rounded-lg border border-indigo-200 overflow-hidden">
+                          <button
+                            onClick={() => toggleCriteria(c.id)}
+                            className="w-full flex items-center justify-between px-3.5 py-2.5 text-left hover:bg-indigo-50 transition-colors duration-150"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-600">
+                                AHA/ACC Diagnostic Criteria
+                              </span>
+                            </div>
+                            <svg
+                              className={`w-4 h-4 text-indigo-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                              fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                          {isOpen && (
+                            <div className="border-t border-indigo-100 px-3.5 py-3 flex flex-col gap-3">
+                              <p className="text-xs text-[var(--academy-ink)] leading-relaxed italic">
+                                {criteria.definition}
+                              </p>
+                              <ul className="flex flex-col gap-1.5">
+                                {criteria.diagnosticCriteria.map((item, i) => (
+                                  <li key={i} className="flex items-start gap-2.5 text-sm text-[var(--academy-ink)]">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0 mt-2" />
+                                    {item}
+                                  </li>
+                                ))}
+                              </ul>
+                              {criteria.clinicalNotes && (
+                                <div className="rounded bg-indigo-50 border border-indigo-100 px-3 py-2">
+                                  <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-600 mb-1">
+                                    Clinical Notes
+                                  </p>
+                                  <p className="text-xs text-[var(--academy-ink)] leading-relaxed">
+                                    {criteria.clinicalNotes}
+                                  </p>
+                                </div>
+                              )}
+                              <p className="text-[10px] text-[var(--academy-muted)]">
+                                Source: {criteria.source}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
 
                     {/* Meta + practice */}
                     <div className="flex items-center justify-between flex-wrap gap-3">
