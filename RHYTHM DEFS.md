@@ -10,11 +10,11 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Definition:** A regular rhythm originating from the sinoatrial node with normal atrioventricular conduction.
 
 **Criteria:**  
-- Rate 60–100 bpm
+- Rate: 60–100 bpm
 - Regular rhythm
 - Upright P wave in lead II before each QRS
-- PR interval 120–200 ms
-- QRS duration <120 ms
+- PR interval: 120–200 ms
+- QRS duration < 120 ms
 - 1:1 P:QRS ratio
 
 **Clinical Notes:**  
@@ -49,11 +49,11 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Definition:** Regular sinus rhythm with a rate below 60 bpm.
 
 **Criteria:**  
-- Rate <60 bpm
+- Rate: < 60 bpm
 - Regular rhythm
 - Normal P wave morphology
 - Normal PR interval
-- Narrow QRS (<120 ms)
+- QRS duration < 120 ms
 - 1:1 P:QRS ratio
 
 **Clinical Notes:**  
@@ -87,11 +87,11 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Definition:** Regular sinus rhythm with a rate above 100 bpm.
 
 **Criteria:**  
-- Rate >100 bpm
+- Rate: > 100 bpm
 - Regular rhythm
 - Upright P wave in lead II
 - Normal PR interval
-- Narrow QRS (<120 ms)
+- QRS duration < 120 ms
 - 1:1 P:QRS ratio
 
 **Clinical Notes:**  
@@ -131,7 +131,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 - Cyclic variation related to respiration
 - Normal PR interval
 - Normal QRS duration
-- No ectopic beats
+- No sustained ectopy (occasional PACs allowed)
 
 **Clinical Notes:**  
 - Normal finding, especially in young people and athletes
@@ -182,12 +182,12 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 - Clinical significance
 
 **Common Misreads:**  
-- Atrial flutter with variable block
+- AFL with variable block
 - Frequent PACs
 - Sinus arrhythmia with artifact
 
 **Related Topics:**  
-- Atrial flutter
+- AFL
 - PACs
 - Stroke risk
 - Rate control
@@ -208,7 +208,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 - Sawtooth appearance, often best seen in inferior leads and V1
 - Fixed or variable AV block
 - Ventricular rhythm may be regular or irregular depending on block ratio
-- QRS usually narrow unless aberrancy is present
+- QRS duration < 120 ms unless aberrancy is present
 
 **Clinical Notes:**  
 - Often confused with atrial fibrillation when AV block is variable
@@ -223,12 +223,12 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 - Clinical significance
 
 **Common Misreads:**  
-- Atrial fibrillation
+- AF
 - SVT
 - Sinus tachycardia
 
 **Related Topics:**  
-- Atrial fibrillation
+- AF
 - SVT
 - AV block
 
@@ -264,7 +264,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Common Misreads:**  
 - Sinus pause
 - AV block
-- PVC
+- PVCs
 
 **Related Topics:**  
 - Atrial fibrillation
@@ -303,12 +303,12 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 
 **Common Misreads:**  
 - Sinus tachycardia
-- Atrial flutter with 2:1 block
-- Atrial fibrillation with rapid ventricular response
+- AFL with 2:1 block
+- AF with rapid ventricular response
 
 **Related Topics:**  
 - Sinus tachycardia
-- Atrial flutter
+- AFL
 - Adenosine response
 
 **Comments for App Content:**  
@@ -322,9 +322,9 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Definition:** Rhythm originating from the AV junction rather than the sinus node.
 
 **Criteria:**  
-- Rate typically 40–60 bpm
+- Rate: typically 40–60 bpm
 - Regular rhythm
-- Narrow QRS complexes
+- QRS duration < 120 ms
 - P waves absent, inverted, or retrograde
 - P waves may occur before, during, or after the QRS
 - AV dissociation may be present
@@ -362,9 +362,9 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Definition:** Junctional rhythm with a rate faster than a typical escape rhythm but below junctional tachycardia.
 
 **Criteria:**  
-- Rate 60–100 bpm
+- Rate: 60–100 bpm
 - Regular rhythm
-- Narrow QRS complexes
+- QRS duration < 120 ms
 - P waves absent or inverted
 - Retrograde P waves may be present
 - May reflect enhanced automaticity of the AV junction
@@ -400,7 +400,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Definition:** Delayed AV conduction with all atrial impulses conducted to the ventricles.
 
 **Criteria:**  
-- PR interval >200 ms
+- PR interval: > 200 ms
 - Every P wave followed by a QRS complex
 - Regular rhythm
 - QRS duration may be normal or abnormal depending on coexisting disease
@@ -441,7 +441,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 - Dropped QRS after the longest PR interval
 - PR interval resets after the dropped beat
 - Repeating pattern
-- QRS often narrow
+- QRS duration < 120 ms unless aberrancy is present
 
 **Clinical Notes:**  
 - Often benign and associated with increased vagal tone
@@ -575,12 +575,50 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 - Complete heart block with escape
 
 **Related Topics:**  
-- Accelerated idioventricular rhythm
+- AIVR
 - Complete heart block
 - VT
 
 **Comments for App Content:**  
 - Useful for teaching escape rhythms and wide-complex bradycardia
+
+## Accelerated Idioventricular Rhythm
+
+**Type:** Rhythm  
+**Category:** Ventricular  
+**Teaching Priority:** Medium  
+**Definition:** Ventricular rhythm with a rate faster than an idioventricular escape rhythm but below the threshold for ventricular tachycardia.
+
+**Criteria:**  
+- Rate: 40–100 bpm
+- Regular rhythm
+- Wide QRS complexes
+- AV dissociation may be present
+- Ventricular morphology
+
+**Clinical Notes:**  
+- AIVR overlaps the high end of idioventricular rates and the low end of VT; local training policy uses rate > 100–120 bpm plus morphology to favor VT.
+- Often seen as a reperfusion rhythm post-MI
+- Usually benign; no treatment typically required
+
+**Suggested Learning Sections:**  
+- Recognition basics
+- Diagnostic criteria
+- Differential diagnosis
+- Clinical significance
+
+**Common Misreads:**  
+- VT
+- Idioventricular rhythm
+- Ventricular pacing
+
+**Related Topics:**  
+- Idioventricular rhythm
+- VT
+- Reperfusion arrhythmia
+
+**Comments for App Content:**  
+- Emphasize rate boundary between idioventricular rhythm and VT
 
 ## Premature Ventricular Contractions
 
@@ -591,7 +629,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 
 **Criteria:**  
 - Premature wide QRS complex
-- QRS usually ≥120 ms
+- QRS duration ≥ 120 ms
 - No preceding normal P wave
 - Often followed by a compensatory pause
 - T wave typically opposite in polarity to the QRS
@@ -617,7 +655,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Related Topics:**  
 - Bigeminy
 - Trigeminy
-- Ventricular tachycardia
+- VT
 
 **Comments for App Content:**  
 - Include examples of compensatory pause and coupling interval
@@ -697,11 +735,11 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Type:** Rhythm  
 **Category:** Ventricular  
 **Teaching Priority:** High  
-**Definition:** Rapid ventricular rhythm originating in the ventricles, usually defined as three or more consecutive ventricular beats.
+**Definition:** Rapid ventricular rhythm originating in the ventricles, defined as ≥ 3 consecutive ventricular beats at a rate typically > 100–120 bpm (commonly 120–250 bpm).
 
 **Criteria:**  
 - Wide QRS complexes
-- Rate typically 100–250 bpm
+- Rate: typically > 100–120 bpm (commonly 120–250 bpm); defined as ≥ 3 consecutive ventricular beats
 - Regular or slightly irregular rhythm
 - AV dissociation may be present
 - Fusion beats or capture beats may be present
@@ -721,12 +759,12 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 
 **Common Misreads:**  
 - SVT with aberrancy
-- Atrial flutter with wide QRS
+- AFL with wide QRS
 - Pre-excited tachycardia
 
 **Related Topics:**  
 - PVCs
-- Ventricular fibrillation
+- VF
 - Wide-complex tachycardia
 
 **Comments for App Content:**  
@@ -763,7 +801,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 - Asystole
 
 **Related Topics:**  
-- Ventricular tachycardia
+- VT
 - Asystole
 - Cardiac arrest rhythms
 
@@ -817,7 +855,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Definition:** Delay or block in left bundle conduction causing abnormal left ventricular depolarization.
 
 **Criteria:**  
-- QRS duration ≥120 ms
+- QRS duration ≥ 120 ms
 - Broad or notched R waves in lateral leads
 - Deep S waves in right precordial leads
 - Absent normal septal Q waves in lateral leads
@@ -841,7 +879,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 - Ventricular rhythm
 
 **Related Topics:**  
-- Right bundle branch block
+- RBBB
 - Left anterior fascicular block
 - STEMI interpretation
 
@@ -856,7 +894,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Definition:** Delay or block in right bundle conduction causing abnormal right ventricular depolarization.
 
 **Criteria:**  
-- QRS duration ≥120 ms
+- QRS duration ≥ 120 ms
 - RSR' pattern in V1–V2
 - Wide terminal S waves in lateral leads
 - Secondary ST-T changes in right precordial leads
@@ -879,7 +917,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 - LBBB
 
 **Related Topics:**  
-- Left bundle branch block
+- LBBB
 - Left anterior fascicular block
 - Pulmonary embolism
 
@@ -897,7 +935,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 - Left axis deviation
 - qR pattern in aVL
 - rS pattern in inferior leads
-- QRS usually <120 ms or only mildly prolonged
+- QRS duration < 120 ms (or only mildly prolonged)
 - No other cause of LAD better explains the axis
 
 **Clinical Notes:**  
