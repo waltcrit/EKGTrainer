@@ -10,12 +10,12 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Definition:** A regular rhythm originating from the sinoatrial node with normal atrioventricular conduction.
 
 **Criteria:**  
-- Rate 60–100 bpm
+- Rate: 60–100 bpm
 - Regular rhythm
 - Upright P wave in lead II before each QRS
-- PR interval 120–200 ms
-- QRS duration <120 ms
-- 1:1 P:QRS ratio
+- PR interval: 120–200 ms
+- QRS duration < 120 ms
+- P:QRS ratio: 1:1
 
 **Clinical Notes:**  
 - Normal baseline rhythm
@@ -49,12 +49,12 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Definition:** Regular sinus rhythm with a rate below 60 bpm.
 
 **Criteria:**  
-- Rate <60 bpm
+- Rate < 60 bpm
 - Regular rhythm
 - Normal P wave morphology
-- Normal PR interval
-- Narrow QRS (<120 ms)
-- 1:1 P:QRS ratio
+- PR interval: 120–200 ms
+- QRS duration < 120 ms
+- P:QRS ratio: 1:1
 
 **Clinical Notes:**  
 - Common in athletes and during sleep
@@ -87,12 +87,12 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Definition:** Regular sinus rhythm with a rate above 100 bpm.
 
 **Criteria:**  
-- Rate >100 bpm
+- Rate > 100 bpm
 - Regular rhythm
 - Upright P wave in lead II
-- Normal PR interval
-- Narrow QRS (<120 ms)
-- 1:1 P:QRS ratio
+- PR interval: 120–200 ms
+- QRS duration < 120 ms
+- P:QRS ratio: 1:1
 
 **Clinical Notes:**  
 - Usually a response to an underlying cause such as pain, fever, hypovolemia, anxiety, infection, PE, thyrotoxicosis, or anemia
@@ -129,9 +129,9 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 - Regular P waves with sinus morphology
 - Variation in PP intervals and RR intervals
 - Cyclic variation related to respiration
-- Normal PR interval
-- Normal QRS duration
-- No ectopic beats
+- PR interval: 120–200 ms
+- QRS duration < 120 ms
+- No sustained ectopy (occasional PACs allowed)
 
 **Clinical Notes:**  
 - Normal finding, especially in young people and athletes
@@ -182,7 +182,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 - Clinical significance
 
 **Common Misreads:**  
-- Atrial flutter with variable block
+- AFL (Atrial flutter) with variable block
 - Frequent PACs
 - Sinus arrhythmia with artifact
 
@@ -264,7 +264,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Common Misreads:**  
 - Sinus pause
 - AV block
-- PVC
+- PVCs
 
 **Related Topics:**  
 - Atrial fibrillation
@@ -324,7 +324,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Criteria:**  
 - Rate typically 40–60 bpm
 - Regular rhythm
-- Narrow QRS complexes
+- QRS duration < 120 ms
 - P waves absent, inverted, or retrograde
 - P waves may occur before, during, or after the QRS
 - AV dissociation may be present
@@ -362,9 +362,9 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Definition:** Junctional rhythm with a rate faster than a typical escape rhythm but below junctional tachycardia.
 
 **Criteria:**  
-- Rate 60–100 bpm
+- Rate: 60–100 bpm
 - Regular rhythm
-- Narrow QRS complexes
+- QRS duration < 120 ms
 - P waves absent or inverted
 - Retrograde P waves may be present
 - May reflect enhanced automaticity of the AV junction
@@ -400,7 +400,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Definition:** Delayed AV conduction with all atrial impulses conducted to the ventricles.
 
 **Criteria:**  
-- PR interval >200 ms
+- PR interval > 200 ms
 - Every P wave followed by a QRS complex
 - Regular rhythm
 - QRS duration may be normal or abnormal depending on coexisting disease
@@ -441,7 +441,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 - Dropped QRS after the longest PR interval
 - PR interval resets after the dropped beat
 - Repeating pattern
-- QRS often narrow
+- QRS often < 120 ms
 
 **Clinical Notes:**  
 - Often benign and associated with increased vagal tone
@@ -478,7 +478,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 - PR interval constant before dropped beats
 - Sudden dropped QRS complexes
 - No progressive PR lengthening
-- QRS may be wide
+- QRS may be wide (QRS duration ≥ 120 ms)
 - Suggests infranodal conduction disease
 
 **Clinical Notes:**  
@@ -515,8 +515,8 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Criteria:**  
 - P waves and QRS complexes have no fixed relationship
 - Atrial and ventricular rhythms are independent
-- Regular P-P intervals
-- Regular R-R intervals
+- Regular P–P intervals
+- Regular R–R intervals
 - Ventricular escape rhythm present
 - Ventricular rate slower than atrial rate
 
@@ -554,7 +554,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Criteria:**  
 - Rate typically 20–40 bpm
 - Regular rhythm
-- Wide QRS complexes
+- QRS duration ≥ 120 ms
 - No normal P waves or AV dissociation
 - Ventricular escape morphology
 
@@ -590,8 +590,8 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Definition:** Early ventricular depolarizations originating below the AV node.
 
 **Criteria:**  
-- Premature wide QRS complex
-- QRS usually ≥120 ms
+- Premature beat with wide QRS complex
+- QRS duration ≥ 120 ms
 - No preceding normal P wave
 - Often followed by a compensatory pause
 - T wave typically opposite in polarity to the QRS
@@ -610,7 +610,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 - Differential diagnosis
 
 **Common Misreads:**  
-- PAC with aberrancy
+- PACs with aberrancy
 - Ashman phenomenon
 - Aberrant conduction
 
@@ -700,8 +700,8 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Definition:** Rapid ventricular rhythm originating in the ventricles, usually defined as three or more consecutive ventricular beats.
 
 **Criteria:**  
-- Wide QRS complexes
-- Rate typically 100–250 bpm
+- Wide QRS complexes (QRS duration ≥ 120 ms)
+- Rate typically > 100–120 bpm (commonly 120–250 bpm); defined as ≥ 3 consecutive ventricular beats
 - Regular or slightly irregular rhythm
 - AV dissociation may be present
 - Fusion beats or capture beats may be present
@@ -817,11 +817,11 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Definition:** Delay or block in left bundle conduction causing abnormal left ventricular depolarization.
 
 **Criteria:**  
-- QRS duration ≥120 ms
+- QRS duration ≥ 120 ms
 - Broad or notched R waves in lateral leads
 - Deep S waves in right precordial leads
 - Absent normal septal Q waves in lateral leads
-- Secondary ST-T changes opposite the QRS direction
+- Secondary ST–T changes opposite the QRS direction
 
 **Clinical Notes:**  
 - Can obscure ischemic ST changes
@@ -856,10 +856,10 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Definition:** Delay or block in right bundle conduction causing abnormal right ventricular depolarization.
 
 **Criteria:**  
-- QRS duration ≥120 ms
+- QRS duration ≥ 120 ms
 - RSR' pattern in V1–V2
 - Wide terminal S waves in lateral leads
-- Secondary ST-T changes in right precordial leads
+- Secondary ST–T changes in right precordial leads
 
 **Clinical Notes:**  
 - May be chronic or acute
@@ -897,7 +897,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 - Left axis deviation
 - qR pattern in aVL
 - rS pattern in inferior leads
-- QRS usually <120 ms or only mildly prolonged
+- QRS usually < 120 ms or only mildly prolonged
 - No other cause of LAD better explains the axis
 
 **Clinical Notes:**  
@@ -1229,7 +1229,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 - Aortic stenosis
 
 **Comments for App Content:**  
-- Use as a classic example of secondary ST-T change
+- Use as a classic example of secondary ST–T change
 
 ## Right Ventricular Strain Pattern
 
@@ -1336,7 +1336,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Related Topics:**  
 - Pulmonary hypertension
 - RV strain
-- Atrial enlargement
+- S1Q3T3 pattern
 
 **Comments for App Content:**  
 - Pair with LAE for comparison teaching
@@ -1428,7 +1428,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 - Pacing spike before P wave
 - P wave follows pacing spike
 - QRS follows via native conduction
-- Narrow QRS unless baseline conduction disease is present
+- QRS duration < 120 ms unless baseline conduction disease is present
 
 **Clinical Notes:**  
 - Atrial lead captures the atrium
@@ -1498,7 +1498,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 
 **Criteria:**  
 - Pacing spike before QRS
-- Wide paced QRS morphology
+- Wide paced QRS morphology (QRS duration ≥ 120 ms)
 - Ventricular capture present
 - Atrial timing may be independent
 
