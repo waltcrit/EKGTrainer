@@ -562,7 +562,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 - Often occurs when higher pacemakers fail
 - May be seen in severe bradycardia, ischemia, or hyperkalemia
 - Accelerated idioventricular rhythm (AIVR) is a related faster variant (40–100 bpm)
-- AIVR overlaps the high end of idioventricular rates and the low end of VT; local training policy uses rate > 100–120 bpm plus morphology to favor VT
+- Rate boundary with VT is not absolute; see Idioventricular Rhythm clinical notes for local training policy guidance
 
 **Suggested Learning Sections:**  
 - Recognition basics
@@ -599,7 +599,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 
 **Clinical Notes:**  
 - Often benign and seen in acute MI reperfusion or digoxin effect
-- AIVR overlaps the high end of idioventricular rates and the low end of VT; local training policy uses rate > 100–120 bpm plus morphology to favor VT
+- Rate boundary with VT is not absolute; see Idioventricular Rhythm clinical notes for local training policy guidance
 - Distinguish from VT by rate, clinical context, and hemodynamic stability
 
 **Suggested Learning Sections:**  
@@ -737,7 +737,7 @@ Internal reference compiled from AHA/ACC guidance and standard ECG teaching. Use
 **Type:** Rhythm  
 **Category:** Ventricular  
 **Teaching Priority:** High  
-**Definition:** Rapid ventricular rhythm originating in the ventricles, defined as ≥ 3 consecutive ventricular beats at a rate typically > 100–120 bpm.
+**Definition:** Rapid ventricular rhythm originating in the ventricles, defined as ≥ 3 consecutive ventricular beats.
 
 **Criteria:**  
 - Wide QRS complexes (QRS duration ≥ 120 ms)
