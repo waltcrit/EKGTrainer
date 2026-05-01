@@ -1,6 +1,6 @@
 # EKG Rhythm Analysis Steps
 
-| Analysis step | Diff diagnosis implication |
+| Analysis step | Differential diagnosis implication |
 |---|---|
 | 1. Confirm correct patient. | Wrong patient = wrong interpretation. |
 | 2. Check prior EKGs. | New change = acute; old change = baseline. |
