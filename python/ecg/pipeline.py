@@ -66,6 +66,6 @@ def run_pipeline_classification(
             "used_deep_learning": result.used_deep_learning,
             "notes":              result.notes,
         }
-    except (ValueError, RuntimeError, TypeError) as exc:
+    except (AttributeError, ValueError, RuntimeError, TypeError) as exc:
         logger.warning(f"Arrhythmia pipeline failed ({type(exc).__name__}): {exc}")
         return {"error": str(exc)}

@@ -27,7 +27,25 @@
       "Bash(python3 -c \"import importlib; print\\(importlib.util.find_spec\\(''ecg_digitiser''\\)\\)\")",
       "Bash(python3 -c \"import run.digitize as d; print\\(''''OK''''\\)\")",
       "Read(//private/tmp/ecg-digitiser/src/**)",
-      "Read(//private/tmp/ecg-digitiser/**)"
+      "Read(//private/tmp/ecg-digitiser/**)",
+      "Bash(python -c \"import sys; sys.path.insert\\(0, 'python'\\); from arrhythmia import constants; from arrhythmia import postprocess; from arrhythmia import segments; print\\('All imports OK'\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(python -m py_compile python/analyze_ecg.py python/fix_measurements.py python/precompute_measurements.py python/server.py)",
+      "Bash(python3)",
+      "Bash(python -m py_compile python/ecg/pipeline.py python/server.py)",
+      "Bash(python -m pytest python/tests/test_signal.py -v)",
+      "Bash(pip list *)",
+      "Bash(python -m pytest python/tests/test_signal.py::TestAnalyzeSignalGolden::test_60bpm_heart_rate -v)",
+      "Bash(where pytest *)",
+      "Bash(/c/Users/waltc/AppData/Local/Python/pythoncore-3.14-64/Scripts/pytest python/tests/test_signal.py::TestAnalyzeSignalGolden::test_60bpm_heart_rate -v)",
+      "Bash(C:\\\\Users\\\\waltc\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python311\\\\python.exe -m pip install -q -r \"c:/Users/waltc/Documents/Programming/EKGTrainer/python/requirements.txt\" pytest)",
+      "Bash(python3.11 -m pip install -q -r python/requirements.txt pytest)",
+      "Bash(python -m pip install -q -r requirements.txt pytest)",
+      "Bash(npm --version)",
+      "Bash(markdownlint --version)",
+      "Bash(python -m json.tool)",
+      "Bash(markdownlint \"*.md\")",
+      "Bash(awk -F: '{print $1}')"
     ]
   }
 }

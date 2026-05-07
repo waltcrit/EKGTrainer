@@ -17,6 +17,9 @@ from pathlib import Path
 
 from ecg import (
     NumpyEncoder,
+    PipelineClassification,
+    STResults,
+    SignalMeasurements,
     _dumps,
     analyze_signal,
     build_claude_prompt,
@@ -30,6 +33,10 @@ __all__ = [
     "run_pipeline_classification",
     "build_claude_prompt",
     "NumpyEncoder",
+    "_dumps",
+    "PipelineClassification",
+    "STResults",
+    "SignalMeasurements",
 ]
 
 

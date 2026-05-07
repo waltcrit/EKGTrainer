@@ -10,7 +10,9 @@ Format:
 
 ## Active Rules
 
-(Rules go here)
+- **Rule**: Python code must pass pylance type checking; .md files must pass markdown linting.
+- **Why**: Prevent silent errors and maintain consistent quality standards across codebase.
+- **How to apply**: Run pylance on all .py files before marking done. Run markdownlint on all .md files. Fix errors before committing.
 
 ## Archived
 
