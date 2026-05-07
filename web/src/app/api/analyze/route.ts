@@ -20,6 +20,7 @@ import measurementsData from "@/data/measurements.json";
 import { getDisplayName } from "@/lib/arrhythmia";
 
 const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL ?? "http://localhost:8000";
+const PYTHON_API_KEY = process.env.PYTHON_API_KEY ?? "";
 
 // ---------------------------------------------------------------------------
 // Primitive coercions
@@ -385,7 +386,10 @@ async function runPythonPipeline(imageBase64: string, mediaType: string): Promis
   try {
     res = await fetch(`${PYTHON_SERVICE_URL}/analyze`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(PYTHON_API_KEY ? { "Authorization": `Bearer ${PYTHON_API_KEY}` } : {}),
+      },
       body: JSON.stringify({ image_base64: imageBase64, media_type: mediaType }),
     });
   } catch (err) {

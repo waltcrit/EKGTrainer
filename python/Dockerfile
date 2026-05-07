@@ -19,7 +19,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Install ECG-Digitiser from GitHub (not on PyPI)
 # Failure is non-fatal — fallback OpenCV digitizer is used automatically
 RUN pip install --no-cache-dir \
-    git+https://github.com/felixkrones/ECG-Digitiser.git \
+    git+https://github.com/felixkrones/ECG-Digitiser.git@e6f62aa776f105e4c7b04f21669da4d4f0df370b \
     || echo "ECG-Digitiser not available, fallback digitizer will be used"
 
 COPY . .

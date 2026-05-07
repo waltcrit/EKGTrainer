@@ -35,5 +35,18 @@
     "m": true,
     "console.log(\"Total": true,
     "EOF": true
-  }
+  },
+  "cursorpyright.analysis.diagnosticMode": "openFilesOnly",
+  "cursorpyright.analysis.exclude": [
+    "**/.venv/**",
+    "**/site-packages/**",
+    "**/dist-packages/**",
+    "**/.vscode/extensions/**",
+    "**/.next/**",
+    "**/node_modules/**",
+    "**/__pycache__",
+    "**/.*"
+  ],
+  "cursorpyright.analysis.typeCheckingMode": "basic",
+  "cursorpyright.analysis.useLibraryCodeForTypes": false
 }
