@@ -295,6 +295,56 @@ def extract_strip_features(
         rr_ms = (np.diff(np.sort(r_peaks_in_window)).astype(np.float64) / fs) * 1000.0
         feats.update(extract_rr_features(rr_ms))
         feats["num_beats"] = float(len(r_peaks_in_window))
+
+        # ------------------------------------------------------------------
+        # Patterned irregularity features (bigeminy / trigeminy hard negatives for AF)
+        # ------------------------------------------------------------------
+        # RR ratio entropy: AF tends to have high variability without repeating motifs;
+        # ectopy patterns often create repeating RR ratios (low entropy).
+        if len(rr_ms) >= 3:
+            rr = np.asarray(rr_ms, dtype=np.float64)
+            prev = rr[:-1]
+            nxt = rr[1:]
+            ratios = nxt / np.clip(prev, 1e-6, None)
+            # Log-ratio is more symmetric around 1.0
+            log_r = np.log(np.clip(ratios, 1e-6, 1e6))
+            # Histogram entropy
+            bins = np.linspace(-1.0, 1.0, 21)
+            hist, _ = np.histogram(log_r, bins=bins, density=False)
+            p = hist.astype(np.float64)
+            p = p / np.sum(p) if np.sum(p) > 0 else p
+            nz = p[p > 0]
+            entropy = float(-np.sum(nz * np.log(nz))) if len(nz) else 0.0
+            feats["rr_ratio_entropy"] = entropy
+
+            # Autocorrelation peak at lag 2: strong in bigeminy/trigeminy motifs
+            rr_centered = rr - float(np.mean(rr))
+            denom = float(np.sum(rr_centered**2)) + 1e-9
+            if len(rr_centered) > 2:
+                ac2 = float(np.sum(rr_centered[:-2] * rr_centered[2:]) / denom)
+            else:
+                ac2 = 0.0
+            feats["rr_autocorr_lag2"] = ac2
+
+            # Lag 3: useful for trigeminy-like repeating motifs
+            if len(rr_centered) > 3:
+                ac3 = float(np.sum(rr_centered[:-3] * rr_centered[3:]) / denom)
+            else:
+                ac3 = 0.0
+            feats["rr_autocorr_lag3"] = ac3
+
+            # Combine into a heuristic patterned score in [0, 1]
+            # Low entropy + high lag2 autocorr => high patterned score.
+            # Entropy range for 20 bins: [0, ln(20)] ~ [0, 3.0]
+            entropy_norm = min(max(entropy / 3.0, 0.0), 1.0)
+            ac_best = max(ac2, ac3)
+            ac_norm = min(max((ac_best + 1.0) / 2.0, 0.0), 1.0)
+            feats["patterned_irregularity_score"] = float((1.0 - entropy_norm) * ac_norm)
+        else:
+            feats["rr_ratio_entropy"] = 0.0
+            feats["rr_autocorr_lag2"] = 0.0
+            feats["rr_autocorr_lag3"] = 0.0
+            feats["patterned_irregularity_score"] = 0.0
     else:
         feats.update({k: float("nan") for k in [
             "rr_mean_ms", "rr_std_ms", "rr_cv", "rr_min_ms", "rr_max_ms",
@@ -302,11 +352,39 @@ def extract_strip_features(
             "heart_rate_bpm", "heart_rate_std",
         ]})
         feats["num_beats"] = float(len(r_peaks_in_window))
+        feats["rr_ratio_entropy"] = float("nan")
+        feats["rr_autocorr_lag2"] = float("nan")
+        feats["rr_autocorr_lag3"] = float("nan")
+        feats["patterned_irregularity_score"] = float("nan")
 
     # Signal-level features
     feats["signal_power"]     = float(np.mean(w ** 2))
     feats["signal_max_abs"]   = float(np.max(np.abs(w))) if len(w) > 0 else 0.0
     feats["baseline_flatness"]= float(1.0 / (np.std(w) + 1e-6))
     feats["kurtosis"]         = float(kurtosis(w)) if len(w) > 1 else 0.0
+
+    # ------------------------------------------------------------------
+    # Coarse spectral features (useful for VF / noise discrimination)
+    # ------------------------------------------------------------------
+    if len(w) > 8 and fs > 0:
+        # Windowed FFT power spectrum
+        win = np.hanning(len(w))
+        x = (w * win).astype(np.float64)
+        freqs = np.fft.rfftfreq(len(x), d=1.0 / fs)
+        psd = (np.abs(np.fft.rfft(x)) ** 2).astype(np.float64)
+        psd_sum = float(np.sum(psd)) + 1e-12
+        psd_p = psd / psd_sum
+        nz = psd_p[psd_p > 0]
+        feats["spectral_entropy"] = float(-np.sum(nz * np.log(nz))) / float(np.log(len(psd_p)))
+        # dominant frequency in 1–15 Hz band (avoid DC)
+        band = (freqs >= 1.0) & (freqs <= 15.0)
+        if np.any(band):
+            idx = int(np.argmax(psd[band]))
+            feats["dominant_freq_hz"] = float(freqs[band][idx])
+        else:
+            feats["dominant_freq_hz"] = 0.0
+    else:
+        feats["spectral_entropy"] = 0.0
+        feats["dominant_freq_hz"] = 0.0
 
     return feats

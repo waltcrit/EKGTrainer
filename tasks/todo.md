@@ -3,6 +3,7 @@
 ## Current Sprint
 
 - [ ] **Replace EKG images** — Current images not in correct sections (cases assigned to wrong rhythm categories). New images needed before fixing categorization.
+- [ ] **Generalize rhythm classifier (multi-class, all-comers)** — Add slice-aware evaluation, improve features/constraints (patterned irregularity vs AF, VF/ASYS guards), add training script + regression tests/CI to prevent backsliding.
 
 ## Backlog
 

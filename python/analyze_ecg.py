@@ -27,6 +27,15 @@ from ecg import (
     run_pipeline_classification,
 )
 
+# Back-compat test helpers (used by python/tests/*)
+from ecg.measure import (  # type: ignore
+    _detect_j_point,
+    _pr_interval,
+    _qrs_width,
+    _qtc,
+    _regularity,
+)
+
 __all__ = [
     "digitize_image",
     "analyze_signal",
@@ -37,6 +46,11 @@ __all__ = [
     "PipelineClassification",
     "STResults",
     "SignalMeasurements",
+    "_regularity",
+    "_qrs_width",
+    "_detect_j_point",
+    "_pr_interval",
+    "_qtc",
 ]
 
 

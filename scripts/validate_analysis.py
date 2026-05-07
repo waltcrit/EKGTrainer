@@ -27,13 +27,13 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from typing import Iterable
 
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 ROOT         = Path(__file__).parent.parent
 CASES_JSON   = ROOT / "web" / "src" / "data" / "cases.json"
 PUBLIC_CASES = ROOT / "web" / "public" / "cases"
-PYTHON_BIN   = ROOT / ".venv" / "bin" / "python"
 ANALYZE_PY   = ROOT / "python" / "analyze_ecg.py"
 
 # ── Pipeline-covered rhythms (display_name fragment → expected partial match) ─
@@ -115,11 +115,79 @@ def pipeline_matches_expected(display_name: str | None, expected_rhythm: str) ->
     return False
 
 
+# ── Canonical label mapping (for aggregate metrics) ───────────────────────────
+# Goal: map both expected labels (cases.json) and predicted pipeline output into
+# a small canonical set so we can compute confusion/F1.
+CANON_LABELS: list[str] = ["AF", "AFL", "SVT", "VT", "VF", "ASYS", "PAC", "PVC", "OTHER"]
+
+
+def _norm(s: str) -> str:
+    return " ".join(s.lower().strip().split())
+
+
+def canonical_expected(rhythm: str) -> str:
+    r = _norm(rhythm)
+    if "atrial fibrillation" in r or "afib" in r:
+        return "AF"
+    if "atrial flutter" in r or "flutter" in r:
+        return "AFL"
+    if "svt" in r or "supraventricular" in r:
+        return "SVT"
+    if "ventricular tachycardia" in r or "vtach" in r or r == "vt":
+        return "VT"
+    if "ventricular fibrillation" in r or "vfib" in r or r == "vf":
+        return "VF"
+    if "asystole" in r:
+        return "ASYS"
+    if "premature atrial" in r or "pac" in r:
+        return "PAC"
+    if "premature ventricular" in r or "pvc" in r:
+        return "PVC"
+    return "OTHER"
+
+
+def canonical_predicted(pipeline_classification: object) -> str:
+    """
+    pipeline_classification is usually a dict with:
+      - primary_rhythm: short code (e.g. 'AF')
+      - display_name:   human readable (e.g. 'Atrial Fibrillation')
+    """
+    if not isinstance(pipeline_classification, dict):
+        return "OTHER"
+
+    primary = pipeline_classification.get("primary_rhythm")
+    if isinstance(primary, str) and primary.strip():
+        p = _norm(primary)
+        # Accept either short codes or verbose strings
+        if p in ("af", "atrial fibrillation"):
+            return "AF"
+        if p in ("afl", "atrial flutter"):
+            return "AFL"
+        if p in ("svt", "supraventricular tachycardia"):
+            return "SVT"
+        if p in ("vt", "ventricular tachycardia"):
+            return "VT"
+        if p in ("vf", "ventricular fibrillation"):
+            return "VF"
+        if p in ("asys", "asystole"):
+            return "ASYS"
+        if p == "pac":
+            return "PAC"
+        if p == "pvc":
+            return "PVC"
+
+    display = pipeline_classification.get("display_name")
+    if isinstance(display, str) and display.strip():
+        return canonical_expected(display)
+
+    return "OTHER"
+
+
 # ── Run analyzer on one image ─────────────────────────────────────────────────
 def run_analysis(image_path: Path) -> dict:
     try:
         result = subprocess.run(
-            [str(PYTHON_BIN), str(ANALYZE_PY), "--image", str(image_path)],
+            [sys.executable, str(ANALYZE_PY), "--image", str(image_path)],
             capture_output=True,
             text=True,
             timeout=60,
@@ -170,7 +238,7 @@ def evaluate(case: dict, analysis: dict, label: str) -> dict:
         if not (lo <= measured_rate <= hi):
             issues.append(
                 f"rate: expected {expected_rate} bpm, got {measured_rate:.0f} bpm"
-                f" (±{RATE_TOL:.0%} tolerance → {lo:.0f}–{hi:.0f})"
+                f" (+/-{RATE_TOL:.0%} tolerance -> {lo:.0f}-{hi:.0f})"
             )
 
     # 2. Regularity
@@ -205,6 +273,42 @@ def evaluate(case: dict, analysis: dict, label: str) -> dict:
     }
 
 
+def _af_binary_counts(y_true: Iterable[str], y_pred: Iterable[str]) -> dict[str, int]:
+    tp = fp = tn = fn = 0
+    for t, p in zip(y_true, y_pred):
+        t_pos = t == "AF"
+        p_pos = p == "AF"
+        if t_pos and p_pos:
+            tp += 1
+        elif (not t_pos) and p_pos:
+            fp += 1
+        elif t_pos and (not p_pos):
+            fn += 1
+        else:
+            tn += 1
+    return {"tp": tp, "fp": fp, "tn": tn, "fn": fn}
+
+
+def _af_binary_metrics(counts: dict[str, int]) -> dict[str, float | int]:
+    tp = int(counts.get("tp", 0))
+    fp = int(counts.get("fp", 0))
+    tn = int(counts.get("tn", 0))
+    fn = int(counts.get("fn", 0))
+    precision = tp / (tp + fp) if (tp + fp) else 0.0
+    recall = tp / (tp + fn) if (tp + fn) else 0.0
+    specificity = tn / (tn + fp) if (tn + fp) else 0.0
+    f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) else 0.0
+    accuracy = (tp + tn) / (tp + tn + fp + fn) if (tp + tn + fp + fn) else 0.0
+    return {
+        **counts,
+        "precision": precision,
+        "recall": recall,
+        "specificity": specificity,
+        "f1": f1,
+        "accuracy": accuracy,
+    }
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__,
@@ -227,14 +331,18 @@ def main() -> None:
 
     all_results: list[dict] = []
     total = fail = 0
+    y_true: list[str] = []
+    y_pred: list[str] = []
 
     PASS_COL = "\033[32mPASS\033[0m"
     FAIL_COL = "\033[31mFAIL\033[0m"
+    SEP_WIDE = "-" * 140
+    SEP_MED = "-" * 60
 
     if not args.json_output:
         print(f"\n{'Case':<26} {'Image':<8} {'Status':<6}  "
               f"{'Rate':>6}  {'Regularity':<22}  {'Pipeline rhythm':<38}  Issues")
-        print("─" * 140)
+        print(SEP_WIDE)
 
     for case in cases:
         c_id = case["id"]
@@ -257,6 +365,14 @@ def main() -> None:
             if res["status"] == "FAIL":
                 fail += 1
 
+            # Collect canonical labels for aggregate metrics.
+            # Include only cases where analysis succeeded and pipeline produced a label.
+            if analysis.get("success") and "pipeline_classification" in analysis:
+                exp = canonical_expected(case.get("rhythm", ""))
+                pred = canonical_predicted(analysis.get("pipeline_classification"))
+                y_true.append(exp)
+                y_pred.append(pred)
+
             if args.json_output:
                 all_results.append({
                     "case_id":  c_id,
@@ -267,6 +383,10 @@ def main() -> None:
                         "regularity": case.get("regularity"),
                         "rhythm": case.get("rhythm"),
                     },
+                    "canonical": {
+                        "expected": canonical_expected(case.get("rhythm", "")),
+                        "predicted": canonical_predicted(analysis.get("pipeline_classification")),
+                    } if analysis.get("success") else None,
                 })
             else:
                 m   = res["measurements"]
@@ -282,12 +402,77 @@ def main() -> None:
                     f"{issue_str}"
                 )
 
+    # Aggregate metrics (canonical labels)
+    aggregate: dict[str, object] = {"available": False}
+    if y_true and y_pred:
+        try:
+            # Import from the repo's python package without requiring installation
+            sys.path.insert(0, str(ROOT / "python"))
+            from arrhythmia.scoring import compute_metrics  # type: ignore
+
+            report = compute_metrics(y_true, y_pred, labels=CANON_LABELS)
+            af_bin = _af_binary_metrics(_af_binary_counts(y_true, y_pred))
+            aggregate = {
+                "available": True,
+                "labels": CANON_LABELS,
+                "report": report.to_dict(),
+                "af_binary": af_bin,
+            }
+        except Exception as exc:
+            aggregate = {"available": False, "error": str(exc)}
+
     if args.json_output:
-        print(json.dumps(all_results, indent=2))
-    else:
-        pass_count = total - fail
-        print("─" * 140)
-        print(f"\nSummary: {pass_count}/{total} passed  ({fail} failed)\n")
+        print(json.dumps({"results": all_results, "aggregate": aggregate}, indent=2))
+        return
+
+    pass_count = total - fail
+    print(SEP_WIDE)
+    print(f"\nSummary: {pass_count}/{total} passed  ({fail} failed)\n")
+
+    if isinstance(aggregate, dict) and aggregate.get("available") is True:
+        print("Aggregate results (canonical labels)")
+        print(SEP_MED)
+        rep = aggregate.get("report")
+        if isinstance(rep, dict):
+            macro_f1 = rep.get("macro_f1")
+            print(f"Macro F1: {macro_f1:.3f}" if isinstance(macro_f1, (int, float)) else "Macro F1: ?")
+            cm = rep.get("confusion_matrix")
+            labels = rep.get("label_order")
+            if isinstance(cm, list) and isinstance(labels, list):
+                # Pretty-print confusion matrix without numpy dependency here
+                maxw = max(5, max(len(str(l)) for l in labels))
+                header = " " * (maxw + 1) + " ".join(f"{str(l):>{maxw}}" for l in labels)
+                print("\nConfusion matrix")
+                print(header)
+                for i, lbl in enumerate(labels):
+                    row = cm[i] if i < len(cm) else []
+                    row_str = " ".join(f"{int(v):>{maxw}}" for v in row)
+                    print(f"{str(lbl):<{maxw}} {row_str}")
+
+            per_class = rep.get("per_class")
+            if isinstance(per_class, dict):
+                print("\nPer-class metrics")
+                print(f"{'Class':<8} {'Prec':>8} {'Rec':>8} {'F1':>8} {'Support':>8}")
+                for lbl in CANON_LABELS:
+                    m = per_class.get(lbl)
+                    if not isinstance(m, dict):
+                        continue
+                    prec = m.get("precision", 0.0)
+                    rec = m.get("recall", 0.0)
+                    f1 = m.get("f1", 0.0)
+                    sup = m.get("support", 0)
+                    if all(isinstance(x, (int, float)) for x in (prec, rec, f1)):
+                        print(f"{lbl:<8} {prec:>8.3f} {rec:>8.3f} {f1:>8.3f} {int(sup):>8}")
+
+        afb = aggregate.get("af_binary")
+        if isinstance(afb, dict):
+            print("\nAF vs rest")
+            for k in ("tp", "fp", "tn", "fn", "precision", "recall", "specificity", "f1", "accuracy"):
+                v = afb.get(k)
+                if isinstance(v, float):
+                    print(f"{k:>11}: {v:.3f}")
+                else:
+                    print(f"{k:>11}: {v}")
 
 
 if __name__ == "__main__":

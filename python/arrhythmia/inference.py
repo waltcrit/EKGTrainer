@@ -94,6 +94,9 @@ def _classical_classify(features: FeatureMap) -> tuple[str, float]:
     rr_rmssd = _get_float("rr_rmssd")
     num_beats = _get_float("num_beats", 0.0)
     signal_power = _get_float("signal_power")
+    patterned = _get_float("patterned_irregularity_score", float("nan"))
+    spectral_entropy = _get_float("spectral_entropy", float("nan"))
+    dominant_freq = _get_float("dominant_freq_hz", float("nan"))
     # qrs_wide may be injected by _pipeline_from_measurements; None = unknown
     qrs_wide = _get_bool("qrs_wide")
     # vf_morphology: explicitly set when image shows chaotic undulating baseline (no QRS)
@@ -116,9 +119,13 @@ def _classical_classify(features: FeatureMap) -> tuple[str, float]:
         return ArrhythmiaClass.NSR, 0.3
 
     # VF — chaotic, high power, no regular beats (signal-based; vf_morphology flag is preferred)
-    if (not _nan(rr_cv) and rr_cv > 0.40 and
-            not _nan(signal_power) and signal_power > 0.1):
-        return ArrhythmiaClass.VF, 0.65
+    # Prefer spectral evidence when available to avoid mislabeling irregular rhythms as VF.
+    if (not _nan(signal_power) and signal_power > 0.1):
+        if (not _nan(spectral_entropy, dominant_freq) and spectral_entropy > 0.75 and 2.0 <= dominant_freq <= 10.0):
+            return ArrhythmiaClass.VF, 0.70
+        # Backward-compatible fallback when spectral features are missing
+        if (not _nan(rr_cv) and rr_cv > 0.45 and _nan(spectral_entropy)):
+            return ArrhythmiaClass.VF, 0.60
 
     # VT — fast + wide QRS (most specific rule when morphology is known)
     if hr > 100 and qrs_wide is True and not _nan(rr_cv) and rr_cv < 0.15:
@@ -130,6 +137,9 @@ def _classical_classify(features: FeatureMap) -> tuple[str, float]:
     _af_cv_thresh   = 0.10 if (not _nan(hr) and hr > 120) else 0.15
     _af_rmssd_thresh = 40.0 if (not _nan(hr) and hr > 120) else 60.0
     if not _nan(rr_cv, rr_rmssd) and rr_cv > _af_cv_thresh and rr_rmssd > _af_rmssd_thresh:
+        # Hard negative: patterned irregularity (bigeminy/trigeminy) can mimic AF on RR metrics.
+        if not _nan(patterned) and patterned > 0.28:
+            return ArrhythmiaClass.NSR, 0.55
         return ArrhythmiaClass.AF, 0.70
 
     # AFL — very regular fast rate (~150 bpm from 2:1 block)
@@ -285,6 +295,7 @@ def classify_ecg(
     final_rhythm = apply_physiologic_constraints(
         strip_label=strip_label,
         beat_labels=beat_labels,
+        strip_features=strip_feats,
     )
 
     result.primary_rhythm = final_rhythm
