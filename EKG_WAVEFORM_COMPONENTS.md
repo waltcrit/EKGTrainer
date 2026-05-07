@@ -369,7 +369,7 @@ This document provides comprehensive definitions of all EKG waveform components,
 ## WAVES AND INTERVALS SUMMARY TABLE
 
 | Component | Duration | Normal Findings | Clinical Significance |
-|-----------|----------|-----------------|----------------------|
+| --------- | -------- | --------------- | --------------------- |
 | P Wave | <120 ms | Upright in II, <2.5 mm height | Atrial depolarization; enlargement with increased height/duration |
 | PR Segment | 30–50 ms | Flat at baseline | Conduction through AV node |
 | PR Interval | 120–200 ms | Constant sinus beats | Total AV conduction time |

@@ -1,6 +1,7 @@
 # AHA/ACC Rhythm and Diagnosis Definitions for EKGTrainer
 
-This document provides AHA/ACC-based definitions and diagnostic criteria for all rhythm types in our cases database. Use this as the authoritative reference for clinical impressions and morphological findings.
+This document provides AHA/ACC-based definitions and diagnostic criteria for all rhythm types in our cases database.
+Use this as the authoritative reference for clinical impressions and morphological findings.
 
 ---
 
@@ -72,6 +73,73 @@ This document provides AHA/ACC-based definitions and diagnostic criteria for all
 
 ---
 
+## SA NODE DISORDERS
+
+### Sinus Pause / Sinus Arrest
+
+**Definition:** Transient failure of the SA node to generate an impulse, causing a pause in atrial (and usually ventricular) activity.
+
+**AHA/ACC Diagnostic Criteria:**
+
+- Absent P wave for a period longer than 2× the normal PP interval (pause not a multiple of the basic PP)
+- **Sinus pause:** pause <3 seconds; usually asymptomatic
+- **Sinus arrest:** pause ≥3 seconds; may cause presyncope, syncope, or escape rhythm
+- If escape rhythm emerges, it arises from a subsidiary pacemaker (junctional or ventricular)
+- The pause duration is **not** a simple multiple of the PP interval (distinguishes from SA exit block)
+
+**Distinction from SA Exit Block:**
+
+- Sinus pause/arrest: SA node fails to fire; pause is irregular
+- SA exit block (Type II): SA node fires but impulse blocked; pause is exactly 2× (or 3×) the PP interval
+
+---
+
+### Sinoatrial (SA) Exit Block — Type II
+
+**Definition:** SA node fires normally but the impulse intermittently fails to exit to the atrium; results in a dropped P-QRS-T cycle.
+
+**AHA/ACC Diagnostic Criteria:**
+
+- Sudden absence of an entire P-QRS-T complex
+- Pause interval is exactly **2× (or 3×) the normal PP interval** (the dropped beat is a precise multiple)
+- P waves before and after the pause maintain the same morphology and PP spacing
+- No progressive PP shortening before the dropped beat (unlike Wenckebach-type SA block)
+- Escape beats may occur if pause is long
+
+**Clinical Notes:**
+
+- Often caused by excess vagal tone, sick sinus syndrome, ischemia, or antiarrhythmic drugs
+- Differentiated from sinus pause by the mathematically exact pause duration
+
+---
+
+### Sick Sinus Syndrome (SSS) / Sinus Node Dysfunction
+
+**Definition:** A spectrum of SA node disorders including inappropriate bradycardia, sinus pauses, chronotropic incompetence, and tachycardia-bradycardia syndrome.
+
+**AHA/ACC Diagnostic Criteria (2018 Bradycardia Guideline):**
+
+- **Symptomatic sinus bradycardia** not explained by medications or reversible causes
+- **Sinus pauses ≥3 seconds** causing symptoms
+- **Chronotropic incompetence:** Heart rate fails to reach 85% of age-predicted maximum with maximal exertion
+- **Tachycardia-bradycardia syndrome:** Alternating AF (or other SVT) and sinus bradycardia/pause; long pauses may follow SVT termination
+- Symptoms: syncope, presyncope, fatigue, dyspnea, palpitations
+
+**ECG Features:**
+
+- Sinus bradycardia, often <40 bpm at rest
+- Sinus pauses of variable duration
+- Alternating AF/SVT and bradycardia (tachy-brady)
+- Junctional escape rhythms
+- Chronotropic incompetence on exercise testing
+
+**Clinical Notes:**
+
+- Pacemaker is the definitive treatment for symptomatic SSS
+- Rate control medications (beta-blockers, CCBs) may worsen bradycardia in tachy-brady syndrome
+
+---
+
 ## ATRIAL ARRHYTHMIAS
 
 ### Atrial Fibrillation (AF)
@@ -134,6 +202,47 @@ This document provides AHA/ACC-based definitions and diagnostic criteria for all
 - Can trigger SVT or AF if frequent
 
 **Blocked PACs:** P wave occurs within or soon after preceding T wave; no QRS follows.
+
+---
+
+### Multifocal Atrial Tachycardia (MAT)
+
+**Definition:** Irregular atrial tachycardia arising from multiple ectopic atrial foci, each generating P waves with distinct morphologies.
+
+**AHA/ACC Diagnostic Criteria:**
+
+- Heart rate **>100 bpm** (if rate 60–100 bpm, termed Wandering Atrial Pacemaker)
+- **At least 3 distinct P wave morphologies** in the same lead
+- Irregular PR intervals and irregular PP intervals
+- **No dominant single P wave morphology** (no one focus is consistently in control)
+- Irregular RR intervals (may mimic AF, but discrete P waves are present)
+- Narrow QRS unless aberrant conduction
+
+**Distinction from AF:**
+
+- MAT: discrete, identifiable P waves of ≥3 morphologies with isoelectric baseline between them
+- AF: no discrete P waves; fibrillatory baseline
+
+**Clinical Context:**
+
+- Strongly associated with COPD, hypoxia, hypomagnesemia, hypokalemia, theophylline toxicity, sepsis, and ICU settings
+- Treatment is directed at the underlying cause; rate control with CCBs or beta-blockers if needed
+
+---
+
+### Wandering Atrial Pacemaker (WAP)
+
+**Definition:** Gradual shift of the dominant pacemaker between the SA node and other atrial or junctional foci, producing ≥3 distinct P wave morphologies at a normal or slow rate.
+
+**AHA/ACC Diagnostic Criteria:**
+
+- Rate **<100 bpm** (if ≥100 bpm, classified as MAT)
+- ≥3 distinct P wave morphologies in the same lead
+- Variable PP, PR, and RR intervals
+- Narrow QRS
+- No single dominant morphology
+
+**Clinical Notes:** Often benign; may be seen with increased vagal tone, atrial disease, or as a precursor to MAT.
 
 ---
 
@@ -258,6 +367,34 @@ This document provides AHA/ACC-based definitions and diagnostic criteria for all
 
 - Mobitz II: constant PR, sudden block
 - Mobitz I: lengthening PR, then eventual block
+
+---
+
+### 2:1 AV Block (Fixed-Ratio Block)
+
+**Definition:** Every other P wave is blocked, producing a 2:1 P:QRS ratio. A special case that cannot be classified as
+Mobitz I or Mobitz II from a single rhythm strip because there is never more than one conducted PR interval visible
+between dropped beats.
+
+**AHA/ACC Diagnostic Criteria:**
+
+- **Every other P wave is followed by a QRS** (1 conducted : 1 blocked, in repeating pairs)
+- Atrial rate is exactly twice the ventricular rate
+- **Cannot determine if Mobitz I or II** from the 2:1 ratio alone — two consecutive conducted beats are required to observe PR prolongation
+
+**How to distinguish Mobitz I from Mobitz II in 2:1 block:**
+
+- **Narrow QRS + normal PR:** Favors Mobitz I (nodal block); benign
+- **Wide QRS (≥120 ms):** Favors Mobitz II (infranodal block); higher risk
+- **Response to atropine or exercise:** Improvement (faster conduction) favors Mobitz I; paradoxical worsening or no change favors Mobitz II
+- **Longer rhythm strip:** May reveal 3:2 or 4:3 sequences that reveal PR progressions (Mobitz I) or fixed PR (Mobitz II)
+- **Clinical context:** Inferior MI → more likely Mobitz I; anterior MI → more likely Mobitz II
+
+**Clinical Notes:**
+
+- 2:1 block from Mobitz II carries high risk of progression to complete heart block and usually warrants pacing
+- Vagal maneuvers may unmask Wenckebach periodicity if the block is nodal
+- This is one of the most commonly misclassified rhythm diagnoses
 
 ---
 
@@ -531,6 +668,59 @@ This document provides AHA/ACC-based definitions and diagnostic criteria for all
 
 ---
 
+### De Winter T-Wave Pattern
+
+**Definition:** ECG equivalent of anterior STEMI from proximal LAD occlusion, presenting without classic ST elevation. A STEMI equivalent requiring immediate catheterization.
+
+**AHA/ACC Diagnostic Criteria:**
+
+- **Upsloping ST depression ≥1 mm at the J point** in precordial leads V1–V6, transitioning to tall, peaked, symmetric **positive T waves**
+- **ST elevation 1–2 mm in aVR** (reciprocal change)
+- **No ST elevation in the precordial leads** (this is the key distinguishing feature from classic anterior STEMI)
+- QRS may be narrow
+- Pattern is typically static (does not evolve like classic STEMI)
+
+**Clinical Significance:**
+
+- Represents ~2% of anterior LAD occlusion presentations; frequently missed
+- Immediate reperfusion is indicated — treat identically to STEMI
+- Unlike Wellens syndrome, De Winter pattern occurs during active ischemia (not post-reperfusion)
+
+---
+
+### Sgarbossa Criteria — STEMI in the Presence of LBBB
+
+**Definition:** Validated criteria for diagnosing acute MI in patients with LBBB or ventricular-paced rhythm, where LBBB-induced ST changes normally obscure ischemic ST changes.
+
+**AHA/ACC / Original Sgarbossa Criteria (1996):**
+
+| Finding | Points |
+| ------- | ------ |
+| ST elevation ≥1 mm **concordant** with QRS direction (same direction as QRS) | 5 |
+| ST depression ≥1 mm in V1, V2, or V3 (concordant ST depression in right precordials) | 3 |
+| ST elevation ≥5 mm **discordant** with QRS direction (excessively discordant) | 2 |
+
+- **Score ≥3:** High specificity for acute MI (~98%)
+- **Concordant changes** (criteria 1 and 2) are the most specific — LBBB causes discordant ST changes by default, so concordance is always abnormal
+
+**Modified Sgarbossa Criteria (Smith, 2012 — preferred):**
+
+- Replaces the 5 mm discordant threshold with a ratio: **ST elevation / S wave depth ≥0.25** in any lead with a dominant S wave
+- Higher sensitivity than original; the Smith modification is now widely preferred in practice
+
+**Key Principle:**
+
+- In LBBB, ST changes opposite to the QRS direction (discordant) are expected and normal
+- Any ST change in the **same direction** as the QRS (concordant) is always pathological
+- Excessively large discordant ST elevation (≥25% of S wave depth) is also pathological
+
+**Clinical Notes:**
+
+- Any new or presumably new LBBB with acute chest pain should be treated as a STEMI equivalent (per prior 2013 guidelines) pending Sgarbossa assessment
+- 2022 AHA/ACC guidelines updated this: new LBBB alone is no longer an automatic STEMI equivalent; Sgarbossa criteria should be applied
+
+---
+
 ### Wellens Syndrome — Type A and Type B
 
 **Definition:** Reperfusion pattern after partial LAD occlusion/reperfusion, indicating critical LAD stenosis; STEMI equivalent.
@@ -778,6 +968,84 @@ This document provides AHA/ACC-based definitions and diagnostic criteria for all
 
 ---
 
+### Pacemaker Malfunction
+
+**Definition:** Failure of a pacemaker to perform one or more of its three core functions: pacing (generating a stimulus), capturing (depolarizing the chamber), or sensing (detecting intrinsic beats).
+
+---
+
+#### Failure to Pace (Output Failure)
+
+**Definition:** Pacemaker does not deliver a stimulus when it should.
+
+**ECG Findings:**
+
+- **No pacing spike** visible at the expected interval when the intrinsic rate falls below the pacemaker's lower rate limit
+- Intrinsic rate below programmed rate with no pacemaker output
+- Result: bradycardia or pauses, possibly escape rhythm
+
+**Causes:** Lead fracture, battery depletion, oversensing (pacemaker "thinks" it sees intrinsic activity), connector failure
+
+---
+
+#### Failure to Capture
+
+**Definition:** Pacemaker delivers a stimulus but fails to depolarize the cardiac chamber.
+
+**ECG Findings:**
+
+- **Pacing spike present** but **not followed by a P wave (atrial pacing) or QRS complex (ventricular pacing)**
+- The spike occurs at the expected time but produces no depolarization
+- Result: effective bradycardia despite visible pacing spikes
+
+**Causes:** Lead dislodgment or perforation, elevated pacing threshold (fibrosis, ischemia, hyperkalemia, antiarrhythmics), battery depletion, lead insulation breach
+
+---
+
+#### Failure to Sense (Undersensing)
+
+**Definition:** Pacemaker fails to detect intrinsic cardiac activity and delivers a stimulus inappropriately.
+
+**ECG Findings:**
+
+- **Pacing spikes appear at fixed intervals regardless of intrinsic beats** — pacemaker does not reset when an intrinsic beat occurs
+- Pacing spikes may fall on T waves (R-on-T risk) or within native QRS complexes
+- Result: competitive pacing; spikes visible within or near native complexes
+
+**Causes:** Lead dislodgment, reduced intrinsic signal amplitude (e.g., bundle branch block, post-MI scar), sensitivity programmed too low, electromagnetic interference
+
+---
+
+#### Oversensing
+
+**Definition:** Pacemaker detects electrical signals that are not true cardiac events (T waves, myopotentials, electromagnetic interference, lead artifact) and inappropriately inhibits pacing.
+
+**ECG Findings:**
+
+- **Pacing inhibited** at unexpected times — pauses longer than the programmed escape interval
+- Pacemaker appears to reset based on noise rather than true P or R waves
+- Result: inappropriate pauses; may mimic failure to pace
+
+**Causes:** T wave oversensing (especially in VVI at high sensitivity), myopotential sensing (unipolar leads), electromagnetic interference (MRI, cautery, arc welders), lead insulation break
+
+---
+
+#### Pacemaker-Mediated Tachycardia (PMT)
+
+**Definition:** Reentrant tachycardia in dual-chamber (DDD) pacemakers where retrograde atrial conduction from a paced
+ventricular beat is sensed as a native atrial signal and triggers another ventricular pace.
+
+**ECG Findings:**
+
+- Regular tachycardia at or near the upper rate limit of the pacemaker
+- Each QRS is paced (wide) and preceded by a pacing spike
+- Rate typically 100–130 bpm (upper tracking rate)
+- Retrograde P waves may be visible in the AV interval
+
+**Termination:** Application of a magnet, reprogramming the post-ventricular atrial refractory period (PVARP)
+
+---
+
 ## ELECTRICAL ABNORMALITIES AND OTHER PATTERNS
 
 ### Electrical Alternans
@@ -814,6 +1082,79 @@ This document provides AHA/ACC-based definitions and diagnostic criteria for all
 - ECG changes appear at K+ >6.0–6.5 mEq/L
 - Requires urgent treatment to avoid VF
 - Calcium gluconate stabilizes membrane; insulin + glucose/beta-agonists shift K+ intracellularly
+
+---
+
+### Hypokalemia
+
+**Definition:** Low serum potassium causing characteristic ECG changes from impaired ventricular repolarization; one of the most common electrolyte abnormalities affecting the ECG.
+
+**AHA/ACC Diagnostic Criteria / ECG Stages by Severity:**
+
+| K⁺ Level (mEq/L) | ECG Changes |
+| ----------------- | ----------- |
+| 3.0–3.5 | Flattening of T waves; U wave becoming prominent (≥1 mm) |
+| 2.5–3.0 | T wave inversion; U wave amplitude exceeds T wave amplitude; apparent QT prolongation (actually QU prolongation) |
+| <2.5 | Prominent U waves fused with T wave (TU fusion); ST depression; widened QRS; PR prolongation |
+| <2.0 | Sine-wave-like pattern; risk of VT/VF; P waves may flatten |
+
+**Key ECG Features:**
+
+- **Prominent U waves** (>1 mm, best seen in V2–V4) — the hallmark finding
+- **TU fusion** — U wave merges with T wave, making QT appear falsely prolonged
+- **ST depression** in precordial leads
+- **Flattened or inverted T waves**
+- Predisposes to Torsades de Pointes, especially when combined with QT-prolonging drugs
+
+**Clinical Notes:**
+
+- True QT interval ends at T wave; the merged TU complex mimics QT prolongation
+- Hypomagnesemia commonly coexists and must be repleted concurrently
+
+---
+
+### Hypocalcemia
+
+**Definition:** Low serum calcium prolongs the plateau phase of the action potential, producing characteristic QT prolongation without T-wave amplitude changes.
+
+**AHA/ACC Diagnostic Criteria:**
+
+- **Prolonged QT interval** (and QTc) — the dominant and most specific finding
+- Prolongation is due to **lengthening of the ST segment**, not the T wave itself
+- T wave morphology typically remains normal (narrow, upright) — this distinguishes it from drug-induced QT prolongation (which prolongs the T wave)
+- Severe hypocalcemia may produce bradycardia, AV block, or ventricular arrhythmias
+
+**Distinguishing QT prolongation by cause:**
+
+| Cause | Mechanism | ST segment | T wave |
+| ----- | --------- | ---------- | ------ |
+| Hypocalcemia | Prolonged plateau | Lengthened | Normal morphology |
+| Hypokalemia | TU fusion | Normal | Flat/inverted + prominent U |
+| Drug-induced LQTS | Prolonged repolarization | Variable | Broad, abnormal |
+
+**Clinical Notes:**
+
+- Common causes: hypoparathyroidism, vitamin D deficiency, pancreatitis, massive transfusion (citrate chelation), chronic kidney disease
+- Replete calcium IV for symptomatic or severe cases; QT normalizes with correction
+
+---
+
+### Hypercalcemia
+
+**Definition:** Elevated serum calcium shortens the plateau phase of the action potential, producing a shortened QT interval.
+
+**AHA/ACC Diagnostic Criteria:**
+
+- **Short QTc (<350 ms)** — the primary finding
+- Shortened ST segment (ST segment appears nearly absent, T wave rises directly from QRS)
+- **Osborn waves** may appear at very high calcium levels
+- Bradycardia, PR prolongation, and AV block at severe levels
+- J point elevation reported at extreme hypercalcemia
+
+**Clinical Notes:**
+
+- Common causes: hyperparathyroidism, malignancy, granulomatous disease, thiazide diuretics, vitamin D toxicity
+- QT shortening from hypercalcemia contrasts with QT shortening from digitalis (which causes ST scooping)
 
 ---
 
