@@ -137,13 +137,35 @@ export default function RhythmReport({ result }: RhythmReportProps) {
         </p>
       </div>
 
-      {/* ── Primary rhythm ────────────────────────────────────────────── */}
+      {/* ── STEMI alert ───────────────────────────────────────────────── */}
+      {result.st_segment.elevation && (
+        <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 flex items-center gap-3">
+          <svg className="w-5 h-5 text-red-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+          </svg>
+          <p className="text-sm font-semibold text-red-800">
+            ST Elevation Detected — Consider STEMI
+            {result.st_segment.details && (
+              <span className="font-normal"> · {result.st_segment.details}</span>
+            )}
+          </p>
+        </div>
+      )}
+
+      {/* ── Impression ────────────────────────────────────────────────── */}
       <div className={`rounded-xl border px-5 py-4 flex items-start justify-between gap-4 ${ringBg}`}>
         <div className="min-w-0">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--academy-muted)] mb-1">
-            Primary Rhythm
+            Impression
           </p>
-          <h2 className="text-xl font-bold text-[var(--academy-ink)] leading-tight">{result.primary_rhythm}</h2>
+          <h2 className="text-xl font-bold text-[var(--academy-ink)] leading-tight">
+            {result.clinical_impression ?? result.primary_rhythm}
+          </h2>
+          {result.primary_rhythm !== (result.clinical_impression ?? result.primary_rhythm) && (
+            <p className="text-xs text-[var(--academy-muted)] mt-1">
+              Rhythm: {result.primary_rhythm}
+            </p>
+          )}
           {result.differentials.length > 0 && (
             <p className="text-xs text-[var(--academy-muted)] mt-1.5">
               Also consider: {result.differentials.join(", ")}
@@ -233,7 +255,7 @@ export default function RhythmReport({ result }: RhythmReportProps) {
             confidence={result.qtc.confidence}
           />
           <Row label="10. Impression"
-            value={result.primary_rhythm}
+            value={result.clinical_impression ?? result.primary_rhythm}
             confidence={result.overall_confidence}
           />
         </div>

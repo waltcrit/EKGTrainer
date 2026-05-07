@@ -4,6 +4,8 @@ __pycache__/
 *.pyc
 *.pyo
 *.egg-info/
+node_modules/
+scripts/ptbxl_data/
 
 # Next.js
 web/.next/
