@@ -1,8 +1,12 @@
-# EKG Trainer — Todo
+# EKGTrainer Tasks
 
-## Pending
+## Current Sprint
 
-- [ ] **Replace EKG images** — Current images are not in the correct sections (cases assigned to wrong rhythm categories). New images needed before fixing categorization.
+- [ ] **Replace EKG images** — Current images not in correct sections (cases assigned to wrong rhythm categories). New images needed before fixing categorization.
+
+## Backlog
+
+(Future work)
 
 ## Completed
 
