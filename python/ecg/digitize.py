@@ -96,6 +96,66 @@ def _detect_grid_calibration(gray: NDArray[np.uint8]) -> dict[str, float] | None
     }
 
 
+def _max_horiz_run(dark: NDArray[np.bool_]) -> NDArray[np.int32]:
+    """
+    Return the maximum consecutive True-run length for each row.
+    Vectorized column scan: O(width) numpy iterations over arrays of length height.
+    """
+    h, w = dark.shape
+    current = np.zeros(h, dtype=np.int32)
+    best    = np.zeros(h, dtype=np.int32)
+    for col in range(w):
+        col_mask = dark[:, col].astype(np.int32)
+        current  = (current + 1) * col_mask
+        np.maximum(best, current, out=best)
+    return best
+
+
+def _detect_rhythm_strip_top(gray: NDArray[np.uint8]) -> int | None:
+    """
+    Return the y-coordinate where the long rhythm strip begins in a standard
+    4x3+1 12-lead ECG image, or None if the layout cannot be identified.
+
+    Detection principle: in the 4-column panel section, vertical separators
+    between lead columns break horizontal ECG grid lines into ~25%-wide
+    segments. In the single-lead rhythm strip below them, horizontal grid
+    lines are unbroken and span the full image width. The first row in the
+    lower portion of the image where a dark horizontal run reaches ≥50% of
+    the image width marks the transition to the rhythm strip.
+    """
+    h, w = gray.shape
+    dark = gray < 128
+
+    max_run = _max_horiz_run(dark)
+
+    threshold = int(w * 0.50)     # must span ≥50% of width (rules out per-column grid lines)
+
+    # Negative check: if full-width runs already appear in the top 35% of the image,
+    # the image is NOT a 4x3+1 layout. It is either:
+    #   • a single-lead rhythm strip (full-width grid lines everywhere), or
+    #   • a bedside monitor photo (dark background creates huge runs everywhere).
+    # In both cases, return None so the full image is traced without cropping.
+    y_top_lo = int(h * 0.05)
+    y_top_hi = int(h * 0.35)
+    if np.any(max_run[y_top_lo:y_top_hi] >= threshold):
+        return None
+
+    y_lo = int(h * 0.40)          # skip the top multi-lead rows
+    y_hi = int(h * 0.88)          # stop before bottom margin
+
+    hits = np.where(max_run[y_lo:y_hi] >= threshold)[0]
+    if len(hits) == 0:
+        return None
+
+    strip_top = y_lo + int(hits[0])
+
+    # Rhythm strip must be at least 12% of the image height to be worth cropping
+    if h - strip_top < int(h * 0.12):
+        return None
+
+    return strip_top
+
+
 def _fallback_digitize(image_path: str | None = None, image_bytes: bytes | None = None) -> DigitizedResult:
     """Grid-calibrated OpenCV digitizer. Accepts image_path or image_bytes."""
     if not _cv2_available:
@@ -113,8 +173,8 @@ def _fallback_digitize(image_path: str | None = None, image_bytes: bytes | None 
         raise ValueError("Either image_path or image_bytes must be provided")
 
     gray = cast(NDArray[np.uint8], cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY))
-    h, w = gray.shape
 
+    # Grid calibration runs on the full image (grid period is the same everywhere).
     cal = _detect_grid_calibration(gray)
     if cal:
         sampling_rate = int(round(cal["sampling_rate_hz"]))
@@ -128,6 +188,16 @@ def _fallback_digitize(image_path: str | None = None, image_bytes: bytes | None 
         calibrated = False
 
     sampling_rate = min(sampling_rate, 500)
+
+    # For 4x3+1 12-lead images, crop to just the long rhythm strip so that
+    # the column-wise argmax traces a single continuous lead rather than
+    # zigzagging across four unrelated panel leads.
+    strip_top = _detect_rhythm_strip_top(gray)
+    if strip_top is not None:
+        gray  = gray[strip_top:, :]
+        method += "+rhythmstrip"
+
+    h, w = gray.shape
 
     inv = (255 - gray).astype(float)
     margin = max(1, w // 100)
