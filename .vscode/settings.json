@@ -1,6 +1,6 @@
 {
   "python.analysis.diagnosticMode": "openFilesOnly",
-  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.typeCheckingMode": "basic",
   "python.analysis.useLibraryCodeForTypes": false,
   "python.analysis.exclude": [
     "**/.venv/**",
@@ -8,7 +8,9 @@
     "**/dist-packages/**",
     "**/.vscode/extensions/**",
     "**/.next/**",
-    "**/node_modules/**"
+    "**/node_modules/**",
+    "**/__pycache__",
+    "**/.*"
   ],
   "problems.exclude": {
     "**/.vscode/extensions/**": true

@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "Python: Debug Server",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/python/server.py",
       "console": "integratedTerminal",
@@ -14,7 +14,7 @@
     },
     {
       "name": "Python: Analyze ECG",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/python/analyze_ecg.py",
       "console": "integratedTerminal",
