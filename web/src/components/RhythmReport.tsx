@@ -197,7 +197,7 @@ export default function RhythmReport({ result }: RhythmReportProps) {
           <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--academy-muted)]">
             Systematic Analysis
           </p>
-          <span className="text-[10px] text-[var(--academy-muted)] font-medium opacity-60">10-step signal-first framework</span>
+          <span className="text-[10px] text-[var(--academy-muted)] font-medium opacity-60">Signal-first systematic framework</span>
         </div>
         <div className="px-4 divide-y divide-[var(--academy-line)]">
           <Row label="1. Rate"

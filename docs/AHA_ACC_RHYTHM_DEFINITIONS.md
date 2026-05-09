@@ -3,6 +3,8 @@
 This document provides AHA/ACC-based definitions and diagnostic criteria for all rhythm types in our cases database.
 Use this as the authoritative reference for clinical impressions and morphological findings.
 
+**Curriculum:** Used with [EKG waveform components](EKG_WAVEFORM_COMPONENTS.md) and [EKG rhythm analysis steps](analysis_steps.md) for **beginner, intermediate, and advanced** modules alike. Assign **individual rhythm sections** (headings) to each lesson as depth requires—do not silo this file to one proficiency tier. Step numbering in `analysis_steps.md` is the shared interpretation spine.
+
 ---
 
 ## SINUS RHYTHMS

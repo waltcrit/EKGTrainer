@@ -9,26 +9,25 @@
         841.3,
         825.3
       ],
-      "heart_rate_bpm": 72.0,
+      "heart_rate_bpm": 72,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 160.0,
-      "qrs_duration_ms": 88.0,
+      "pr_interval_ms": 160,
+      "qrs_duration_ms": 88,
       "qrs_wide": false,
-      "qt_ms": 380.0,
+      "qt_ms": 380,
       "qtc_ms": 416.7,
       "qtc_prolonged": false,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Normal Sinus Rhythm (NSR)\n- Confidence: 80%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 72 bpm\n- RR intervals (ms): 825, 841, 825, 841, 825\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 160 ms\n- QRS duration: 88 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 380 ms\n- QTc (Bazett): 417 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [825.3, 841.3, 825.3, 841.3, 825.3],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 160.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 88.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 416.7,\n    \"measured_qt_ms\": [380.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -51,32 +50,31 @@
     "measurements": {
       "r_peaks": [],
       "rr_intervals_ms": [
-        792.0,
-        808.0,
-        792.0,
-        808.0,
-        792.0
+        792,
+        808,
+        792,
+        808,
+        792
       ],
-      "heart_rate_bpm": 75.0,
+      "heart_rate_bpm": 75,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 160.0,
-      "qrs_duration_ms": 90.0,
+      "pr_interval_ms": 160,
+      "qrs_duration_ms": 90,
       "qrs_wide": false,
-      "qt_ms": 380.0,
+      "qt_ms": 380,
       "qtc_ms": 425.3,
       "qtc_prolonged": false,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Normal Sinus Rhythm (NSR)\n- Confidence: 80%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 75 bpm\n- RR intervals (ms): 792, 808, 792, 808, 792\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 160 ms\n- QRS duration: 90 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 380 ms\n- QTc (Bazett): 425 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [792.0, 808.0, 792.0, 808.0, 792.0],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 160.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 90.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 425.3,\n    \"measured_qt_ms\": [380.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -99,32 +97,31 @@
     "measurements": {
       "r_peaks": [],
       "rr_intervals_ms": [
-        1242.0,
-        1258.0,
-        1242.0,
-        1258.0,
-        1242.0
+        1242,
+        1258,
+        1242,
+        1258,
+        1242
       ],
-      "heart_rate_bpm": 48.0,
+      "heart_rate_bpm": 48,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 160.0,
-      "qrs_duration_ms": 88.0,
+      "pr_interval_ms": 160,
+      "qrs_duration_ms": 88,
       "qrs_wide": false,
-      "qt_ms": 440.0,
+      "qt_ms": 440,
       "qtc_ms": 393.8,
       "qtc_prolonged": false,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Sinus Bradycardia (SB)\n- Confidence: 75%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 48 bpm\n- RR intervals (ms): 1242, 1258, 1242, 1258, 1242\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 160 ms\n- QRS duration: 88 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 440 ms\n- QTc (Bazett): 394 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [1242.0, 1258.0, 1242.0, 1258.0, 1242.0],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 160.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 88.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 393.8,\n    \"measured_qt_ms\": [440.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -153,26 +150,25 @@
         1436.6,
         1420.6
       ],
-      "heart_rate_bpm": 42.0,
+      "heart_rate_bpm": 42,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 160.0,
-      "qrs_duration_ms": 88.0,
+      "pr_interval_ms": 160,
+      "qrs_duration_ms": 88,
       "qrs_wide": false,
-      "qt_ms": 460.0,
+      "qt_ms": 460,
       "qtc_ms": 385.1,
       "qtc_prolonged": false,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Sinus Bradycardia (SB)\n- Confidence: 75%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 42 bpm\n- RR intervals (ms): 1421, 1437, 1421, 1437, 1421\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 160 ms\n- QRS duration: 88 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 460 ms\n- QTc (Bazett): 385 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [1420.6, 1436.6, 1420.6, 1436.6, 1420.6],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 160.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 88.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 385.1,\n    \"measured_qt_ms\": [460.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -201,26 +197,25 @@
         563.6,
         547.6
       ],
-      "heart_rate_bpm": 108.0,
+      "heart_rate_bpm": 108,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 140.0,
-      "qrs_duration_ms": 88.0,
+      "pr_interval_ms": 140,
+      "qrs_duration_ms": 88,
       "qrs_wide": false,
-      "qt_ms": 320.0,
+      "qt_ms": 320,
       "qtc_ms": 429.9,
       "qtc_prolonged": false,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Sinus Tachycardia (ST)\n- Confidence: 75%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 108 bpm\n- RR intervals (ms): 548, 564, 548, 564, 548\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 140 ms\n- QRS duration: 88 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 320 ms\n- QTc (Bazett): 430 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [547.6, 563.6, 547.6, 563.6, 547.6],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 140.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 88.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 429.9,\n    \"measured_qt_ms\": [320.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -249,26 +244,25 @@
         476.8,
         460.8
       ],
-      "heart_rate_bpm": 128.0,
+      "heart_rate_bpm": 128,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 130.0,
-      "qrs_duration_ms": 88.0,
+      "pr_interval_ms": 130,
+      "qrs_duration_ms": 88,
       "qrs_wide": false,
-      "qt_ms": 300.0,
+      "qt_ms": 300,
       "qtc_ms": 438.9,
       "qtc_prolonged": false,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Sinus Tachycardia (ST)\n- Confidence: 75%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 128 bpm\n- RR intervals (ms): 461, 477, 461, 477, 461\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 130 ms\n- QRS duration: 88 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 300 ms\n- QTc (Bazett): 439 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [460.8, 476.8, 460.8, 476.8, 460.8],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 130.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 88.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 438.9,\n    \"measured_qt_ms\": [300.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -291,33 +285,32 @@
     "measurements": {
       "r_peaks": [],
       "rr_intervals_ms": [
-        740.0,
-        980.0,
-        820.0,
-        1060.0,
-        700.0,
-        940.0
+        740,
+        980,
+        820,
+        1060,
+        700,
+        940
       ],
-      "heart_rate_bpm": 65.0,
+      "heart_rate_bpm": 65,
       "regularity": "regularly_irregular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 160.0,
-      "qrs_duration_ms": 88.0,
+      "pr_interval_ms": 160,
+      "qrs_duration_ms": 88,
       "qrs_wide": false,
-      "qt_ms": 400.0,
-      "qtc_ms": 428.0,
+      "qt_ms": 400,
+      "qtc_ms": 428,
       "qtc_prolonged": false,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Atrial Fibrillation (AF)\n- Confidence: 70%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 65 bpm\n- RR intervals (ms): 740, 980, 820, 1060, 700, 940\n- Rhythm regularity: regularly_irregular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 160 ms\n- QRS duration: 88 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 400 ms\n- QTc (Bazett): 428 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [740.0, 980.0, 820.0, 1060.0, 700.0, 940.0],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 160.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 88.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 428.0,\n    \"measured_qt_ms\": [400.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -340,33 +333,32 @@
     "measurements": {
       "r_peaks": [],
       "rr_intervals_ms": [
-        830.0,
-        580.0,
-        1020.0,
-        830.0,
-        600.0,
-        1010.0
+        830,
+        580,
+        1020,
+        830,
+        600,
+        1010
       ],
-      "heart_rate_bpm": 72.0,
+      "heart_rate_bpm": 72,
       "regularity": "irregularly_irregular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 150.0,
-      "qrs_duration_ms": 88.0,
+      "pr_interval_ms": 150,
+      "qrs_duration_ms": 88,
       "qrs_wide": false,
-      "qt_ms": 390.0,
+      "qt_ms": 390,
       "qtc_ms": 432.9,
       "qtc_prolonged": false,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Atrial Fibrillation (AF)\n- Confidence: 70%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 72 bpm\n- RR intervals (ms): 830, 580, 1020, 830, 600, 1010\n- Rhythm regularity: irregularly_irregular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 150 ms\n- QRS duration: 88 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 390 ms\n- QTc (Bazett): 433 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [830.0, 580.0, 1020.0, 830.0, 600.0, 1010.0],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 150.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 88.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 432.9,\n    \"measured_qt_ms\": [390.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -389,33 +381,32 @@
     "measurements": {
       "r_peaks": [],
       "rr_intervals_ms": [
-        830.0,
-        520.0,
-        1130.0,
-        830.0,
-        510.0,
-        1140.0
+        830,
+        520,
+        1130,
+        830,
+        510,
+        1140
       ],
-      "heart_rate_bpm": 72.0,
+      "heart_rate_bpm": 72,
       "regularity": "irregularly_irregular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 160.0,
-      "qrs_duration_ms": 90.0,
+      "pr_interval_ms": 160,
+      "qrs_duration_ms": 90,
       "qrs_wide": false,
-      "qt_ms": 390.0,
+      "qt_ms": 390,
       "qtc_ms": 428.9,
       "qtc_prolonged": false,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Atrial Fibrillation (AF)\n- Confidence: 70%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 72 bpm\n- RR intervals (ms): 830, 520, 1130, 830, 510, 1140\n- Rhythm regularity: irregularly_irregular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 160 ms\n- QRS duration: 90 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 390 ms\n- QTc (Bazett): 429 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [830.0, 520.0, 1130.0, 830.0, 510.0, 1140.0],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 160.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 90.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 428.9,\n    \"measured_qt_ms\": [390.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -444,26 +435,25 @@
         338.3,
         328.3
       ],
-      "heart_rate_bpm": 180.0,
+      "heart_rate_bpm": 180,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": false,
       "pr_interval_ms": null,
-      "qrs_duration_ms": 88.0,
+      "qrs_duration_ms": 88,
       "qrs_wide": false,
-      "qt_ms": 240.0,
+      "qt_ms": 240,
       "qtc_ms": 416.3,
       "qtc_prolonged": false,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Supraventricular Tachycardia (SVT)\n- Confidence: 60%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 180 bpm\n- RR intervals (ms): 328, 338, 328, 338, 328\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: False\n- PR interval: not measurable\n- QRS duration: 88 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 240 ms\n- QTc (Bazett): 416 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [328.3, 338.3, 328.3, 338.3, 328.3],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": null,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 88.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 416.3,\n    \"measured_qt_ms\": [240.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -486,33 +476,32 @@
     "measurements": {
       "r_peaks": [],
       "rr_intervals_ms": [
-        590.0,
-        820.0,
-        450.0,
-        710.0,
-        530.0,
-        880.0
+        590,
+        820,
+        450,
+        710,
+        530,
+        880
       ],
-      "heart_rate_bpm": 90.0,
+      "heart_rate_bpm": 90,
       "regularity": "irregularly_irregular",
       "num_beats": 6,
       "p_waves_present": false,
       "pr_interval_ms": null,
-      "qrs_duration_ms": 88.0,
+      "qrs_duration_ms": 88,
       "qrs_wide": false,
-      "qt_ms": 360.0,
-      "qtc_ms": 442.0,
+      "qt_ms": 360,
+      "qtc_ms": 442,
       "qtc_prolonged": true,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Atrial Fibrillation (AF)\n- Confidence: 70%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 90 bpm\n- RR intervals (ms): 590, 820, 450, 710, 530, 880\n- Rhythm regularity: irregularly_irregular\n- Beats detected: 6\n- P waves present: False\n- PR interval: not measurable\n- QRS duration: 88 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 360 ms\n- QTc (Bazett): 442 ms\n- QTc prolonged: True\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [590.0, 820.0, 450.0, 710.0, 530.0, 880.0],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": null,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 88.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 442.0,\n    \"measured_qt_ms\": [360.0],\n    \"prolonged\": true,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -535,33 +524,32 @@
     "measurements": {
       "r_peaks": [],
       "rr_intervals_ms": [
-        360.0,
-        430.0,
-        380.0,
-        500.0,
-        350.0,
-        440.0
+        360,
+        430,
+        380,
+        500,
+        350,
+        440
       ],
-      "heart_rate_bpm": 148.0,
+      "heart_rate_bpm": 148,
       "regularity": "irregularly_irregular",
       "num_beats": 6,
       "p_waves_present": false,
       "pr_interval_ms": null,
-      "qrs_duration_ms": 88.0,
+      "qrs_duration_ms": 88,
       "qrs_wide": false,
-      "qt_ms": 280.0,
+      "qt_ms": 280,
       "qtc_ms": 437.3,
       "qtc_prolonged": false,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Atrial Fibrillation (AF)\n- Confidence: 70%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 148 bpm\n- RR intervals (ms): 360, 430, 380, 500, 350, 440\n- Rhythm regularity: irregularly_irregular\n- Beats detected: 6\n- P waves present: False\n- PR interval: not measurable\n- QRS duration: 88 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 280 ms\n- QTc (Bazett): 437 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [360.0, 430.0, 380.0, 500.0, 350.0, 440.0],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": null,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 88.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 437.3,\n    \"measured_qt_ms\": [280.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -584,32 +572,31 @@
     "measurements": {
       "r_peaks": [],
       "rr_intervals_ms": [
-        795.0,
-        805.0,
-        795.0,
-        805.0,
-        795.0
+        795,
+        805,
+        795,
+        805,
+        795
       ],
-      "heart_rate_bpm": 75.0,
+      "heart_rate_bpm": 75,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 160.0,
-      "qrs_duration_ms": 88.0,
+      "pr_interval_ms": 160,
+      "qrs_duration_ms": 88,
       "qrs_wide": false,
-      "qt_ms": 380.0,
+      "qt_ms": 380,
       "qtc_ms": 425.1,
       "qtc_prolonged": false,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Normal Sinus Rhythm (NSR)\n- Confidence: 80%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 75 bpm\n- RR intervals (ms): 795, 805, 795, 805, 795\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 160 ms\n- QRS duration: 88 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 380 ms\n- QTc (Bazett): 425 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [795.0, 805.0, 795.0, 805.0, 795.0],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 160.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 88.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 425.1,\n    \"measured_qt_ms\": [380.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -638,26 +625,25 @@
         890.4,
         874.4
       ],
-      "heart_rate_bpm": 68.0,
+      "heart_rate_bpm": 68,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 240.0,
-      "qrs_duration_ms": 88.0,
+      "pr_interval_ms": 240,
+      "qrs_duration_ms": 88,
       "qrs_wide": false,
-      "qt_ms": 390.0,
+      "qt_ms": 390,
       "qtc_ms": 415.6,
       "qtc_prolonged": false,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Normal Sinus Rhythm (NSR)\n- Confidence: 80%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 68 bpm\n- RR intervals (ms): 874, 890, 874, 890, 874\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 240 ms\n- QRS duration: 88 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 390 ms\n- QTc (Bazett): 416 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [874.4, 890.4, 874.4, 890.4, 874.4],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 240.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 88.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 415.6,\n    \"measured_qt_ms\": [390.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -680,33 +666,32 @@
     "measurements": {
       "r_peaks": [],
       "rr_intervals_ms": [
-        820.0,
-        860.0,
-        920.0,
-        1400.0,
-        820.0,
-        860.0
+        820,
+        860,
+        920,
+        1400,
+        820,
+        860
       ],
-      "heart_rate_bpm": 60.0,
+      "heart_rate_bpm": 60,
       "regularity": "regularly_irregular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 220.0,
-      "qrs_duration_ms": 88.0,
+      "pr_interval_ms": 220,
+      "qrs_duration_ms": 88,
       "qrs_wide": false,
-      "qt_ms": 400.0,
+      "qt_ms": 400,
       "qtc_ms": 411.1,
       "qtc_prolonged": false,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Atrial Fibrillation (AF)\n- Confidence: 70%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 60 bpm\n- RR intervals (ms): 820, 860, 920, 1400, 820, 860\n- Rhythm regularity: regularly_irregular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 220 ms\n- QRS duration: 88 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 400 ms\n- QTc (Bazett): 411 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [820.0, 860.0, 920.0, 1400.0, 820.0, 860.0],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 220.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 88.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 411.1,\n    \"measured_qt_ms\": [400.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -729,33 +714,32 @@
     "measurements": {
       "r_peaks": [],
       "rr_intervals_ms": [
-        1000.0,
-        1000.0,
-        2000.0,
-        1000.0,
-        1000.0,
-        2000.0
+        1000,
+        1000,
+        2000,
+        1000,
+        1000,
+        2000
       ],
-      "heart_rate_bpm": 45.0,
+      "heart_rate_bpm": 45,
       "regularity": "regularly_irregular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 180.0,
-      "qrs_duration_ms": 120.0,
+      "pr_interval_ms": 180,
+      "qrs_duration_ms": 120,
       "qrs_wide": true,
-      "qt_ms": 440.0,
+      "qt_ms": 440,
       "qtc_ms": 381.1,
       "qtc_prolonged": false,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Atrial Fibrillation (AF)\n- Confidence: 70%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 45 bpm\n- RR intervals (ms): 1000, 1000, 2000, 1000, 1000, 2000\n- Rhythm regularity: regularly_irregular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 180 ms\n- QRS duration: 120 ms\n- QRS wide (\u2265120ms): True\n- QT interval: 440 ms\n- QTc (Bazett): 381 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [1000.0, 1000.0, 2000.0, 1000.0, 1000.0, 2000.0],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 180.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 120.0,\n    \"measured_beats_ms\": [],\n    \"wide\": true,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 381.1,\n    \"measured_qt_ms\": [440.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -778,32 +762,31 @@
     "measurements": {
       "r_peaks": [],
       "rr_intervals_ms": [
-        1490.0,
-        1510.0,
-        1490.0,
-        1510.0,
-        1490.0
+        1490,
+        1510,
+        1490,
+        1510,
+        1490
       ],
-      "heart_rate_bpm": 40.0,
+      "heart_rate_bpm": 40,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
       "pr_interval_ms": null,
-      "qrs_duration_ms": 120.0,
+      "qrs_duration_ms": 120,
       "qrs_wide": true,
-      "qt_ms": 440.0,
+      "qt_ms": 440,
       "qtc_ms": 359.5,
       "qtc_prolonged": false,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Sinus Bradycardia (SB)\n- Confidence: 75%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 40 bpm\n- RR intervals (ms): 1490, 1510, 1490, 1510, 1490\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: not measurable\n- QRS duration: 120 ms\n- QRS wide (\u2265120ms): True\n- QT interval: 440 ms\n- QTc (Bazett): 360 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [1490.0, 1510.0, 1490.0, 1510.0, 1490.0],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": null,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 120.0,\n    \"measured_beats_ms\": [],\n    \"wide\": true,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 359.5,\n    \"measured_qt_ms\": [440.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -832,12 +815,12 @@
         841.3,
         825.3
       ],
-      "heart_rate_bpm": 72.0,
+      "heart_rate_bpm": 72,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 180.0,
-      "qrs_duration_ms": 140.0,
+      "pr_interval_ms": 180,
+      "qrs_duration_ms": 140,
       "qrs_wide": true,
       "qt_ms": null,
       "qtc_ms": null,
@@ -846,12 +829,11 @@
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Normal Sinus Rhythm (NSR)\n- Confidence: 80%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 72 bpm\n- RR intervals (ms): 825, 841, 825, 841, 825\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 180 ms\n- QRS duration: 140 ms\n- QRS wide (\u2265120ms): True\n- QT interval: not measurable\n- QTc (Bazett): not measurable\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [825.3, 841.3, 825.3, 841.3, 825.3],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 180.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 140.0,\n    \"measured_beats_ms\": [],\n    \"wide\": true,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": null,\n    \"measured_qt_ms\": [null],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -874,32 +856,31 @@
     "measurements": {
       "r_peaks": [],
       "rr_intervals_ms": [
-        792.0,
-        808.0,
-        792.0,
-        808.0,
-        792.0
+        792,
+        808,
+        792,
+        808,
+        792
       ],
-      "heart_rate_bpm": 75.0,
+      "heart_rate_bpm": 75,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 160.0,
-      "qrs_duration_ms": 130.0,
+      "pr_interval_ms": 160,
+      "qrs_duration_ms": 130,
       "qrs_wide": true,
-      "qt_ms": 400.0,
+      "qt_ms": 400,
       "qtc_ms": 447.7,
       "qtc_prolonged": true,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Normal Sinus Rhythm (NSR)\n- Confidence: 80%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 75 bpm\n- RR intervals (ms): 792, 808, 792, 808, 792\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 160 ms\n- QRS duration: 130 ms\n- QRS wide (\u2265120ms): True\n- QT interval: 400 ms\n- QTc (Bazett): 448 ms\n- QTc prolonged: True\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [792.0, 808.0, 792.0, 808.0, 792.0],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 160.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 130.0,\n    \"measured_beats_ms\": [],\n    \"wide\": true,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 447.7,\n    \"measured_qt_ms\": [400.0],\n    \"prolonged\": true,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -922,32 +903,31 @@
     "measurements": {
       "r_peaks": [],
       "rr_intervals_ms": [
-        1240.0,
-        1260.0,
-        1240.0,
-        1260.0,
-        1240.0
+        1240,
+        1260,
+        1240,
+        1260,
+        1240
       ],
-      "heart_rate_bpm": 48.0,
+      "heart_rate_bpm": 48,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": false,
       "pr_interval_ms": null,
-      "qrs_duration_ms": 88.0,
+      "qrs_duration_ms": 88,
       "qrs_wide": false,
-      "qt_ms": 420.0,
-      "qtc_ms": 376.0,
+      "qt_ms": 420,
+      "qtc_ms": 376,
       "qtc_prolonged": false,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Sinus Bradycardia (SB)\n- Confidence: 75%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 48 bpm\n- RR intervals (ms): 1240, 1260, 1240, 1260, 1240\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: False\n- PR interval: not measurable\n- QRS duration: 88 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 420 ms\n- QTc (Bazett): 376 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [1240.0, 1260.0, 1240.0, 1260.0, 1240.0],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": null,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 88.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 376.0,\n    \"measured_qt_ms\": [420.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -976,26 +956,25 @@
         777.2,
         761.2
       ],
-      "heart_rate_bpm": 78.0,
+      "heart_rate_bpm": 78,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": false,
       "pr_interval_ms": null,
-      "qrs_duration_ms": 88.0,
+      "qrs_duration_ms": 88,
       "qrs_wide": false,
-      "qt_ms": 390.0,
+      "qt_ms": 390,
       "qtc_ms": 445.1,
       "qtc_prolonged": true,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Normal Sinus Rhythm (NSR)\n- Confidence: 80%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 78 bpm\n- RR intervals (ms): 761, 777, 761, 777, 761\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: False\n- PR interval: not measurable\n- QRS duration: 88 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 390 ms\n- QTc (Bazett): 445 ms\n- QTc prolonged: True\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [761.2, 777.2, 761.2, 777.2, 761.2],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": null,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 88.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 445.1,\n    \"measured_qt_ms\": [390.0],\n    \"prolonged\": true,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -1024,26 +1003,25 @@
         1729.3,
         1699.3
       ],
-      "heart_rate_bpm": 35.0,
+      "heart_rate_bpm": 35,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": false,
       "pr_interval_ms": null,
-      "qrs_duration_ms": 140.0,
+      "qrs_duration_ms": 140,
       "qrs_wide": true,
-      "qt_ms": 480.0,
+      "qt_ms": 480,
       "qtc_ms": 366.9,
       "qtc_prolonged": true,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Sinus Bradycardia (SB)\n- Confidence: 75%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 35 bpm\n- RR intervals (ms): 1699, 1729, 1699, 1729, 1699\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: False\n- PR interval: not measurable\n- QRS duration: 140 ms\n- QRS wide (\u2265120ms): True\n- QT interval: 480 ms\n- QTc (Bazett): 367 ms\n- QTc prolonged: True\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [1699.3, 1729.3, 1699.3, 1729.3, 1699.3],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": null,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 140.0,\n    \"measured_beats_ms\": [],\n    \"wide\": true,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 366.9,\n    \"measured_qt_ms\": [480.0],\n    \"prolonged\": true,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -1072,12 +1050,12 @@
         341.3,
         325.3
       ],
-      "heart_rate_bpm": 180.0,
+      "heart_rate_bpm": 180,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": false,
       "pr_interval_ms": null,
-      "qrs_duration_ms": 140.0,
+      "qrs_duration_ms": 140,
       "qrs_wide": true,
       "qt_ms": null,
       "qtc_ms": null,
@@ -1086,12 +1064,11 @@
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Ventricular Tachycardia (VT)\n- Confidence: 75%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 180 bpm\n- RR intervals (ms): 325, 341, 325, 341, 325\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: False\n- PR interval: not measurable\n- QRS duration: 140 ms\n- QRS wide (\u2265120ms): True\n- QT interval: not measurable\n- QTc (Bazett): not measurable\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [325.3, 341.3, 325.3, 341.3, 325.3],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": null,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 140.0,\n    \"measured_beats_ms\": [],\n    \"wide\": true,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": null,\n    \"measured_qt_ms\": [null],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -1114,18 +1091,18 @@
     "measurements": {
       "r_peaks": [],
       "rr_intervals_ms": [
-        292.0,
-        308.0,
-        292.0,
-        308.0,
-        292.0
+        292,
+        308,
+        292,
+        308,
+        292
       ],
-      "heart_rate_bpm": 200.0,
+      "heart_rate_bpm": 200,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": false,
       "pr_interval_ms": null,
-      "qrs_duration_ms": 140.0,
+      "qrs_duration_ms": 140,
       "qrs_wide": true,
       "qt_ms": null,
       "qtc_ms": null,
@@ -1134,12 +1111,11 @@
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Ventricular Tachycardia (VT)\n- Confidence: 75%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 200 bpm\n- RR intervals (ms): 292, 308, 292, 308, 292\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: False\n- PR interval: not measurable\n- QRS duration: 140 ms\n- QRS wide (\u2265120ms): True\n- QT interval: not measurable\n- QTc (Bazett): not measurable\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [292.0, 308.0, 292.0, 308.0, 292.0],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": null,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 140.0,\n    \"measured_beats_ms\": [],\n    \"wide\": true,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": null,\n    \"measured_qt_ms\": [null],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -1162,7 +1138,7 @@
     "measurements": {
       "r_peaks": [],
       "rr_intervals_ms": [],
-      "heart_rate_bpm": 0.0,
+      "heart_rate_bpm": 0,
       "regularity": "irregularly_irregular",
       "num_beats": 0,
       "p_waves_present": false,
@@ -1176,13 +1152,12 @@
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II",
       "vf_morphology": true
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Ventricular Fibrillation (VF)\n- Confidence: 82%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 0 bpm\n- RR intervals (ms): unavailable\n- Rhythm regularity: irregularly_irregular\n- Beats detected: 0\n- P waves present: False\n- PR interval: not measurable\n- QRS duration: not measurable\n- QRS wide (\u2265120ms): False\n- QT interval: not measurable\n- QTc (Bazett): not measurable\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": null,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": null,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": null,\n    \"measured_qt_ms\": [null],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -1205,7 +1180,7 @@
     "measurements": {
       "r_peaks": [],
       "rr_intervals_ms": [],
-      "heart_rate_bpm": 0.0,
+      "heart_rate_bpm": 0,
       "regularity": "irregularly_irregular",
       "num_beats": 0,
       "p_waves_present": false,
@@ -1219,12 +1194,11 @@
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Asystole (ASYS)\n- Confidence: 85%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 0 bpm\n- RR intervals (ms): unavailable\n- Rhythm regularity: irregularly_irregular\n- Beats detected: 0\n- P waves present: False\n- PR interval: not measurable\n- QRS duration: not measurable\n- QRS wide (\u2265120ms): False\n- QT interval: not measurable\n- QTc (Bazett): not measurable\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": null,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": null,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": null,\n    \"measured_qt_ms\": [null],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -1253,14 +1227,14 @@
         689.8,
         673.8
       ],
-      "heart_rate_bpm": 88.0,
+      "heart_rate_bpm": 88,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 160.0,
-      "qrs_duration_ms": 90.0,
+      "pr_interval_ms": 160,
+      "qrs_duration_ms": 90,
       "qrs_wide": false,
-      "qt_ms": 380.0,
+      "qt_ms": 380,
       "qtc_ms": 460.7,
       "qtc_prolonged": true,
       "st": {
@@ -1272,7 +1246,6 @@
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Normal Sinus Rhythm (NSR)\n- Confidence: 80%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 88 bpm\n- RR intervals (ms): 674, 690, 674, 690, 674\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 160 ms\n- QRS duration: 90 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 380 ms\n- QTc (Bazett): 461 ms\n- QTc prolonged: True\n\nST SEGMENT (per lead):\n  II: elevated (+0.20 mV)\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [673.8, 689.8, 673.8, 689.8, 673.8],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 160.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 90.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 460.7,\n    \"measured_qt_ms\": [380.0],\n    \"prolonged\": true,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -1301,14 +1274,14 @@
         777.2,
         761.2
       ],
-      "heart_rate_bpm": 78.0,
+      "heart_rate_bpm": 78,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 180.0,
-      "qrs_duration_ms": 90.0,
+      "pr_interval_ms": 180,
+      "qrs_duration_ms": 90,
       "qrs_wide": false,
-      "qt_ms": 380.0,
+      "qt_ms": 380,
       "qtc_ms": 433.7,
       "qtc_prolonged": false,
       "st": {
@@ -1320,7 +1293,6 @@
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Normal Sinus Rhythm (NSR)\n- Confidence: 80%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 78 bpm\n- RR intervals (ms): 761, 777, 761, 777, 761\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 180 ms\n- QRS duration: 90 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 380 ms\n- QTc (Bazett): 434 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  II: elevated (+0.25 mV)\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [761.2, 777.2, 761.2, 777.2, 761.2],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 180.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 90.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 433.7,\n    \"measured_qt_ms\": [380.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -1349,26 +1321,25 @@
         739.7,
         723.7
       ],
-      "heart_rate_bpm": 82.0,
+      "heart_rate_bpm": 82,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 160.0,
-      "qrs_duration_ms": 90.0,
+      "pr_interval_ms": 160,
+      "qrs_duration_ms": 90,
       "qrs_wide": false,
-      "qt_ms": 380.0,
+      "qt_ms": 380,
       "qtc_ms": 444.7,
       "qtc_prolonged": true,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Normal Sinus Rhythm (NSR)\n- Confidence: 80%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 82 bpm\n- RR intervals (ms): 724, 740, 724, 740, 724\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 160 ms\n- QRS duration: 90 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 380 ms\n- QTc (Bazett): 445 ms\n- QTc prolonged: True\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [723.7, 739.7, 723.7, 739.7, 723.7],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 160.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 90.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 444.7,\n    \"measured_qt_ms\": [380.0],\n    \"prolonged\": true,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -1391,20 +1362,20 @@
     "measurements": {
       "r_peaks": [],
       "rr_intervals_ms": [
-        792.0,
-        808.0,
-        792.0,
-        808.0,
-        792.0
+        792,
+        808,
+        792,
+        808,
+        792
       ],
-      "heart_rate_bpm": 75.0,
+      "heart_rate_bpm": 75,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 160.0,
-      "qrs_duration_ms": 90.0,
+      "pr_interval_ms": 160,
+      "qrs_duration_ms": 90,
       "qrs_wide": false,
-      "qt_ms": 380.0,
+      "qt_ms": 380,
       "qtc_ms": 425.3,
       "qtc_prolonged": false,
       "st": {
@@ -1416,7 +1387,6 @@
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Normal Sinus Rhythm (NSR)\n- Confidence: 80%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 75 bpm\n- RR intervals (ms): 792, 808, 792, 808, 792\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 160 ms\n- QRS duration: 90 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 380 ms\n- QTc (Bazett): 425 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  II: depressed (-0.20 mV)\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [792.0, 808.0, 792.0, 808.0, 792.0],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 160.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 90.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 425.3,\n    \"measured_qt_ms\": [380.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -1445,14 +1415,14 @@
         713.9,
         697.9
       ],
-      "heart_rate_bpm": 85.0,
+      "heart_rate_bpm": 85,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 160.0,
-      "qrs_duration_ms": 90.0,
+      "pr_interval_ms": 160,
+      "qrs_duration_ms": 90,
       "qrs_wide": false,
-      "qt_ms": 380.0,
+      "qt_ms": 380,
       "qtc_ms": 452.8,
       "qtc_prolonged": true,
       "st": {
@@ -1464,7 +1434,6 @@
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Normal Sinus Rhythm (NSR)\n- Confidence: 80%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 85 bpm\n- RR intervals (ms): 698, 714, 698, 714, 698\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 160 ms\n- QRS duration: 90 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 380 ms\n- QTc (Bazett): 453 ms\n- QTc prolonged: True\n\nST SEGMENT (per lead):\n  II: depressed (-0.15 mV)\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [697.9, 713.9, 697.9, 713.9, 697.9],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 160.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 90.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 452.8,\n    \"measured_qt_ms\": [380.0],\n    \"prolonged\": true,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -1493,26 +1462,25 @@
         865.1,
         849.1
       ],
-      "heart_rate_bpm": 70.0,
+      "heart_rate_bpm": 70,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 160.0,
-      "qrs_duration_ms": 88.0,
+      "pr_interval_ms": 160,
+      "qrs_duration_ms": 88,
       "qrs_wide": false,
-      "qt_ms": 400.0,
+      "qt_ms": 400,
       "qtc_ms": 432.5,
       "qtc_prolonged": false,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Normal Sinus Rhythm (NSR)\n- Confidence: 80%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 70 bpm\n- RR intervals (ms): 849, 865, 849, 865, 849\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 160 ms\n- QRS duration: 88 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 400 ms\n- QTc (Bazett): 432 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [849.1, 865.1, 849.1, 865.1, 849.1],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 160.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 88.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 432.5,\n    \"measured_qt_ms\": [400.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -1541,26 +1509,25 @@
         865.1,
         849.1
       ],
-      "heart_rate_bpm": 70.0,
+      "heart_rate_bpm": 70,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 160.0,
-      "qrs_duration_ms": 88.0,
+      "pr_interval_ms": 160,
+      "qrs_duration_ms": 88,
       "qrs_wide": false,
-      "qt_ms": 440.0,
+      "qt_ms": 440,
       "qtc_ms": 475.7,
       "qtc_prolonged": true,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Normal Sinus Rhythm (NSR)\n- Confidence: 80%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 70 bpm\n- RR intervals (ms): 849, 865, 849, 865, 849\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 160 ms\n- QRS duration: 88 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 440 ms\n- QTc (Bazett): 476 ms\n- QTc prolonged: True\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [849.1, 865.1, 849.1, 865.1, 849.1],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 160.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 88.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 475.7,\n    \"measured_qt_ms\": [440.0],\n    \"prolonged\": true,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -1589,26 +1556,25 @@
         563.6,
         547.6
       ],
-      "heart_rate_bpm": 108.0,
+      "heart_rate_bpm": 108,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 160.0,
-      "qrs_duration_ms": 92.0,
+      "pr_interval_ms": 160,
+      "qrs_duration_ms": 92,
       "qrs_wide": false,
-      "qt_ms": 340.0,
+      "qt_ms": 340,
       "qtc_ms": 456.8,
       "qtc_prolonged": true,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Sinus Tachycardia (ST)\n- Confidence: 75%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 108 bpm\n- RR intervals (ms): 548, 564, 548, 564, 548\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 160 ms\n- QRS duration: 92 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 340 ms\n- QTc (Bazett): 457 ms\n- QTc prolonged: True\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [547.6, 563.6, 547.6, 563.6, 547.6],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 160.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 92.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 456.8,\n    \"measured_qt_ms\": [340.0],\n    \"prolonged\": true,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -1637,26 +1603,25 @@
         529.7,
         513.7
       ],
-      "heart_rate_bpm": 115.0,
+      "heart_rate_bpm": 115,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 160.0,
-      "qrs_duration_ms": 110.0,
+      "pr_interval_ms": 160,
+      "qrs_duration_ms": 110,
       "qrs_wide": false,
-      "qt_ms": 320.0,
+      "qt_ms": 320,
       "qtc_ms": 443.7,
       "qtc_prolonged": true,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Sinus Tachycardia (ST)\n- Confidence: 75%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 115 bpm\n- RR intervals (ms): 514, 530, 514, 530, 514\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 160 ms\n- QRS duration: 110 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 320 ms\n- QTc (Bazett): 444 ms\n- QTc prolonged: True\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [513.7, 529.7, 513.7, 529.7, 513.7],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 160.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 110.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 443.7,\n    \"measured_qt_ms\": [320.0],\n    \"prolonged\": true,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -1685,14 +1650,14 @@
         841.3,
         825.3
       ],
-      "heart_rate_bpm": 72.0,
+      "heart_rate_bpm": 72,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 160.0,
-      "qrs_duration_ms": 100.0,
+      "pr_interval_ms": 160,
+      "qrs_duration_ms": 100,
       "qrs_wide": false,
-      "qt_ms": 380.0,
+      "qt_ms": 380,
       "qtc_ms": 416.7,
       "qtc_prolonged": false,
       "st": {
@@ -1704,7 +1669,6 @@
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Normal Sinus Rhythm (NSR)\n- Confidence: 80%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 72 bpm\n- RR intervals (ms): 825, 841, 825, 841, 825\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 160 ms\n- QRS duration: 100 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 380 ms\n- QTc (Bazett): 417 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  II: depressed (-0.12 mV)\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [825.3, 841.3, 825.3, 841.3, 825.3],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 160.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 100.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 416.7,\n    \"measured_qt_ms\": [380.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -1733,26 +1697,25 @@
         689.8,
         673.8
       ],
-      "heart_rate_bpm": 88.0,
+      "heart_rate_bpm": 88,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 160.0,
-      "qrs_duration_ms": 92.0,
+      "pr_interval_ms": 160,
+      "qrs_duration_ms": 92,
       "qrs_wide": false,
-      "qt_ms": 360.0,
+      "qt_ms": 360,
       "qtc_ms": 436.5,
       "qtc_prolonged": false,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Normal Sinus Rhythm (NSR)\n- Confidence: 80%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 88 bpm\n- RR intervals (ms): 674, 690, 674, 690, 674\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 160 ms\n- QRS duration: 92 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 360 ms\n- QTc (Bazett): 436 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [673.8, 689.8, 673.8, 689.8, 673.8],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 160.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 92.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 436.5,\n    \"measured_qt_ms\": [360.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -1781,26 +1744,25 @@
         860.1,
         854.1
       ],
-      "heart_rate_bpm": 70.0,
+      "heart_rate_bpm": 70,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 160.0,
-      "qrs_duration_ms": 92.0,
+      "pr_interval_ms": 160,
+      "qrs_duration_ms": 92,
       "qrs_wide": false,
-      "qt_ms": 380.0,
+      "qt_ms": 380,
       "qtc_ms": 410.6,
       "qtc_prolonged": false,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Normal Sinus Rhythm (NSR)\n- Confidence: 80%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 70 bpm\n- RR intervals (ms): 854, 860, 854, 860, 854\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 160 ms\n- QRS duration: 92 ms\n- QRS wide (\u2265120ms): False\n- QT interval: 380 ms\n- QTc (Bazett): 411 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [854.1, 860.1, 854.1, 860.1, 854.1],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 160.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 92.0,\n    \"measured_beats_ms\": [],\n    \"wide\": false,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 410.6,\n    \"measured_qt_ms\": [380.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -1829,26 +1791,25 @@
         860.1,
         854.1
       ],
-      "heart_rate_bpm": 70.0,
+      "heart_rate_bpm": 70,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": false,
       "pr_interval_ms": null,
-      "qrs_duration_ms": 140.0,
+      "qrs_duration_ms": 140,
       "qrs_wide": true,
-      "qt_ms": 480.0,
+      "qt_ms": 480,
       "qtc_ms": 518.7,
       "qtc_prolonged": true,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Normal Sinus Rhythm (NSR)\n- Confidence: 80%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 70 bpm\n- RR intervals (ms): 854, 860, 854, 860, 854\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: False\n- PR interval: not measurable\n- QRS duration: 140 ms\n- QRS wide (\u2265120ms): True\n- QT interval: 480 ms\n- QTc (Bazett): 519 ms\n- QTc prolonged: True\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [854.1, 860.1, 854.1, 860.1, 854.1],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": null,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 140.0,\n    \"measured_beats_ms\": [],\n    \"wide\": true,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 518.7,\n    \"measured_qt_ms\": [480.0],\n    \"prolonged\": true,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -1877,26 +1838,25 @@
         860.1,
         854.1
       ],
-      "heart_rate_bpm": 70.0,
+      "heart_rate_bpm": 70,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 160.0,
-      "qrs_duration_ms": 140.0,
+      "pr_interval_ms": 160,
+      "qrs_duration_ms": 140,
       "qrs_wide": true,
-      "qt_ms": 480.0,
+      "qt_ms": 480,
       "qtc_ms": 518.7,
       "qtc_prolonged": true,
       "st": {
         "II": {
           "elevation": false,
           "depression": false,
-          "mean_mv": 0.0
+          "mean_mv": 0
         }
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Normal Sinus Rhythm (NSR)\n- Confidence: 80%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 70 bpm\n- RR intervals (ms): 854, 860, 854, 860, 854\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 160 ms\n- QRS duration: 140 ms\n- QRS wide (\u2265120ms): True\n- QT interval: 480 ms\n- QTc (Bazett): 519 ms\n- QTc prolonged: True\n\nST SEGMENT (per lead):\n  No significant ST deviation detected\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [854.1, 860.1, 854.1, 860.1, 854.1],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 160.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 140.0,\n    \"measured_beats_ms\": [],\n    \"wide\": true,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 518.7,\n    \"measured_qt_ms\": [480.0],\n    \"prolonged\": true,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"
@@ -1925,14 +1885,14 @@
         890.4,
         874.4
       ],
-      "heart_rate_bpm": 68.0,
+      "heart_rate_bpm": 68,
       "regularity": "regular",
       "num_beats": 6,
       "p_waves_present": true,
-      "pr_interval_ms": 180.0,
-      "qrs_duration_ms": 120.0,
+      "pr_interval_ms": 180,
+      "qrs_duration_ms": 120,
       "qrs_wide": true,
-      "qt_ms": 380.0,
+      "qt_ms": 380,
       "qtc_ms": 404.9,
       "qtc_prolonged": false,
       "st": {
@@ -1944,7 +1904,6 @@
       },
       "rhythm_lead": "II"
     },
-    "claude_prompt": "You are an expert cardiologist reviewing an ECG that has been digitized and algorithmically analyzed. The signal measurements below are derived from the actual waveform \u2014 treat them as accurate. Do NOT re-estimate these values visually.\nSIGNAL PIPELINE PRE-CLASSIFICATION (PhysioNet-compatible detector):\n- Primary rhythm: Normal Sinus Rhythm (NSR)\n- Confidence: 80%\n- Notes: derived from pre-computed measurements (no live signal)\nYou may confirm or override this classification based on morphology and context.\n\n\nMEASURED SIGNAL DATA (from clinically-validated):\n- Heart rate: 68 bpm\n- RR intervals (ms): 874, 890, 874, 890, 874\n- Rhythm regularity: regular\n- Beats detected: 6\n- P waves present: True\n- PR interval: 180 ms\n- QRS duration: 120 ms\n- QRS wide (\u2265120ms): True\n- QT interval: 380 ms\n- QTc (Bazett): 405 ms\n- QTc prolonged: False\n\nST SEGMENT (per lead):\n  II: elevated (+0.22 mV)\n\nUsing these measurements and the ECG image for morphology context (P-wave axis, QRS shape, T-wave polarity, bundle branch patterns), provide your interpretation as valid JSON matching EXACTLY this schema \u2014 no markdown, no extra text:\n\n{\n  \"rate\": {\n    \"bpm\": <number>,\n    \"rr_intervals_ms\": [874.4, 890.4, 874.4, 890.4, 874.4],\n    \"category\": \"<bradycardia|normal|tachycardia>\",\n    \"method\": \"signal-derived\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"rhythm\": {\n    \"regularity\": \"<regular|regularly_irregular|irregularly_irregular>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"p_waves\": {\n    \"present\": <true|false>,\n    \"morphology\": \"<description or null>\",\n    \"ratio\": \"<e.g. '1:1' or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"pr_interval\": {\n    \"ms\": 180.0,\n    \"measured_beats\": [],\n    \"normal\": <true|false|null>,\n    \"fixed\": <true|false|null>,\n    \"confidence\": <0.0-1.0>\n  },\n  \"qrs\": {\n    \"duration_ms\": 120.0,\n    \"measured_beats_ms\": [],\n    \"wide\": true,\n    \"morphology\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"st_segment\": {\n    \"elevation\": <true|false>,\n    \"depression\": <true|false>,\n    \"details\": \"<description or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"t_waves\": {\n    \"morphology\": \"<upright|inverted|peaked|flat|biphasic or null>\",\n    \"confidence\": <0.0-1.0>\n  },\n  \"qtc\": {\n    \"ms\": 404.9,\n    \"measured_qt_ms\": [380.0],\n    \"prolonged\": false,\n    \"confidence\": <0.0-1.0>\n  },\n  \"primary_rhythm\": \"<rhythm name>\",\n  \"overall_confidence\": <0.0-1.0>,\n  \"differentials\": [\"<rhythm>\", \"<rhythm>\"],\n  \"explanation\": \"<2-4 sentence educational explanation grounded in the measured values>\",\n  \"image_quality\": \"<good|fair|poor>\",\n  \"caveats\": \"<limitations or null>\"\n}",
     "digitizer_method": "clinically-validated",
     "leads_available": [
       "II"

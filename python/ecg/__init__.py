@@ -37,9 +37,6 @@ from ecg.measure import (
 # Pipeline
 from ecg.pipeline import run_pipeline_classification
 
-# Prompt
-from ecg.prompt import build_claude_prompt
-
 # Utils
 from ecg.utils import NumpyEncoder, _dumps
 
@@ -70,8 +67,6 @@ __all__ = [
     "_st_analysis",
     # Pipeline
     "run_pipeline_classification",
-    # Prompt
-    "build_claude_prompt",
     # Utils
     "NumpyEncoder",
     "_dumps",

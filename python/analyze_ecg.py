@@ -22,7 +22,6 @@ from ecg import (
     SignalMeasurements,
     _dumps,
     analyze_signal,
-    build_claude_prompt,
     digitize_image,
     run_pipeline_classification,
 )
@@ -40,7 +39,6 @@ __all__ = [
     "digitize_image",
     "analyze_signal",
     "run_pipeline_classification",
-    "build_claude_prompt",
     "NumpyEncoder",
     "_dumps",
     "PipelineClassification",
@@ -74,14 +72,9 @@ def main() -> None:
         pipeline_classification = run_pipeline_classification(
             digitized["signals"], digitized["sampling_rate"]
         )
-        prompt = build_claude_prompt(
-            measurements, digitized["method"], pipeline_classification
-        )
-
         result: dict[str, object] = {
             "success": True,
             "measurements": measurements,
-            "claude_prompt": prompt,
             "digitizer_method": digitized["method"],
             "leads_available": list(digitized["signals"].keys()),
             "sampling_rate": digitized["sampling_rate"],

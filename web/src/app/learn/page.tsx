@@ -12,7 +12,7 @@ const LEVEL_CONFIG: Record<
     borderColor: "border-emerald-200 hover:border-emerald-400",
     icon: "○",
     description:
-      "EKG fundamentals: waveforms, intervals, rate calculation, and a 10-step systematic reading method.",
+      "EKG fundamentals: waveforms, intervals, rate calculation, and the 17-step systematic reading checklist.",
   },
   intermediate: {
     label: "Intermediate",
@@ -65,7 +65,7 @@ export default function LearnIndexPage() {
         </svg>
         <p className="text-sm text-teal-900">
           <strong>Core principle:</strong> Read every EKG the same way, every time. This curriculum
-          teaches a 10-step systematic method and builds your arrhythmia recognition around it.
+          teaches the same 17-step checklist used in the canonical docs and builds arrhythmia recognition around it.
         </p>
       </div>
 

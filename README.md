@@ -1,6 +1,6 @@
 # EKG Trainer
 
-A full-stack EKG teaching platform combining a structured MDX lesson curriculum with an interactive strip viewer and AI-assisted interpretation.
+A full-stack EKG teaching platform combining a structured MDX lesson curriculum with an interactive strip viewer and signal-pipeline interpretation.
 
 ## What it is
 
@@ -89,7 +89,6 @@ python3 scripts/generate_ptbxl_ekgs.py --render-style physionet --remote
 
 Set these environment variables in Vercel (or your hosting provider):
 
-- `ANTHROPIC_API_KEY`: required for AI interpretation.
 - `PYTHON_SERVICE_URL`: URL to the Python service (e.g. your Railway app).
 - `PYTHON_API_KEY`: shared secret used to authenticate calls from the web app to the Python service.
 
@@ -102,7 +101,6 @@ Set these environment variables in Railway (or wherever you deploy the Python se
 - `MAX_IMAGE_BYTES`: max decoded upload size in bytes (default: 4 MiB).
 - `RATE_MAX_REQUESTS`: max requests per IP per window (default: 60).
 - `RATE_WINDOW_S`: rate limit window in seconds (default: 3600).
-- `INCLUDE_CLAUDE_PROMPT`: set to `true` to include `claude_prompt` in responses (default: off).
 
 Notes:
 

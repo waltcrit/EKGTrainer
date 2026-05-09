@@ -54,8 +54,8 @@ PIPELINE_RHYTHMS: dict[str, list[str]] = {
 }
 # Rhythms the pipeline MUST correctly classify.
 # Diagnoses not in this set (STEMI, BBB, AVB, strain, pacing, junctional,
-# idioventricular, Brugada, PE, sinus arrhythmia) are detected by Claude
-# using morphology; a wrong pipeline label is informational, not a failure.
+# idioventricular, Brugada, PE, sinus arrhythmia) are outside rhythm-label scope;
+# a wrong pipeline label for those is informational, not a failure.
 PIPELINE_MUST_MATCH: set[str] = {
     "atrial fibrillation", "afib",
     "atrial flutter",
@@ -100,7 +100,7 @@ def pipeline_matches_expected(display_name: str | None, expected_rhythm: str) ->
     Only flag as FAIL when the expected rhythm is something the pipeline
     is REQUIRED to detect correctly (defined in PIPELINE_MUST_MATCH).
     Non-rhythm diagnoses (STEMI, BBB, V block, strain, pacing, etc.) are
-    excluded — Claude handles them via morphology.
+    excluded — handled outside rhythm classification scope.
     """
     erh = expected_rhythm.lower()
     # Skip check if this rhythm is outside pipeline scope

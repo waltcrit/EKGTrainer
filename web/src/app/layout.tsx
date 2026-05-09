@@ -16,7 +16,7 @@ const fraunces = Fraunces({
 
 export const metadata: Metadata = {
   title: "EKG Academy",
-  description: "Rhythm recognition · 12-lead interpretation · AI-powered analysis",
+  description: "Rhythm recognition · 12-lead interpretation · signal-based analysis",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

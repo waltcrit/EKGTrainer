@@ -48,5 +48,6 @@
     "**/.*"
   ],
   "cursorpyright.analysis.typeCheckingMode": "basic",
-  "cursorpyright.analysis.useLibraryCodeForTypes": false
+  "cursorpyright.analysis.useLibraryCodeForTypes": false,
+  "cursor.composer.usageSummaryDisplay": "always"
 }

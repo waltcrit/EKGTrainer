@@ -55,7 +55,7 @@ export interface QTcAnalysis {
 
 /**
  * Result of the PhysioNet-compatible signal pipeline pre-classification.
- * Included in the API response alongside the Claude interpretation.
+ * Included in the `/api/analyze` response when available.
  */
 export interface PipelineClassification {
   /** Canonical arrhythmia label (e.g. "AF", "NSR") */

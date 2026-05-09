@@ -1,5 +1,5 @@
 /**
- * Canonical 10-step systematic EKG reading method.
+ * Canonical systematic EKG read — mirrors docs/analysis_steps.md (17 steps).
  * Used in the "Systematic Approach" lesson and in the live Trainer checklist.
  */
 
@@ -12,122 +12,124 @@ export interface SystematicStep {
 
 export const SYSTEMATIC_STEPS: SystematicStep[] = [
   {
-    id: "basics",
-    title: "Confirm Basics",
-    description: "Verify patient identity, clinical context, and technical quality.",
-    subpoints: [
-      "Correct patient name and date",
-      "Leads properly placed (no reversals)",
-      "Adequate signal (10 mm/mV calibration, 25 mm/s paper speed)",
-      "Minimize artifact before interpreting",
-    ],
+    id: "patient",
+    title: "Confirm correct patient",
+    description: "Wrong tracing or chart pairing invalidates everything downstream.",
+  },
+  {
+    id: "prior_ekgs",
+    title: "Check prior EKGs",
+    description: "New change suggests acute pathology; stable change suggests baseline or chronic findings.",
   },
   {
     id: "rate",
-    title: "Rate",
-    description: "Calculate ventricular rate (and atrial rate if different).",
-    subpoints: [
-      "Regular rhythm: 300 ÷ number of large boxes between R–R",
-      "Irregular rhythm: count QRS complexes in 10-second strip × 6",
-      "Normal: 60–100 bpm; Brady < 60; Tachy > 100",
-    ],
+    title: "Assess rate",
+    description:
+      "Fast → tachycardia spectrum, flutter/AF/VT, or physiologic stress; Slow → sinus brady, AV block, meds, metabolic causes.",
   },
   {
     id: "rhythm",
-    title: "Rhythm",
-    description: "Determine if the rhythm is regular, regularly irregular, or irregularly irregular.",
-    subpoints: [
-      "March out R–R intervals with calipers",
-      "Note: regularly irregular suggests a pattern (e.g., bigeminy, Wenckebach)",
-      "Chaotic/irregularly irregular → think atrial fibrillation",
-    ],
+    title: "Assess rhythm",
+    description:
+      "Regularly irregular vs irregularly irregular narrows AV block patterns, flutter with variable block, AF/MAT, ectopy.",
+  },
+  {
+    id: "p_before_qrs",
+    title: "Check P before each QRS",
+    description:
+      "Missing vs extra vs disconnected P waves — AF, junctional rhythm, AV block, flutter.",
+  },
+  {
+    id: "intervals",
+    title: "Measure intervals",
+    description:
+      "PR long/short, QRS wide/narrow, QT long — AV nodal disease, pre-excitation, BBB/VT/hyperK, torsades risk.",
   },
   {
     id: "p_waves",
-    title: "P Waves",
-    description: "Assess presence, morphology, axis, and relationship to QRS.",
-    subpoints: [
-      "Is a P wave present before every QRS?",
-      "Are all P waves identical in a given lead?",
-      "Upright in I and II → normal sinus origin",
-      "P:QRS ratio — more P waves than QRS = high-degree block",
-    ],
+    title: "Evaluate P waves",
+    description:
+      "Abnormal P → atrial enlargement or ectopic atrial rhythm; inverted inferior P → junctional/low-atrial origin.",
   },
   {
-    id: "pr_interval",
-    title: "PR Interval",
-    description: "Measure from start of P to start of QRS; normal 120–200 ms.",
-    subpoints: [
-      "Short PR (< 120 ms): pre-excitation, junctional, or posterior atrial focus",
-      "Long PR (> 200 ms): 1st-degree AV block",
-      "Progressively lengthening PR → Mobitz I (Wenckebach)",
-      "Fixed PR with dropped beats → Mobitz II",
-    ],
+    id: "axis",
+    title: "Evaluate axis",
+    description:
+      "LAD/RAD/extreme — bundle hemiblocks, LVH/RVH, infarction, lung disease, lead reversal, severe conduction disease.",
   },
   {
-    id: "qrs",
-    title: "QRS Complex",
-    description: "Measure duration; assess morphology and axis.",
-    subpoints: [
-      "Normal duration ≤ 120 ms (3 small boxes)",
-      "Wide QRS (> 120 ms): BBB, aberrancy, ventricular rhythm, hyperkalemia",
-      "Delta waves → pre-excitation (WPW)",
-      "Axis: normal −30° to +90°; LAD or RAD suggests pathology",
-    ],
+    id: "precordial_progression",
+    title: "Check precordial progression",
+    description:
+      "Poor progression → anterior MI, lead misplacement, LBBB, RVH, COPD, normal variant.",
   },
   {
-    id: "st_t",
-    title: "ST Segments & T Waves",
-    description: "Inspect for elevation, depression, or T-wave abnormalities.",
-    subpoints: [
-      "ST elevation ≥ 1 mm in ≥2 contiguous leads → STEMI territory",
-      "ST depression / T-wave inversions → ischemia, LVH strain, BBB",
-      "Diffuse concave ST elevation + PR depression → pericarditis",
-      "Peaked T waves → hyperkalemia; flattened / inverted → multiple causes",
-    ],
+    id: "st_segments",
+    title: "Check ST segments",
+    description:
+      "Anchor STE/STD at the J-point. STE vs STD — STEMI injury vs ischemia, reciprocal change, digoxin, strain, mimics.",
   },
   {
-    id: "qt",
-    title: "QT Interval",
-    description: "Measure QT and calculate QTc; normal QTc ≤ 440 ms (men) / ≤ 460 ms (women).",
-    subpoints: [
-      "Measure from start of QRS to end of T wave",
-      "Bazett formula: QTc = QT / √(R–R in seconds)",
-      "Prolonged QTc → risk of torsades de pointes",
-      "Short QTc (< 340 ms): hypercalcemia, digitalis, short QT syndrome",
-    ],
+    id: "t_waves",
+    title: "Check T waves",
+    description:
+      "Inversion, peaked T (hyperK), flat/biphasic — ischemia, strain, BBB, PE, electrolytes, Wellens-type morphology.",
   },
   {
-    id: "compare",
-    title: "Compare with Prior",
-    description: "Always compare to the most recent previous EKG when available.",
-    subpoints: [
-      "New ST changes are more significant than chronic ones",
-      "New BBB or axis shift can indicate acute pathology",
-      "Rate or rhythm change from baseline may explain symptoms",
-    ],
+    id: "q_waves",
+    title: "Check Q waves",
+    description: "Pathologic Q — prior MI/scar, cardiomyopathy, lead misplacement.",
   },
   {
-    id: "synthesize",
-    title: "Synthesize",
-    description: "Name the rhythm, state key findings, and correlate with clinical context.",
-    subpoints: [
-      "State the primary rhythm (e.g., 'Sinus tachycardia at 110 bpm')",
-      "List additional findings in order of clinical urgency",
-      "Correlate with symptoms, vitals, and history",
-      "State a plan: compare, repeat, treat, or consult",
-    ],
+    id: "ischemia_acs",
+    title: "Ischemia / ACS patterns",
+    description:
+      "Cross-lead patterns — Wellens, de Winter, hyperacute MI; modified Sgarbossa (primary) vs classic Sgarbossa, Barcelona; adjunct to guidelines.",
+  },
+  {
+    id: "strain",
+    title: "Strain",
+    description:
+      "LVH strain vs lateral ischemia — ST/T discordant vs concordant ST depression with QRS.",
+  },
+  {
+    id: "pulmonary_pattern",
+    title: "Pulmonary disease pattern",
+    description:
+      "PE (e.g. S1Q3T3, tach, new RBBB/RAD) and chronic lung pattern — RAD, P pulmonale, low voltage, poor progression.",
+  },
+  {
+    id: "pericarditis_vs_mimic",
+    title: "Pericarditis vs mimic",
+    description:
+      "Diffuse STE + Spodick sign vs early repolarization — concave J-point STE, fishhook J.",
+  },
+  {
+    id: "channelopathy_structural",
+    title: "Channelopathy / structural",
+    description:
+      "Brugada type 1 coved — ARVC with epsilon wave (terminal notch V1–V3).",
   },
 ];
 
 export type StepId =
-  | "basics"
+  | "patient"
+  | "prior_ekgs"
   | "rate"
   | "rhythm"
+  | "p_before_qrs"
+  | "intervals"
   | "p_waves"
-  | "pr_interval"
-  | "qrs"
-  | "st_t"
-  | "qt"
-  | "compare"
-  | "synthesize";
+  | "axis"
+  | "precordial_progression"
+  | "st_segments"
+  | "t_waves"
+  | "q_waves"
+  | "ischemia_acs"
+  | "strain"
+  | "pulmonary_pattern"
+  | "pericarditis_vs_mimic"
+  | "channelopathy_structural";
+
+/** Same order as `SYSTEMATIC_STEPS` — aligned with the `StepId` union. */
+export const SYSTEMATIC_STEP_IDS: StepId[] = SYSTEMATIC_STEPS.map((s) => s.id as StepId);

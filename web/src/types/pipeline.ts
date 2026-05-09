@@ -30,7 +30,6 @@ export interface SignalMeasurements {
 
 export interface PipelineData {
   measurements: Record<string, unknown>;
-  claude_prompt: string;
   digitizer_method: string;
   leads_available: string[];
   sampling_rate: number;

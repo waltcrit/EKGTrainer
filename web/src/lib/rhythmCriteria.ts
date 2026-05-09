@@ -1,7 +1,7 @@
 /**
  * AHA/ACC rhythm criteria registry.
  * Keyed by the exact `rhythm` string values used in cases.json.
- * All content transcribed from AHA_ACC_RHYTHM_DEFINITIONS.md.
+ * All content transcribed from docs/AHA_ACC_RHYTHM_DEFINITIONS.md.
  */
 
 export interface RhythmCriteria {

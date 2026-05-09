@@ -28,7 +28,7 @@ const LEVEL_LABELS: Record<Level, string> = {
 };
 
 const LEVELS: Level[] = ["beginner", "intermediate", "advanced"];
-const BEGINNER_PIN_LAST_SLUG = "07-systematic-approach";
+const BEGINNER_PIN_LAST_SLUG = "15-systematic-approach";
 
 export function getLessonsForLevel(level: Level): LessonMeta[] {
   const dir = path.join(process.cwd(), "content", "learn", level);

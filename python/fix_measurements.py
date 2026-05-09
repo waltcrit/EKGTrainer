@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Manually override measurements with clinically accurate values for all training cases,
-then regenerate measurements.json using the existing build_claude_prompt function.
+then regenerate web/src/data/measurements.json.
 
 Run from project root:
     python python/fix_measurements.py
@@ -21,7 +21,6 @@ from analyze_ecg import (
     PipelineClassification,
     STResults,
     SignalMeasurements,
-    build_claude_prompt,
 )
 
 # Arrhythmia pipeline — optional; produces pipeline_classification for pre-computed cases
@@ -60,11 +59,6 @@ def st_depression(mv: float = -0.15) -> STResults:
 # Clinically accurate measurements, keyed by case ID
 # Values sourced from standard cardiology references.
 # ---------------------------------------------------------------------------
-# Keys required by build_claude_prompt:
-#   rr_intervals_ms, heart_rate_bpm, regularity, num_beats,
-#   p_waves_present, pr_interval_ms, qrs_duration_ms, qrs_wide,
-#   qt_ms, qtc_ms, qtc_prolonged, st, rhythm_lead, r_peaks
-
 def make(
     hr: float,
     rr_list: list[float],
@@ -403,11 +397,9 @@ def main() -> None:
     for case_id, measurements in CORRECTIONS.items():
         digitizer_method = "clinically-validated"
         pipeline_classification = _pipeline_from_measurements(measurements)
-        prompt = build_claude_prompt(measurements, digitizer_method, pipeline_classification)
 
         existing[case_id] = {
             "measurements": measurements,
-            "claude_prompt": prompt,
             "digitizer_method": digitizer_method,
             "leads_available": ["II"],
             "sampling_rate": 300,

@@ -1,0 +1,83 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`analyze golden — nsr_01 > matches snapshot 1`] = `
+{
+  "caveats": "Digitized via clinically-validated at 300 Hz. Lead used for rhythm: II. Deep model unavailable - used signal-rule classifier.",
+  "clinical_impression": "Normal Sinus Rhythm",
+  "differentials": [],
+  "explanation": "1) Rate: approximately 72 bpm from detected R-R intervals. 2) Rhythm: regular. 3) P waves: present. 4) PR interval: 160 ms. 5) QRS duration: 88 ms (narrow). 6) QRS morphology: Narrow QRS — no bundle branch block pattern detected. 7) ST segment: No significant ST shift detected. 8) T waves: no definitive morphology classification from this signal-only pass. 9) QTc: 417 ms. 10) Impression: Normal Sinus Rhythm (signal-rule-based pipeline).",
+  "image_quality": "good",
+  "overall_confidence": 0.8,
+  "p_waves": {
+    "confidence": 0.7200000000000001,
+    "morphology": "Detected on rhythm lead",
+    "present": true,
+    "ratio": "1:1 (inferred)",
+  },
+  "pipeline_classification": {
+    "beat_labels": [],
+    "confidence": 0.8,
+    "display_name": "Normal Sinus Rhythm",
+    "notes": [
+      "derived from pre-computed measurements (no live signal)",
+    ],
+    "primary_rhythm": "NSR",
+    "strip_label": "NSR",
+    "used_deep_learning": false,
+  },
+  "pr_interval": {
+    "confidence": 0.7000000000000001,
+    "fixed": true,
+    "measured_beats": [
+      160,
+    ],
+    "ms": 160,
+    "normal": true,
+  },
+  "primary_rhythm": "Normal Sinus Rhythm",
+  "qrs": {
+    "confidence": 0.74,
+    "duration_ms": 88,
+    "measured_beats_ms": [
+      88,
+    ],
+    "morphology": "Narrow — no bundle branch block pattern detected",
+    "wide": false,
+  },
+  "qtc": {
+    "confidence": 0.68,
+    "measured_qt_ms": [
+      380,
+    ],
+    "ms": 417,
+    "prolonged": false,
+  },
+  "rate": {
+    "bpm": 72,
+    "category": "normal",
+    "confidence": 0.8,
+    "method": "PhysioNet signal pipeline",
+    "rr_intervals_ms": [
+      825,
+      841,
+      825,
+      841,
+      825,
+    ],
+  },
+  "rhythm": {
+    "confidence": 0.8,
+    "regularity": "regular",
+  },
+  "st_segment": {
+    "confidence": 0.68,
+    "depression": false,
+    "details": null,
+    "elevation": false,
+  },
+  "t_waves": {
+    "confidence": 0.4,
+    "morphology": "Not robustly classified by current signal pipeline",
+  },
+}
+`;

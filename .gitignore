@@ -12,5 +12,12 @@ web/.next/
 web/node_modules/
 web/.env*.local
 
+# Playwright / E2E
+web/test-results/
+web/playwright-report/
+
+# Local backups (do not publish)
+Dockerfile.bak
+
 # OS
 .DS_Store

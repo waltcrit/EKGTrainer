@@ -12,21 +12,25 @@ export default function AboutPage() {
         <div className="px-5 py-4 flex flex-col gap-3">
           <p className="text-sm text-[var(--academy-ink)] leading-relaxed">
             EKG Academy is an educational tool for learning systematic ECG interpretation. It
-            presents rhythm strips and 12-lead tracings in quiz and reference modes, backed by
-            AI-powered analysis using Claude. It is intended for medical students,
-            residents, nurses, and paramedics — not for clinical diagnosis.
+            presents rhythm strips and 12-lead tracings in quiz and reference modes, with
+            signal-derived measurements and rule-based summaries. It is intended for medical
+            students, residents, nurses, and paramedics — not for clinical diagnosis.
           </p>
           <p className="text-sm text-[var(--academy-ink)] leading-relaxed">
-            The systematic framework used throughout follows the standard 10-step approach: confirm
-            basics, rate, rhythm, P waves, PR interval, QRS complex, ST segments and T waves, QT
-            interval, compare with prior, and synthesize.
+            The learner-facing checklist follows the same{" "}
+            <strong>17-step</strong> sequence documented in{" "}
+            <code className="text-[11px] bg-slate-100 px-1 rounded">docs/analysis_steps.md</code>
+            : patient context and priors, rate and rhythm, P–QRS relationships, intervals, then P,
+            axis, precordial progression, ST (J-point anchored), T and Q waves, followed by
+            cross-lead syndromes (ischemia patterns, strain, pulmonary and pericarditis mimics,
+            channelopathy/structural clues).
           </p>
           <p className="text-sm text-[var(--academy-ink)] leading-relaxed">
             ECG analysis uses a signal processing pipeline: uploaded images are digitized to
             extract waveform data, then BioSPPy measures intervals and detects features
-            algorithmically. These measurements are passed to Claude, which provides the
-            plain-language interpretation. This approach is significantly more accurate than
-            pure image-based AI analysis.
+            algorithmically. A PhysioNet-style classifier suggests rhythm labels where available;
+            the app assembles a structured, plain-language report from those measurements — without
+            generative AI in the loop.
           </p>
         </div>
       </div>
@@ -180,27 +184,6 @@ export default function AboutPage() {
             </p>
           </div>
 
-          {/* Claude / Anthropic */}
-          <div className="rounded-lg bg-white/95 border border-emerald-100 px-4 py-3 flex flex-col gap-1">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--academy-muted)] mb-1">
-              Claude — AI Interpretation
-            </p>
-            <p className="text-xs text-[var(--academy-ink)] leading-relaxed">
-              Anthropic. Claude (claude-haiku-4-5). 2024.{" "}
-              <a
-                href="https://www.anthropic.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-emerald-700 hover:text-emerald-900 underline underline-offset-2"
-              >
-                anthropic.com
-              </a>
-            </p>
-            <p className="text-xs text-[var(--academy-muted)] leading-relaxed">
-              Provides plain-language rhythm interpretation guided by signal-derived measurements.
-            </p>
-          </div>
-
         </div>
       </div>
 
@@ -214,8 +197,8 @@ export default function AboutPage() {
           <p className="text-xs text-amber-700 leading-relaxed">
             This application is intended solely for educational purposes. It is not a medical
             device and must not be used for clinical diagnosis, patient care, or any other
-            clinical decision-making. AI-generated analysis is provided for learning purposes only
-            and may be incorrect.
+            clinical decision-making. Automated and algorithmic summaries are provided for learning
+            purposes only and may be incorrect.
           </p>
         </div>
       </div>

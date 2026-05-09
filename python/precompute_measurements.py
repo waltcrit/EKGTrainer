@@ -19,7 +19,7 @@ from typing import cast
 
 # Allow importing from the same package
 sys.path.insert(0, str(Path(__file__).parent))
-from analyze_ecg import NumpyEncoder, analyze_signal, build_claude_prompt, digitize_image
+from analyze_ecg import NumpyEncoder, analyze_signal, digitize_image
 
 
 def main() -> None:
@@ -53,11 +53,9 @@ def main() -> None:
         try:
             digitized    = digitize_image(image_path)
             measurements = analyze_signal(digitized["signals"], digitized["sampling_rate"])
-            prompt       = build_claude_prompt(measurements, digitized["method"])
 
             results[case_id] = {
                 "measurements":      measurements,
-                "claude_prompt":     prompt,
                 "digitizer_method":  digitized["method"],
                 "leads_available":   list(digitized["signals"].keys()),
                 "sampling_rate":     digitized["sampling_rate"],

@@ -4,6 +4,8 @@
 
 This document provides comprehensive definitions of all EKG waveform components, their physiologic basis, normal characteristics, and common abnormalities. Use this as the foundational reference for understanding ECG anatomy and interpretation.
 
+**Curriculum:** Supports **beginner, intermediate, and advanced** content together with [AHA/ACC rhythm definitions](AHA_ACC_RHYTHM_DEFINITIONS.md) and the numbered checklist in [EKG rhythm analysis steps](analysis_steps.md). Link learners to **specific sections** of this file (e.g. grid basics vs ST/T abnormalities) per objective rather than assigning the whole document to one level only.
+
 ---
 
 ## NORMAL EKG TRACING WITH LABELED COMPONENTS
@@ -246,8 +248,13 @@ This document provides comprehensive definitions of all EKG waveform components,
 **Normal Characteristics:**
 
 - Should be at or very near the baseline
-- Reference point for measuring ST displacement
+- **Universal measurement landmark:** ST elevation and depression for STEMI/NSTEMI criteria and most published rules (including Sgarbossa-type algorithms) are gauged **vertically from the PR segment baseline to the J-point**, not from the nadir of an S wave nor from the midpoint of the ST segment unless explicitly stated.
 - Ideally isoelectric in normal ECG
+
+**Measurement nuance:**
+
+- **J-point vs mid-ST:** Upsloping ST segments may look less alarming at the J-point than further along the segment; report morphology (concave vs convex) **starting from the J-point** and how the segment evolves toward the T wave.
+- **Slurred takeoff:** When QRS merges smoothly into ST (some normal variants, LBBB, paced rhythms), locate the J-point at the last clear inflection of ventricular depolarization before the ST limb—avoid measuring purely “high ST” without fixing the J-point first.
 
 **Abnormalities:**
 

@@ -8,10 +8,10 @@
     "start": "next start",
     "lint": "eslint src/",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0",
     "gray-matter": "^4.0.3",
     "katex": "^0.16.45",
     "next": "^15.5.15",
@@ -24,6 +24,7 @@
     "unist-util-visit": "^5.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
     "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^20",

@@ -138,9 +138,9 @@ function LandingPage({ onEnter, caseCount }: { onEnter: (tab: Tab) => void; case
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-[var(--academy-ink)] text-sm">AI Analysis</p>
+              <p className="font-semibold text-[var(--academy-ink)] text-sm">Analyze</p>
               <p className="text-xs text-[var(--academy-muted)] mt-0.5">
-                Upload any EKG · Claude applies the 10-step framework
+                Upload any EKG · Signal pipeline applies the systematic interpretation framework
               </p>
             </div>
             <svg className="w-4 h-4 text-[var(--academy-muted)] group-hover:text-teal-400 transition-colors shrink-0"
@@ -165,7 +165,7 @@ function LandingPage({ onEnter, caseCount }: { onEnter: (tab: Tab) => void; case
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-slate-900 text-sm">EKG Academy</p>
               <p className="text-xs text-slate-500 mt-0.5">
-                Guided lessons · Master the 10-step systematic approach
+                Guided lessons · Master the 17-step systematic checklist
               </p>
             </div>
             <svg className="w-4 h-4 text-slate-300 group-hover:text-sky-400 transition-colors shrink-0"
@@ -293,13 +293,13 @@ export default function Home() {
     runAnalysis(base64, mediaType);
   };
 
-  // Called by the "AI Analysis" button in the Case Library
+  // Called by the library “Analyze” action
   const handleAnalyzeFromLibrary = async (c: EKGCase) => {
     setTab("analyze");
     setAnalyzePreview(null); // cleared until image is fetched
 
     try {
-      // Fetch the 12-lead image and convert to base64 so Claude has visual context
+      // Fetch the 12-lead image and digitize via Python when possible (case fast-path still uses measurements.json)
       const res  = await fetch(c.twelveleadPath);
       const blob = await res.blob();
       const dataUrl = await new Promise<string>((resolve) => {
@@ -491,7 +491,7 @@ export default function Home() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
                 </div>
-                <p className="text-sm text-[var(--academy-muted)] font-medium">Applying 10-step framework…</p>
+                <p className="text-sm text-[var(--academy-muted)] font-medium">Applying systematic framework…</p>
               </div>
             )}
 

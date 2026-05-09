@@ -105,18 +105,6 @@ export default function SystematicChecklist({ stripId, compact = false }: Props)
   const completedCount = checked.size;
   const totalCount = SYSTEMATIC_STEPS.length;
   const allDone = completedCount === totalCount;
-  const progressClass =
-    !ready || totalCount === 0
-      ? "w-0"
-      : completedCount >= totalCount
-        ? "w-full"
-        : completedCount >= totalCount * 0.75
-          ? "w-3/4"
-          : completedCount >= totalCount * 0.5
-            ? "w-1/2"
-            : completedCount >= totalCount * 0.25
-              ? "w-1/4"
-              : "w-0";
 
   return (
     <div
@@ -172,7 +160,7 @@ export default function SystematicChecklist({ stripId, compact = false }: Props)
       </div>
 
       {/* Steps */}
-      <ol className={`space-y-${compact ? "1" : "2"}`}>
+      <ol className={compact ? "space-y-1" : "space-y-2"}>
         {SYSTEMATIC_STEPS.map((step: SystematicStep, idx: number) => {
           const isChecked = ready && checked.has(step.id);
           return (

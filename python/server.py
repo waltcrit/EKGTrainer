@@ -28,7 +28,6 @@ from pydantic import BaseModel
 from analyze_ecg import (
     NumpyEncoder,
     analyze_signal,
-    build_claude_prompt,
     digitize_image,
     run_pipeline_classification,
 )
@@ -52,13 +51,6 @@ app.add_middleware(
 _PYTHON_API_KEY = os.environ.get("PYTHON_API_KEY", "").strip()
 
 _MAX_IMAGE_BYTES = int(os.environ.get("MAX_IMAGE_BYTES", str(4 * 1024 * 1024)))
-
-_INCLUDE_CLAUDE_PROMPT = os.environ.get("INCLUDE_CLAUDE_PROMPT", "").strip().lower() in {
-    "1",
-    "true",
-    "yes",
-    "on",
-}
 
 _RATE_WINDOW_S = int(os.environ.get("RATE_WINDOW_S", str(60 * 60)))
 _RATE_MAX_REQUESTS = int(os.environ.get("RATE_MAX_REQUESTS", "60"))
@@ -133,10 +125,6 @@ def _cached_analyze(image_hash: str, image_bytes: bytes) -> str:
         precomputed_fs=digitized["sampling_rate"],
     )
 
-    prompt = build_claude_prompt(
-        measurements, digitized["method"], pipeline_classification
-    )
-
     result: dict[str, object] = {
         "success": True,
         "measurements": measurements,
@@ -145,8 +133,6 @@ def _cached_analyze(image_hash: str, image_bytes: bytes) -> str:
         "sampling_rate": digitized["sampling_rate"],
         "pipeline_classification": pipeline_classification,
     }
-    if _INCLUDE_CLAUDE_PROMPT:
-        result["claude_prompt"] = prompt
     return json.dumps(result, cls=NumpyEncoder)
 
 
@@ -175,6 +161,8 @@ async def analyze(req: AnalyzeRequest, request: Request) -> dict[str, object]:
 
         # validate=True rejects non-base64 alphabet characters
         image_bytes = base64.b64decode(req.image_base64, validate=True)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.warning(f"[{request_id}] Invalid base64: {type(e).__name__}")
         raise HTTPException(status_code=400, detail="image_base64 is not valid base64")
